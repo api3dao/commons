@@ -1,16 +1,11 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { universalRestrictedImportsConfig, universalImportOrderConfig } = require('./internal');
+
 module.exports = {
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 2022, // Allows for the parsing of modern ECMAScript features
-    ecmaFeatures: {
-      jsx: true,
-    },
     sourceType: 'module', // Allows for the use of imports
-  },
-  settings: {
-    react: {
-      version: 'detect',
-    },
   },
   env: {
     node: true,
@@ -19,23 +14,12 @@ module.exports = {
   extends: [
     'plugin:@typescript-eslint/recommended-type-checked',
     'plugin:@typescript-eslint/stylistic-type-checked',
-    'plugin:react/recommended',
     'plugin:import/recommended',
     'plugin:import/typescript',
-    'next/core-web-vitals', // https://nextjs.org/docs/basic-features/eslint
     'plugin:unicorn/recommended',
     'plugin:promise/recommended',
   ],
-  plugins: [
-    '@typescript-eslint',
-    'react',
-    'deprecation',
-    'functional',
-    'prefer-arrow',
-    'unicorn',
-    'check-file',
-    'promise',
-  ],
+  plugins: ['@typescript-eslint', 'deprecation', 'functional', 'prefer-arrow', 'unicorn', 'check-file', 'import'],
   rules: {
     /* Rule definitions and overrides for standard eslint rules */
     camelcase: 'error',
@@ -103,7 +87,6 @@ module.exports = {
       'error',
       {
         '**/': 'KEBAB_CASE',
-        'mocks/*/': 'KEBAB_CASE',
       },
     ],
     'unicorn/filename-case': [
@@ -127,50 +110,7 @@ module.exports = {
     'import/no-default-export': 'error',
     'import/no-duplicates': 'error',
     'import/no-named-as-default': 'off',
-    'import/order': [
-      'error',
-      {
-        // https://github.com/benmosher/eslint-plugin-import/blob/master/docs/rules/order.md
-        groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
-        // Make react first
-        pathGroups: [
-          {
-            pattern: 'react',
-            group: 'builtin',
-            position: 'before',
-          },
-        ],
-        pathGroupsExcludedImportTypes: ['react'],
-        'newlines-between': 'always',
-        alphabetize: {
-          order: 'asc',
-          caseInsensitive: true,
-        },
-      },
-    ],
-
-    /* Rule overrides for "react" plugin */
-    'react/destructuring-assignment': ['error', 'always', { destructureInSignature: 'ignore' }],
-    'react/function-component-definition': 'off', // Arrow functions are enforced globally by different rules.
-    'react/hook-use-state': 'error',
-    'react/jsx-boolean-value': 'error',
-    'react/jsx-child-element-spacing': 'error',
-    'react/jsx-curly-brace-presence': ['error', { props: 'never', children: 'never', propElementValues: 'always' }],
-    'react/jsx-fragments': 'error',
-    'react/jsx-no-useless-fragment': 'error',
-    'react/jsx-sort-props': 'off', // Event though it has an automatic fixer, it's not bulletproof and does not handle inline comments (written above the jsx prop). In practice, sorting the JSX props is not an issue, since components rarely have too many props.
-    'react/no-object-type-as-default-prop': 'error',
-    'react/no-unescaped-entities': 'off',
-    'react/prop-types': 'off',
-    'react/react-in-jsx-scope': 'off',
-    'react/self-closing-comp': [
-      'error',
-      {
-        component: true,
-        html: true,
-      },
-    ],
-    'react/void-dom-elements-no-children': 'error',
+    'import/order': ['error', universalImportOrderConfig],
 
     /* Rule overrides for "@typescript-eslint" plugin */
     '@typescript-eslint/comma-dangle': 'off', // Conflicts with prettier.
@@ -217,29 +157,7 @@ module.exports = {
     ],
     '@typescript-eslint/no-non-null-assertion': 'off', // Too restrictive. The inference is often not powerful enough or there is not enough context.
     '@typescript-eslint/no-require-imports': 'off', // We use a similar rule called "@typescript-eslint/no-var-imports" which bans require imports alltogether.
-    '@typescript-eslint/no-restricted-imports': [
-      'error',
-      {
-        paths: [
-          {
-            name: 'react',
-            importNames: ['default'],
-            message:
-              'There is no need to import React globally starting from version 17. Use named imports when a specific React API is needed.',
-          },
-        ],
-        patterns: [
-          {
-            group: ['lodash/*'],
-            message: "Please use named imports from 'lodash'.",
-          },
-          {
-            group: ['date-fns/*'],
-            message: "Please use named imports from 'date-fns'.",
-          },
-        ],
-      },
-    ],
+    '@typescript-eslint/no-restricted-imports': ['error', universalRestrictedImportsConfig],
     '@typescript-eslint/no-shadow': 'off', // It is often valid to shadow variable (e.g. for the lack of a better name).
     '@typescript-eslint/no-unnecessary-condition': 'off', // Suggests removing useful conditionals for index signatures and arrays. Would require enabling additional strict checks in TS, which is hard to ask.
     '@typescript-eslint/no-unsafe-argument': 'off', // Too restrictive, often false yields to more verbose code.
@@ -273,14 +191,6 @@ module.exports = {
     'deprecation/deprecation': 'error',
   },
   overrides: [
-    // Next.js expects default exports in pages directory. See: https://stackoverflow.com/a/73470605.
-    {
-      files: ['pages/**/*'],
-      rules: {
-        'import/no-default-export': 'off',
-        'import/prefer-default-export': 'error',
-      },
-    },
     // Overrides for Jest tests.
     {
       files: ['**/*.test.ts', '**/*.test.tsx'],

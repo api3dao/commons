@@ -26,3 +26,7 @@ Use:
 ```sh
 eslint --report-unused-disable-directives --cache --ext js,ts,tsx . --max-warnings 0
 ```
+
+// NOTE: The file is intentionally written in JS so it can be used to lint the project itself.
+
+TODO: add a note about config overrides
