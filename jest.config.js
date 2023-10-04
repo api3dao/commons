@@ -1,9 +1,8 @@
-const { join } = require('path');
+// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/unbound-method
+const { join } = require('node:path');
 
-/*
- * For a detailed explanation regarding each configuration property and type check, visit:
- * https://jestjs.io/docs/configuration
- */
+// For a detailed explanation regarding each configuration property and type check, visit:
+// https://jestjs.io/docs/configuration
 module.exports = {
   collectCoverage: true,
   coverageDirectory: 'coverage',
