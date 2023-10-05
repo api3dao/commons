@@ -47,6 +47,9 @@ dependencies:
   eslint-plugin-react:
     specifier: ^7.32.1
     version: 7.33.2(eslint@8.50.0)
+  eslint-plugin-react-hooks:
+    specifier: ^4.6.0
+    version: 4.6.0(eslint@8.50.0)
   eslint-plugin-unicorn:
     specifier: ^48.0.1
     version: 48.0.1(eslint@8.50.0)

@@ -22,7 +22,7 @@ module.exports = {
     node: true,
     browser: true,
   },
-  extends: ['plugin:react/recommended'],
+  extends: ['plugin:react/all', 'plugin:react-hooks/recommended'],
   plugins: ['react', '@typescript-eslint', 'import'],
   rules: {
     'import/order': [
@@ -42,18 +42,31 @@ module.exports = {
 
     /* Rule overrides for "react" plugin */
     'react/destructuring-assignment': ['error', 'always', { destructureInSignature: 'ignore' }],
+    'react/forbid-component-props': ['error', { forbid: [] }], // Prefer using Material UI component and "sx" prop for static styles, use "style" for dynamic ones. See: https://stackoverflow.com/a/72527462.
+    'react/forbid-dom-props': ['error', { forbid: [] }], // Prefer using Material UI component and "sx" prop for static styles, use "style" for dynamic ones. See: https://stackoverflow.com/a/72527462.
     'react/function-component-definition': 'off', // Arrow functions are enforced globally by different rules.
-    'react/hook-use-state': 'error',
-    'react/jsx-boolean-value': 'error',
-    'react/jsx-child-element-spacing': 'error',
     'react/jsx-curly-brace-presence': ['error', { props: 'never', children: 'never', propElementValues: 'always' }],
-    'react/jsx-fragments': 'error',
-    'react/jsx-no-useless-fragment': 'error',
+    'react/jsx-curly-newline': 'off', // Conflicts with prettier.
+    'react/jsx-filename-extension': 'off', // We use .tsx files and this rule does not support that.
+    'react/jsx-handler-names': 'off', // Too restrictive.
+    'react/jsx-indent': 'off', // Conflicts with prettier.
+    'react/jsx-indent-props': 'off', // Conflicts with prettier.
+    'react/jsx-max-depth': 'off', // Conflicts with prettier.
+    'react/jsx-max-props-per-line': 'off', // Conflicts with prettier.
+    'react/jsx-newline': 'off', // Conflicts with prettier.
+    'react/jsx-no-bind': 'off', // Conflicts with prettier.
+    'react/jsx-no-leaked-render': 'off', // The rule is too restrictive (and leads to more verbose code) and reports many false positives.
+    'react/jsx-no-literals': 'off', // Too verbose.
+    'react/jsx-one-expression-per-line': 'off', // Conflicts with prettier.
+    'react/jsx-props-no-spreading': 'off', // Too restrictive.
     'react/jsx-sort-props': 'off', // Event though it has an automatic fixer, it's not bulletproof and does not handle inline comments (written above the jsx prop). In practice, sorting the JSX props is not an issue, since components rarely have too many props.
-    'react/no-object-type-as-default-prop': 'error',
+    'react/no-multi-comp': 'off', // Too restrictive.
     'react/no-unescaped-entities': 'off',
+    'react/no-unused-prop-types': 'off', // Reports false positives.
+    'react/prefer-read-only-props': 'off', // Too verbose.
     'react/prop-types': 'off',
     'react/react-in-jsx-scope': 'off',
+    'react/require-default-props': 'off', // Too restrictive.
     'react/self-closing-comp': [
       'error',
       {
