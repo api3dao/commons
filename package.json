@@ -1,6 +1,6 @@
 {
-  "name": "commons",
-  "version": "1.0.3",
+  "name": "@api3/commons",
+  "version": "0.1.0",
   "keywords": [],
   "license": "MIT",
   "engines": {

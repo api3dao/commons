@@ -38,3 +38,7 @@ TODO: need to set:
     project: ['./tsconfig.json'],
   }
 ```
+
+TODO: Mentioon that we need to load plugins via relative paths from node_modules, because of
+
+https://github.com/eslint/eslintrc/blob/242d569020dfe4f561e4503787b99ec016337457/lib/config-array-factory.js#L920
