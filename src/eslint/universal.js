@@ -12,8 +12,8 @@ module.exports = {
     browser: true,
   },
   extends: [
-    'plugin:@typescript-eslint/recommended-type-checked',
-    'plugin:@typescript-eslint/stylistic-type-checked',
+    'eslint:recommended',
+    'plugin:@typescript-eslint/all',
     'plugin:import/recommended',
     'plugin:import/typescript',
     'plugin:unicorn/recommended',
@@ -26,7 +26,6 @@ module.exports = {
     'capitalized-comments': ['error', 'always', { ignoreConsecutiveComments: true }],
     curly: ['error', 'multi-line', 'consistent'],
     eqeqeq: 'error',
-    'multiline-comment-style': ['error', 'separate-lines'],
     // There are two (imho equally valid) ways to add a short comment. Either inline or directly above the code. The
     // former is nicer when the comment is short, the latter reads better when the comment is longer and is split into
     // multiple lines.
@@ -39,6 +38,7 @@ module.exports = {
     'no-nested-ternary': 'error',
     'no-new-wrappers': 'error',
     'no-return-await': 'off', // Superceded by @typescript-eslint/return-await
+    'no-unexpected-multiline': 'off', // Conflicts with prettier.
     'no-unused-expressions': 'off', // Superceded by @typescript-eslint/no-unused-expressions
     'object-shorthand': 'error',
     'prefer-destructuring': [
@@ -98,7 +98,9 @@ module.exports = {
     ],
 
     /* Rule overrides for "unicorn" plugin */
+    'unicorn/consistent-function-scoping': 'off', // Disabling due to the rule's constraints conflicting with established patterns, especially in test suites where local helper or mocking functions are prevalent and do not necessitate exports.
     'unicorn/no-abusive-eslint-disable': 'off', // Already covered by different ruleset.
+    'unicorn/no-array-callback-reference': 'off', // We prefer point free notation using "functional/prefer-tacit" rule.
     'unicorn/no-array-reduce': 'off', // We are OK with using reduce occasionally, but I agree with the author that the code using reduce can easily get complex.
     'unicorn/no-nested-ternary': 'off', // This rule is smarter than the standard eslint rule, but conflicts with prettier so it needs to be turned off. Nested ternaries are very unreadable so it's OK if all of them are flagged.
     'unicorn/no-null': 'off', // We use both null and undefined for representing three state objects. We could use a string union instead, but using combination of null and undefined is less verbose.
@@ -159,6 +161,7 @@ module.exports = {
     '@typescript-eslint/no-require-imports': 'off', // We use a similar rule called "@typescript-eslint/no-var-imports" which bans require imports alltogether.
     '@typescript-eslint/no-restricted-imports': ['error', universalRestrictedImportsConfig],
     '@typescript-eslint/no-shadow': 'off', // It is often valid to shadow variable (e.g. for the lack of a better name).
+    '@typescript-eslint/no-type-alias': 'off', // The rule is deprecated and "@typescript-eslint/consistent-type-definitions" is used instead.
     '@typescript-eslint/no-unnecessary-condition': 'off', // Suggests removing useful conditionals for index signatures and arrays. Would require enabling additional strict checks in TS, which is hard to ask.
     '@typescript-eslint/no-unsafe-argument': 'off', // Too restrictive, often false yields to more verbose code.
     '@typescript-eslint/no-unsafe-assignment': 'off', // Too restrictive, often false yields to more verbose code.
@@ -178,6 +181,7 @@ module.exports = {
     '@typescript-eslint/semi': 'off', // Conflicts with prettier.
     '@typescript-eslint/space-before-function-paren': 'off', // Conflicts with prettier.
     '@typescript-eslint/strict-boolean-expressions': 'off', // While the rule is reasonable, it is often convenient and intended to just check whether the value is not null or undefined. Enabling this rule would make the code more verbose. See: https://typescript-eslint.io/rules/strict-boolean-expressions/
+    '@typescript-eslint/unbound-method': 'off', // Reports issues for common patterns in tests (e.g. "expect(logger.warn)..."). Often the issue yields false positives.
 
     /* Rule overrides for "functional" plugin */
     'functional/no-classes': 'error', // Functions are all we need.
