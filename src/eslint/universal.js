@@ -23,7 +23,6 @@ module.exports = {
   rules: {
     /* Rule definitions and overrides for standard eslint rules */
     camelcase: 'error',
-    'capitalized-comments': ['error', 'always', { ignoreConsecutiveComments: true }],
     curly: ['error', 'multi-line', 'consistent'],
     eqeqeq: 'error',
     // There are two (imho equally valid) ways to add a short comment. Either inline or directly above the code. The
