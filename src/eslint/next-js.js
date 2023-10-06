@@ -1,11 +1,11 @@
 module.exports = {
   parser: '@typescript-eslint/parser',
   parserOptions: {
-    ecmaVersion: 2022, // Allows for the parsing of modern ECMAScript features
+    ecmaVersion: 2022, // Enable parsing of modern ECMAScript features.
     ecmaFeatures: {
-      jsx: true,
+      jsx: true, // Support JSX syntax.
     },
-    sourceType: 'module', // Allows for the use of imports
+    sourceType: 'module', // Enable ES6 import/export syntax.
   },
   settings: {
     react: {
@@ -17,15 +17,14 @@ module.exports = {
     browser: true,
   },
   extends: [
-    'next/core-web-vitals', // https://nextjs.org/docs/basic-features/eslint
+    'next/core-web-vitals', // Enforce Next.js performance best practices. See: https://nextjs.org/docs/basic-features/eslint.
   ],
   overrides: [
-    // Next.js expects default exports in pages directory. See: https://stackoverflow.com/a/73470605.
     {
       files: ['pages/**/*'],
       rules: {
         'import/no-default-export': 'off',
-        'import/prefer-default-export': 'error',
+        'import/prefer-default-export': 'error', // Next.js expects default exports in the pages directory.
       },
     },
   ],

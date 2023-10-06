@@ -1,14 +1,14 @@
 module.exports = {
   parser: '@typescript-eslint/parser',
   parserOptions: {
-    ecmaVersion: 2022, // Allows for the parsing of modern ECMAScript features
-    sourceType: 'module', // Allows for the use of imports
+    ecmaVersion: 2022, // Enable parsing modern ECMAScript features.
+    sourceType: 'module', // Enable the use of ES6 import/export syntax.
   },
   env: {
     node: true,
     browser: true,
   },
-  // Files can only be specified under overrides, so we move the whole configuration there.
+  // Configuration for specific files is done under 'overrides'.
   overrides: [
     {
       files: ['**/*.test.ts', '**/*.test.tsx', '**/*.test.js', '**/*.test.jsx'],
@@ -18,13 +18,13 @@ module.exports = {
       plugins: ['jest'],
       extends: ['plugin:jest/all', 'plugin:jest-formatting/recommended'],
       rules: {
-        'jest/prefer-expect-assertions': 'off', // Enabling this option would result in excessively verbose code.
-        'jest/prefer-each': 'off', // We prefer the traditional for loop.
-        'jest/require-top-level-describe': 'off', // This is not a good pattern. There is nothing wrong with having multiple top level describe blocks or tests.
-        'jest/max-expects': 'off', // It's good to limit the number of expects in a test, but this rule is too strict.
-        'jest/valid-title': 'off', // Prevents using "<function-name>.name" as a test name.
+        'jest/prefer-expect-assertions': 'off', // While useful, enforcing this can lead to verbose tests.
+        'jest/prefer-each': 'off', // We find traditional for-loops more readable in certain contexts.
+        'jest/require-top-level-describe': 'off', // Multiple top-level describe blocks or tests can be acceptable.
+        'jest/max-expects': 'off', // Limiting expect statements is beneficial, but enforcing a strict count can be restrictive.
+        'jest/valid-title': 'off', // This restriction can prevent using titles like "<function-name>.name".
         'jest/no-hooks': [
-          'error', // Prefer using setup functions instead of beforeXXX hooks. AfterXyz are sometimes necessary (e.g. to reset Jest timers).
+          'error', // We advocate for setup functions over beforeXXX hooks. However, afterXyz hooks are sometimes indispensable, like for resetting Jest timers. See: https://kentcdodds.com/blog/avoid-nesting-when-youre-testing#inline-it.
           {
             allow: ['afterEach', 'afterAll'],
           },

@@ -4,8 +4,8 @@ const { universalRestrictedImportsConfig, universalImportOrderConfig } = require
 module.exports = {
   parser: '@typescript-eslint/parser',
   parserOptions: {
-    ecmaVersion: 2022, // Allows for the parsing of modern ECMAScript features
-    sourceType: 'module', // Allows for the use of imports
+    ecmaVersion: 2022, // Allows for the parsing of modern ECMAScript features.
+    sourceType: 'module', // Allows for the use of imports.
   },
   env: {
     node: true,
@@ -25,20 +25,17 @@ module.exports = {
     camelcase: 'error',
     curly: ['error', 'multi-line', 'consistent'],
     eqeqeq: 'error',
-    // There are two (imho equally valid) ways to add a short comment. Either inline or directly above the code. The
-    // former is nicer when the comment is short, the latter reads better when the comment is longer and is split into
-    // multiple lines.
     'no-await-in-loop': 'off', // Too restrictive, often false yields to more verbose code.
     'no-console': ['error', { allow: ['info', 'groupCollapsed', 'groupEnd'] }],
-    'no-constant-condition': 'off', // Writing a while(true) loop is often the most readable way to express the intent.
+    'no-constant-condition': 'off', // Writing a "while(true)"" loop is often the most readable way to express the intent.
     'no-fallthrough': 'off', // Does not work well with typescript exhaustive enums.
     'no-inline-comments': 'off',
     'no-lonely-if': 'error',
     'no-nested-ternary': 'error',
     'no-new-wrappers': 'error',
-    'no-return-await': 'off', // Superceded by @typescript-eslint/return-await
+    'no-return-await': 'off', // Superceded by @typescript-eslint/return-await.
     'no-unexpected-multiline': 'off', // Conflicts with prettier.
-    'no-unused-expressions': 'off', // Superceded by @typescript-eslint/no-unused-expressions
+    'no-unused-expressions': 'off', // Superceded by @typescript-eslint/no-unused-expressions.
     'object-shorthand': 'error',
     'prefer-destructuring': [
       'error',
@@ -99,7 +96,7 @@ module.exports = {
     /* Rule overrides for "unicorn" plugin */
     'unicorn/consistent-function-scoping': 'off', // Disabling due to the rule's constraints conflicting with established patterns, especially in test suites where local helper or mocking functions are prevalent and do not necessitate exports.
     'unicorn/no-abusive-eslint-disable': 'off', // Already covered by different ruleset.
-    'unicorn/no-array-callback-reference': 'off', // We prefer point free notation using "functional/prefer-tacit" rule.
+    'unicorn/no-array-callback-reference': 'error', // Explicitly turned on, because it was initially disabled and "point free" notation was enforced using "functional/prefer-tacit". That said, the point free pattern is dangerous in JS. See: https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/docs/rules/no-array-callback-reference.md.
     'unicorn/no-array-reduce': 'off', // We are OK with using reduce occasionally, but I agree with the author that the code using reduce can easily get complex.
     'unicorn/no-nested-ternary': 'off', // This rule is smarter than the standard eslint rule, but conflicts with prettier so it needs to be turned off. Nested ternaries are very unreadable so it's OK if all of them are flagged.
     'unicorn/no-null': 'off', // We use both null and undefined for representing three state objects. We could use a string union instead, but using combination of null and undefined is less verbose.
@@ -140,11 +137,11 @@ module.exports = {
     '@typescript-eslint/no-confusing-void-expression': [
       'error',
       {
-        ignoreArrowShorthand: true, // See: https://typescript-eslint.io/rules/no-confusing-void-expression/#ignorearrowshorthand
+        ignoreArrowShorthand: true, // See: https://typescript-eslint.io/rules/no-confusing-void-expression/#ignorearrowshorthand.
       },
     ],
     '@typescript-eslint/no-empty-function': 'off', // Too restrictive, often false yields to more verbose code.
-    '@typescript-eslint/no-explicit-any': 'off', // Using any is sometimes necessary.
+    '@typescript-eslint/no-explicit-any': 'off', // Using "any" is sometimes necessary.
     '@typescript-eslint/no-extra-parens': 'off', // Conflicts with prettier.
     '@typescript-eslint/no-magic-numbers': 'off', // Too restrictive. There is often nothing wrong with inlining numbers.
     '@typescript-eslint/no-misused-promises': [
@@ -186,7 +183,7 @@ module.exports = {
     'functional/no-classes': 'error', // Functions are all we need.
     'functional/no-promise-reject': 'error',
     'functional/no-try-statements': 'error', // Use go utils instead.
-    'functional/prefer-tacit': 'error',
+    'functional/prefer-tacit': 'off', // The rule is dangerous. See: https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/docs/rules/no-array-callback-reference.md.
 
     /* Rule overrides for other plugins and rules */
     // This rule unfortunately does not detect deprecated properties. See:

@@ -1,11 +1,8 @@
 const universalRestrictedImportsConfig = {
   patterns: [
     {
-      group: ['lodash/*'],
-      message: "Please use named imports from 'lodash'.",
-    },
-    {
       group: ['date-fns/*'],
+      // The date-fns library is tree-shakeable and it's more convenient to use named imports.
       message: "Please use named imports from 'date-fns'.",
     },
   ],
