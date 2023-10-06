@@ -1,4 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/unbound-method
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { join } = require('node:path');
 
 // For a detailed explanation regarding each configuration property and type check, visit:

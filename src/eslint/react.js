@@ -1,4 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/unbound-method
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { merge } = require('lodash');
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -27,7 +27,7 @@ module.exports = {
   rules: {
     'import/order': [
       'error',
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+       
       merge({}, universalImportOrderConfig, {
         // Make react import first
         pathGroups: [
@@ -79,7 +79,7 @@ module.exports = {
     /* Rule overrides for "@typescript-eslint" plugin */
     '@typescript-eslint/no-restricted-imports': [
       'error',
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+       
       merge({}, universalRestrictedImportsConfig, {
         paths: [
           {
