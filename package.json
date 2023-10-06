@@ -60,8 +60,5 @@
   },
   "peerDependencies": {
     "eslint": "^8.50.0"
-  },
-  "publishConfig": {
-    "registry": "http://localhost:4873"
   }
 }
