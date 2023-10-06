@@ -38,3 +38,24 @@ To release a new version follow these steps:
    commit it.
 3. `pnpm publish --access public` - Publish the new version to NPM.
 4. `git push --follow-tags` - Push the tagged commit upstream.
+
+## Development notes
+
+### Working with verdaccio
+
+The common pattern is to move some part of implementation to commons and then use it in some other repo. It is valuable
+to see whether nothing broke in the process (before publishing the package). You can use
+[verdaccio](https://verdaccio.org/).
+
+1. Start verdaccio (either as a docker service or directly on host machine). See:
+   https://verdaccio.org/docs/installation.
+2. Implement and commit your changes. You should have a clean working tree.
+3. `pnpm version minor --no-git-tag-version` - Will bump the `package.json` version. Feel free to replace `minor` with a
+   `path` or `major` if necessary.
+4. `pnpm publish --access public --registry http://localhost:4873 --no-git-checks` - Will do the publishing to the local
+   registry. It will disable git checks (which ensure that the working tree is clean).
+5. You can now install the package in the target repository. Use
+   `pnpm add @api3/commons --registry http://localhost:4873`.
+
+Tip: To unpublish a package from the local registry, you can just remove verdaccio storage. On my machine it can be done
+via `rm -rf $HOME/.local/share/verdaccio/storage`.
