@@ -118,6 +118,7 @@ module.exports = {
     'import/no-default-export': 'error',
     'import/no-duplicates': 'error',
     'import/no-named-as-default': 'off',
+    'import/no-unresolved': 'off', // Does not accept exports keyword. See: https://github.com/import-js/eslint-plugin-import/issues/1810.
     'import/order': ['error', universalImportOrderConfig],
 
     /* Rule overrides for "@typescript-eslint" plugin */
@@ -197,6 +198,7 @@ module.exports = {
 
     /* Overrides for "lodash" plugin */
     'lodash/import-scope': ['error', 'member'], // We prefer member imports in node.js code. This is not recommended for FE projects, because lodash can't be tree shaken (written in CJS not ESM). This rule should be overridden for FE projects (and we do so in React ruleset).
+    'lodash/path-style': 'off', // Can potentially trigger TS errors. Both variants have use cases when they are more readable.
     'lodash/prefer-lodash-method': 'off', // Disagree with this rule. Using the native method is often simpler.
 
     /* Rule overrides for other plugins and rules */
