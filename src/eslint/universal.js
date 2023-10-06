@@ -18,6 +18,7 @@ module.exports = {
     'plugin:import/typescript',
     'plugin:unicorn/recommended',
     'plugin:promise/recommended',
+    'plugin:lodash/recommended',
   ],
   plugins: ['@typescript-eslint', 'deprecation', 'functional', 'prefer-arrow', 'unicorn', 'check-file', 'import'],
   rules: {
