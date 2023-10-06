@@ -23,7 +23,7 @@ module.exports = {
     browser: true,
   },
   extends: ['plugin:react/all', 'plugin:react-hooks/recommended'],
-  plugins: ['react', '@typescript-eslint', 'import'],
+  plugins: ['react', '@typescript-eslint', 'import', 'lodash'],
   rules: {
     'import/order': [
       'error',
@@ -82,5 +82,8 @@ module.exports = {
         ],
       }),
     ],
+
+    /* Overrides for "lodash" plugin */
+    'lodash/import-scope': ['error', 'method'],
   },
 };

@@ -20,7 +20,16 @@ module.exports = {
     'plugin:promise/recommended',
     'plugin:lodash/recommended',
   ],
-  plugins: ['@typescript-eslint', 'deprecation', 'functional', 'prefer-arrow', 'unicorn', 'check-file', 'import'],
+  plugins: [
+    '@typescript-eslint',
+    'deprecation',
+    'functional',
+    'prefer-arrow',
+    'unicorn',
+    'check-file',
+    'import',
+    'lodash',
+  ],
   rules: {
     /* Rule definitions and overrides for standard eslint rules */
     camelcase: 'error',
@@ -185,6 +194,9 @@ module.exports = {
     'functional/no-promise-reject': 'error',
     'functional/no-try-statements': 'error', // Use go utils instead.
     'functional/prefer-tacit': 'off', // The rule is dangerous. See: https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/docs/rules/no-array-callback-reference.md.
+
+    /* Overrides for "lodash" plugin */
+    'lodash/import-scope': ['error', 'member'], // We prefer member imports in node.js code. This is not recommended for FE projects, because lodash can't be tree shaken (written in CJS not ESM). This rule should be overridden for FE projects (and we do so in React ruleset).
 
     /* Rule overrides for other plugins and rules */
     // This rule unfortunately does not detect deprecated properties. See:
