@@ -2,7 +2,6 @@
 // and use this function as a workaround at the top of your test.
 //
 // Credit: https://github.com/facebook/jest/issues/6914#issuecomment-654710111
- 
 const { defineProperty } = Object;
 
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions

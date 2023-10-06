@@ -8,7 +8,7 @@ duplication.
 
 The commons library is a single repo and a collection of multiple modules:
 
-- [`eslint`](./src/eslint/README.md) - The configrations for ESlint.
+- [`eslint`](./src/eslint/README.md) - The configrations for ESLint.
 
 Read the documentation of each module for more information.
 

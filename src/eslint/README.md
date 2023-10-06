@@ -1,8 +1,8 @@
 # eslint
 
-> ESlint configurations used across API3 projects.
+> ESLint configurations used across API3 projects.
 
-The modules consists of multiple ESlint configurations supporting wide variety of targets:
+The modules consists of multiple ESLint configurations supporting wide variety of targets:
 
 - `universal` - Linting rules for universal (both FE and BE) JS/TS code (with the emphasis on TS).
 - `react` - Linting rules for React code.
@@ -21,7 +21,7 @@ For example:
 
 ```js
 module.exports = {
-  // Unfortunately, the plugin does not comply with official eslint naming convention which demands the plugin to be
+  // Unfortunately, the plugin does not comply with official ESLint naming convention which demands the plugin to be
   // published as "@api3/eslint-config-commons". As a workaround, you need to use a relative path instead.
   //
   // See: https://github.com/eslint/eslintrc/blob/242d569020dfe4f561e4503787b99ec016337457/lib/config-array-factory.js#L920
@@ -45,7 +45,7 @@ We recommend using the following linting commands inside `package.json` scripts:
 }
 ```
 
-The `--cache` parameter makes ESlint create a `.eslintcache` file in the root of the project. This file should be put to
+The `--cache` parameter makes ESLint create a `.eslintcache` file in the root of the project. This file should be put to
 `.gitignore`.
 
 ## Rules
@@ -87,6 +87,6 @@ To override a rule, you can use the `rules` section key in your `.eslintrc.js` f
 - The implementation is intentionally written in JS so it can be used to lint the project itself. You can see that the
   root `.eslintrc.js` extends the configuration files from this module.
 
-- Unfortunately, the plugin does not comply with official eslint naming convention which demands the plugin to be
+- Unfortunately, the plugin does not comply with official ESLint naming convention which demands the plugin to be
   published as "@api3/eslint-config-commons". As a workaround, project need to use a relative path instead. See:
   https://github.com/eslint/eslintrc/blob/242d569020dfe4f561e4503787b99ec016337457/lib/config-array-factory.js#L920

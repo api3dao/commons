@@ -31,7 +31,7 @@ module.exports = {
     'lodash',
   ],
   rules: {
-    /* Rule definitions and overrides for standard eslint rules */
+    /* Rule definitions and overrides for standard ESLint rules */
     camelcase: 'error',
     curly: ['error', 'multi-line', 'consistent'],
     eqeqeq: 'error',
@@ -108,7 +108,7 @@ module.exports = {
     'unicorn/no-abusive-eslint-disable': 'off', // Already covered by different ruleset.
     'unicorn/no-array-callback-reference': 'error', // Explicitly turned on, because it was initially disabled and "point free" notation was enforced using "functional/prefer-tacit". That said, the point free pattern is dangerous in JS. See: https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/docs/rules/no-array-callback-reference.md.
     'unicorn/no-array-reduce': 'off', // We are OK with using reduce occasionally, but I agree with the author that the code using reduce can easily get complex.
-    'unicorn/no-nested-ternary': 'off', // This rule is smarter than the standard eslint rule, but conflicts with prettier so it needs to be turned off. Nested ternaries are very unreadable so it's OK if all of them are flagged.
+    'unicorn/no-nested-ternary': 'off', // This rule is smarter than the standard ESLint rule, but conflicts with prettier so it needs to be turned off. Nested ternaries are very unreadable so it's OK if all of them are flagged.
     'unicorn/no-null': 'off', // We use both null and undefined for representing three state objects. We could use a string union instead, but using combination of null and undefined is less verbose.
     'unicorn/no-useless-undefined': ['error', { checkArguments: false }], // We need to disable "checkArguments", because if a function expects a value of type "T | undefined" the undefined value needs to be passed explicitly.
     'unicorn/prefer-module': 'off', // We use CJS for configuration files and tests. There is no rush to migrate to ESM and the configuration files are probably not yet ready for ESM yet.

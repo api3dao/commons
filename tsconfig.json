@@ -14,7 +14,7 @@
     "noImplicitReturns": true,
     "allowJs": true,
 
-    // Disabled because they are covered by Eslint rules
+    // Disabled because they are covered by ESLint rules
     "noUnusedLocals": false,
     "noUnusedParameters": false,
 
