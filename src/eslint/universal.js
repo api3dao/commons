@@ -197,6 +197,7 @@ module.exports = {
 
     /* Overrides for "lodash" plugin */
     'lodash/import-scope': ['error', 'member'], // We prefer member imports in node.js code. This is not recommended for FE projects, because lodash can't be tree shaken (written in CJS not ESM). This rule should be overridden for FE projects (and we do so in React ruleset).
+    'lodash/prefer-lodash-method': 'off', // Disagree with this rule. Using the native method is often simpler.
 
     /* Rule overrides for other plugins and rules */
     // This rule unfortunately does not detect deprecated properties. See:
