@@ -64,6 +64,14 @@ To release a new version follow these steps:
 
 ## Development notes
 
+### Adding new common utility
+
+1. Create a new directory in `src` with the name of the utility.
+2. Create `index.ts` file in the directory. This file will be the entry point for the utility.
+3. Add the new utility to `package.json` `exports` field. See
+   [exports](https://nodejs.org/api/packages.html#package-entry-points) for more information.
+4. Create a `README.md` with documentation.
+
 ### Working with verdaccio
 
 The common pattern is to move some part of implementation to commons and then use it in some other repo. It is valuable
