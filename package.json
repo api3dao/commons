@@ -11,6 +11,10 @@
     "dist",
     "src"
   ],
+  "exports": {
+    "./logger": "./dist/logger/index.js",
+    "./eslint": "./dist/logger/index.js"
+  },
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "clean": "rm -rf coverage dist",

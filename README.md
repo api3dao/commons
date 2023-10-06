@@ -28,6 +28,29 @@ pnpm add @api3/commons
 
 Read the documentation of each module how to use it in the project.
 
+### Import paths
+
+We want the consumers to import common utilities like this:
+
+```ts
+import { createLogger } from '@api3/commons/logger';
+// and not like this
+import { createLogger } from '@api3/commons/dist/logger';
+```
+
+This is done via `package.json` field called [exports](https://nodejs.org/api/packages.html#package-entry-points). This
+field works for both CJS and ESM starting from Node version 12. In order for TS to support this, you need to make sure
+you use `moduleResolution` and `module` set to `Node16`:
+
+```json
+{
+  "compilerOptions": {
+    "module": "Node16",
+    "moduleResolution": "Node16"
+  }
+}
+```
+
 ## Release
 
 To release a new version follow these steps:
