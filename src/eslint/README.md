@@ -15,6 +15,7 @@ The modules consists of multiple ESlint configurations supporting wide variety o
 1. Create an `.eslintrc.js` configuration file in the repo root.
 2. Extend the desired configuration(s).
 3. Specify the `parserOptions.project` option with the path to the `tsconfig.json` file(s).
+4. Install `eslint` (which is a peer dependency of this module) as dev dependencies.
 
 For example:
 

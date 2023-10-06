@@ -58,6 +58,9 @@
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   },
+  "peerDependencies": {
+    "eslint": "^8.50.0"
+  },
   "publishConfig": {
     "registry": "http://localhost:4873"
   }
