@@ -63,6 +63,9 @@ But some stylistical rules are too strict for certain projects, for example:
 - Enforce `camelCase` for variables and functions, but `kebab-case` for filenames.
 - Prefer arrow functions everywhere instead of regular `function` functions.
 
+Tip: Some rules do have fixer with multiple variants of the fixes. You need to use the IDE to prompt the fixes and
+choose the one you want.
+
 ### Overriding rules
 
 To override a rule, you can use the `rules` section key in your `.eslintrc.js` file. For example:

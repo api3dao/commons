@@ -12,6 +12,13 @@ The commons library is a single repo and a collection of multiple modules:
 
 Read the documentation of each module for more information.
 
+## Related repositories
+
+- [promise-utils](https://github.com/api3dao/promise-utils)
+- [ois](https://github.com/api3dao/ois)
+- [chains](https://github.com/api3dao/chains)
+- [contracts](https://github.com/api3dao/contracts)
+
 ## Getting started
 
 ```sh
