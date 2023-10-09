@@ -42,18 +42,22 @@ export const preProcessApiSpecifications = async (
 
   const goProcessedParameters = await go(
     () =>
-      preProcessingSpecifications.reduce(async (input: Promise<unknown>, currentValue: ProcessingSpecification) => {
+      preProcessingSpecifications.reduce(async (input: Promise<unknown>, processing: ProcessingSpecification) => {
         // provide endpoint parameters without reserved parameters immutably between steps
         const endpointParameters = removeReservedParameters(
           JSON.parse(JSON.stringify(payload.aggregatedApiCall.parameters))
         );
-        switch (currentValue.environment) {
+        switch (processing.environment) {
           case 'Node':
-            return unsafeEvaluate(await input, currentValue.value, currentValue.timeoutMs, endpointParameters);
+            return unsafeEvaluate(processing.value, { input: await input, endpointParameters }, processing.timeoutMs);
           case 'Node async':
-            return unsafeEvaluateAsync(await input, currentValue.value, currentValue.timeoutMs, endpointParameters);
+            return unsafeEvaluateAsync(
+              processing.value,
+              { input: await input, endpointParameters },
+              processing.timeoutMs
+            );
           default:
-            throw new Error(`Environment ${currentValue.environment} is not supported`);
+            throw new Error(`Environment ${processing.environment} is not supported`);
         }
       }, Promise.resolve(inputParameters)),
     processingOptions
@@ -99,9 +103,17 @@ export const postProcessApiSpecifications = async (
         );
         switch (currentValue.environment) {
           case 'Node':
-            return unsafeEvaluate(await input, currentValue.value, currentValue.timeoutMs, endpointParameters);
+            return unsafeEvaluate(
+              currentValue.value,
+              { input: await input, endpointParameters },
+              currentValue.timeoutMs
+            );
           case 'Node async':
-            return unsafeEvaluateAsync(await input, currentValue.value, currentValue.timeoutMs, endpointParameters);
+            return unsafeEvaluateAsync(
+              currentValue.value,
+              { input: await input, endpointParameters },
+              currentValue.timeoutMs
+            );
           default:
             throw new Error(`Environment ${currentValue.environment} is not supported`);
         }

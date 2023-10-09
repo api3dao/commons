@@ -79,10 +79,9 @@ const builtInNodeModules = {
 /**
  * This function is dangerous. Make sure to use it only with Trusted code.
  */
-export const unsafeEvaluate = (input: any, code: string, timeout: number, endpointParameters?: any) => {
+export const unsafeEvaluate = (code: string, globalVariables: Record<string, unknown>, timeout: number) => {
   const vmContext = {
-    input,
-    endpointParameters,
+    ...globalVariables,
     ...builtInNodeModules,
     deferredOutput: undefined,
   };
@@ -107,7 +106,7 @@ export const unsafeEvaluate = (input: any, code: string, timeout: number, endpoi
  *
  * The value given to `resolve` is expected to be the equivalent of `output` above.
  */
-export const unsafeEvaluateAsync = (input: any, code: string, timeout: number, endpointParameters?: any) => {
+export const unsafeEvaluateAsync = (code: string, globalVariables: Record<string, unknown>, timeout: number) => {
   let vmReject: (reason: unknown) => void;
 
   // Make sure the timeout is applied. When the processing snippet uses setTimeout or setInterval, the timeout option
@@ -132,15 +131,14 @@ export const unsafeEvaluateAsync = (input: any, code: string, timeout: number, e
     };
 
     const vmContext = {
-      input,
-      endpointParameters,
+      ...globalVariables,
+      ...builtInNodeModules,
       resolve: vmResolve,
       reject: vmReject,
       setTimeout: timers.customSetTimeout,
       setInterval: timers.customSetInterval,
       clearTimeout: timers.customClearTimeout,
       clearInterval: timers.customClearInterval,
-      ...builtInNodeModules,
     };
     vm.runInNewContext(code, vmContext, { displayErrors: true, timeout });
   });
