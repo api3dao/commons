@@ -1,4 +1,3 @@
-/* eslint-disable */
 /**
  * Timers (setTimeout, setInterval) do not work in Node.js vm, see: https://github.com/nodejs/help/issues/1875
  *
@@ -18,7 +17,9 @@ export const createTimers = () => {
   };
 
   const clearAllTimeouts = () => {
-    timeouts.forEach(clearTimeout);
+    for (const element of timeouts) {
+      clearTimeout(element);
+    }
     timeouts = [];
   };
 
@@ -34,7 +35,9 @@ export const createTimers = () => {
   };
 
   const clearAllIntervals = () => {
-    intervals.forEach(clearInterval);
+    for (const element of intervals) {
+      clearInterval(element);
+    }
     intervals = [];
   };
 

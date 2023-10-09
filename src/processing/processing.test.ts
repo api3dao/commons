@@ -1,6 +1,7 @@
-/* eslint-disable */
-import { postProcessApiSpecifications, preProcessApiSpecifications } from './processing';
+/* eslint-disable jest/prefer-strict-equal */ // Because the errors are thrown from the "vm" module (different context), they are not strictly equal.
 import * as fixtures from '../../test/fixtures';
+
+import { postProcessApiSpecifications, preProcessApiSpecifications } from './processing';
 
 describe('pre-processing', () => {
   it('valid processing code', async () => {
@@ -9,12 +10,12 @@ describe('pre-processing', () => {
       {
         environment: 'Node' as const,
         value: 'const output = {...input, from: "ETH"};',
-        timeoutMs: 5_000,
+        timeoutMs: 5000,
       },
       {
         environment: 'Node' as const,
         value: 'const output = {...input, newProp: "airnode"};',
-        timeoutMs: 5_000,
+        timeoutMs: 5000,
       },
     ];
     config.ois[0]!.endpoints[0] = { ...config.ois[0]!.endpoints[0]!, preProcessingSpecifications };
@@ -38,12 +39,12 @@ describe('pre-processing', () => {
       {
         environment: 'Node' as const,
         value: 'something invalid; const output = {...input, from: `ETH`};',
-        timeoutMs: 5_000,
+        timeoutMs: 5000,
       },
       {
         environment: 'Node' as const,
         value: 'const output = {...input, newProp: "airnode"};',
-        timeoutMs: 5_000,
+        timeoutMs: 5000,
       },
     ];
     config.ois[0]!.endpoints[0] = { ...config.ois[0]!.endpoints[0]!, preProcessingSpecifications };
@@ -51,7 +52,7 @@ describe('pre-processing', () => {
     const parameters = { _type: 'int256', _path: 'price', from: 'TBD' };
     const aggregatedApiCall = fixtures.buildAggregatedRegularApiCall({ parameters });
 
-    const throwingFunc = () => preProcessApiSpecifications({ type: 'regular', config, aggregatedApiCall });
+    const throwingFunc = async () => preProcessApiSpecifications({ type: 'regular', config, aggregatedApiCall });
 
     await expect(throwingFunc).rejects.toEqual(new Error('SyntaxError: Unexpected identifier'));
   });
@@ -65,7 +66,7 @@ describe('pre-processing', () => {
         // the presence of the reserved parameter _type (which is inaccessible)
         value:
           'const output = {...input, from: "ETH", _path: "price.newpath", myVal: input._type ? "123" : "456", newTo: endpointParameters.to };',
-        timeoutMs: 5_000,
+        timeoutMs: 5000,
       },
     ];
     config.ois[0]!.endpoints[0] = { ...config.ois[0]!.endpoints[0]!, preProcessingSpecifications };
@@ -93,12 +94,12 @@ describe('post-processing', () => {
       {
         environment: 'Node' as const,
         value: 'const output = parseInt(input.price)*2;',
-        timeoutMs: 5_000,
+        timeoutMs: 5000,
       },
       {
         environment: 'Node' as const,
         value: 'const output = parseInt(input)*2;',
-        timeoutMs: 5_000,
+        timeoutMs: 5000,
       },
     ];
     const endpoint = { ...config.ois[0]!.endpoints[0]!, postProcessingSpecifications };
@@ -111,7 +112,7 @@ describe('post-processing', () => {
       aggregatedApiCall,
     });
 
-    expect(result).toEqual(4000);
+    expect(result).toBe(4000);
   });
 
   it('demonstrates access to endPointParameters, but reserved parameters are inaccessible', async () => {
@@ -121,7 +122,7 @@ describe('post-processing', () => {
         environment: 'Node' as const,
         value:
           'const reservedMultiplier = endpointParameters._times ? 1 : 2; const output = parseInt(input.price) * endpointParameters.myMultiplier * reservedMultiplier;',
-        timeoutMs: 5_000,
+        timeoutMs: 5000,
       },
     ];
     const endpoint = { ...config.ois[0]!.endpoints[0]!, postProcessingSpecifications };
@@ -147,19 +148,19 @@ describe('post-processing', () => {
       {
         environment: 'Node' as const,
         value: 'const output = parseInt(input.price)*1000;',
-        timeoutMs: 5_000,
+        timeoutMs: 5000,
       },
       {
         environment: 'Node' as const,
         value: 'Something Unexpected; const output = parseInt(input)*2;',
-        timeoutMs: 5_000,
+        timeoutMs: 5000,
       },
     ];
     const endpoint = { ...config.ois[0]!.endpoints[0]!, postProcessingSpecifications };
     const parameters = { _type: 'int256', _path: 'price' };
     const aggregatedApiCall = fixtures.buildAggregatedRegularApiCall({ parameters });
 
-    const throwingFunc = () =>
+    const throwingFunc = async () =>
       postProcessApiSpecifications({ price: 1000 }, endpoint, {
         type: 'http-gateway',
         config,

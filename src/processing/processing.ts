@@ -1,8 +1,8 @@
-/* eslint-disable */
-import { Endpoint, ProcessingSpecification, RESERVED_PARAMETERS } from '@api3/ois';
-import { GoAsyncOptions, go } from '@api3/promise-utils';
+import { type Endpoint, type ProcessingSpecification, RESERVED_PARAMETERS } from '@api3/ois';
+import { type GoAsyncOptions, go } from '@api3/promise-utils';
+
+import { type ApiCallParameters, type ApiCallPayload, apiCallParametersSchema } from './schema';
 import { unsafeEvaluate, unsafeEvaluateAsync } from './unsafe-evaluate';
-import { ApiCallParameters, ApiCallPayload, apiCallParametersSchema } from './schema';
 
 export const PROCESSING_TIMEOUT_MS = 10_000;
 
@@ -41,23 +41,21 @@ export const preProcessApiSpecifications = async (
   const inputParameters = removeReservedParameters(aggregatedApiCall.parameters);
 
   const goProcessedParameters = await go(
-    () =>
+    async () =>
       preProcessingSpecifications.reduce(async (input: Promise<unknown>, processing: ProcessingSpecification) => {
         // provide endpoint parameters without reserved parameters immutably between steps
-        const endpointParameters = removeReservedParameters(
-          JSON.parse(JSON.stringify(payload.aggregatedApiCall.parameters))
-        );
+        const endpointParameters = removeReservedParameters(JSON.parse(JSON.stringify(aggregatedApiCall.parameters)));
         switch (processing.environment) {
-          case 'Node':
+          case 'Node': {
             return unsafeEvaluate(processing.value, { input: await input, endpointParameters }, processing.timeoutMs);
-          case 'Node async':
+          }
+          case 'Node async': {
             return unsafeEvaluateAsync(
               processing.value,
               { input: await input, endpointParameters },
               processing.timeoutMs
             );
-          default:
-            throw new Error(`Environment ${processing.environment} is not supported`);
+          }
         }
       }, Promise.resolve(inputParameters)),
     processingOptions
@@ -95,27 +93,27 @@ export const postProcessApiSpecifications = async (
   }
 
   const goResult = await go(
-    () =>
+    async () =>
       postProcessingSpecifications.reduce(async (input: any, currentValue: ProcessingSpecification) => {
         // provide endpoint parameters without reserved parameters immutably between steps
         const endpointParameters = removeReservedParameters(
           JSON.parse(JSON.stringify(payload.aggregatedApiCall.parameters))
         );
         switch (currentValue.environment) {
-          case 'Node':
+          case 'Node': {
             return unsafeEvaluate(
               currentValue.value,
               { input: await input, endpointParameters },
               currentValue.timeoutMs
             );
-          case 'Node async':
+          }
+          case 'Node async': {
             return unsafeEvaluateAsync(
               currentValue.value,
               { input: await input, endpointParameters },
               currentValue.timeoutMs
             );
-          default:
-            throw new Error(`Environment ${currentValue.environment} is not supported`);
+          }
         }
       }, Promise.resolve(input)),
 

@@ -1,40 +1,41 @@
-/* eslint-disable */
-import assert from 'assert';
-import async_hooks from 'async_hooks';
-import buffer from 'buffer';
-import child_process from 'child_process';
-import cluster from 'cluster';
-import console from 'console';
-import constants from 'constants';
-import crypto from 'crypto';
-import dgram from 'dgram';
-import dns from 'dns';
-import events from 'events';
-import fs from 'fs';
-import http from 'http';
-import http2 from 'http2';
-import https from 'https';
-import inspector from 'inspector';
-import module from 'module';
-import net from 'net';
-import os from 'os';
-import path from 'path';
-import perf_hooks from 'perf_hooks';
-import process from 'process';
-import readline from 'readline';
-import repl from 'repl';
-import stream from 'stream';
-import string_decoder from 'string_decoder';
-import timers from 'timers';
-import tls from 'tls';
-import trace_events from 'trace_events';
-import tty from 'tty';
-import url from 'url';
-import util from 'util';
-import v8 from 'v8';
-import vm from 'vm';
-import worker_threads from 'worker_threads';
-import zlib from 'zlib';
+/* eslint-disable camelcase */
+import assert from 'node:assert';
+import async_hooks from 'node:async_hooks';
+import buffer from 'node:buffer';
+import child_process from 'node:child_process';
+import cluster from 'node:cluster';
+import console from 'node:console';
+import constants from 'node:constants';
+import crypto from 'node:crypto';
+import dgram from 'node:dgram';
+import dns from 'node:dns';
+import events from 'node:events';
+import fs from 'node:fs';
+import http from 'node:http';
+import http2 from 'node:http2';
+import https from 'node:https';
+import inspector from 'node:inspector';
+import module from 'node:module';
+import net from 'node:net';
+import os from 'node:os';
+import path from 'node:path';
+import perf_hooks from 'node:perf_hooks';
+import process from 'node:process';
+import readline from 'node:readline';
+import repl from 'node:repl';
+import stream from 'node:stream';
+import string_decoder from 'node:string_decoder';
+import timers from 'node:timers';
+import tls from 'node:tls';
+import trace_events from 'node:trace_events';
+import tty from 'node:tty';
+import url from 'node:url';
+import util from 'node:util';
+import v8 from 'node:v8';
+import vm from 'node:vm';
+import worker_threads from 'node:worker_threads';
+import zlib from 'node:zlib';
+
 import { createTimers } from './vm-timers';
 
 const builtInNodeModules = {
@@ -83,7 +84,7 @@ export const unsafeEvaluate = (code: string, globalVariables: Record<string, unk
   const vmContext = {
     ...globalVariables,
     ...builtInNodeModules,
-    deferredOutput: undefined,
+    deferredOutput: undefined as unknown,
   };
 
   vm.runInNewContext(`${code}; deferredOutput = output;`, vmContext, {
@@ -106,7 +107,7 @@ export const unsafeEvaluate = (code: string, globalVariables: Record<string, unk
  *
  * The value given to `resolve` is expected to be the equivalent of `output` above.
  */
-export const unsafeEvaluateAsync = (code: string, globalVariables: Record<string, unknown>, timeout: number) => {
+export const unsafeEvaluateAsync = async (code: string, globalVariables: Record<string, unknown>, timeout: number) => {
   let vmReject: (reason: unknown) => void;
 
   // Make sure the timeout is applied. When the processing snippet uses setTimeout or setInterval, the timeout option
@@ -117,17 +118,17 @@ export const unsafeEvaluateAsync = (code: string, globalVariables: Record<string
     vmReject(new Error('Timeout exceeded'));
   }, timeout);
 
-  return new Promise((evaluateResolve, evaluateReject) => {
+  return new Promise((resolve, reject) => {
     const timers = createTimers();
     const vmResolve = (value: unknown) => {
       timers.clearAll();
       clearTimeout(timeoutTimer);
-      evaluateResolve(value);
+      resolve(value);
     };
     vmReject = (reason: unknown) => {
       timers.clearAll();
       clearTimeout(timeoutTimer);
-      evaluateReject(reason);
+      reject(reason);
     };
 
     const vmContext = {

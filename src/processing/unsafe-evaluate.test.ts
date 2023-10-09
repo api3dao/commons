@@ -1,15 +1,15 @@
-/* eslint-disable */
+/* eslint-disable jest/prefer-strict-equal */ // Because the errors are thrown from the "vm" module (different context), they are not strictly equal.
 import { unsafeEvaluate, unsafeEvaluateAsync } from './unsafe-evaluate';
 
 describe('unsafe evaluate - sync', () => {
   it('executes harmless code', () => {
-    const result = unsafeEvaluate("const output = {...input, c: 'some-value'}", { input: { a: true, b: 123 } }, 5_000);
+    const result = unsafeEvaluate("const output = {...input, c: 'some-value'}", { input: { a: true, b: 123 } }, 5000);
 
     expect(result).toEqual({ a: true, b: 123, c: 'some-value' });
   });
 
   it('throws on exception', () => {
-    expect(() => unsafeEvaluate("throw new Error('unexpected')", {}, 5_000)).toThrow('unexpected');
+    expect(() => unsafeEvaluate("throw new Error('unexpected')", {}, 5000)).toThrow('unexpected');
   });
 });
 
@@ -18,7 +18,7 @@ describe('unsafe evaluate - async', () => {
     const result = unsafeEvaluateAsync(
       "const output = {...input, c: 'some-value'}; resolve(output);",
       { input: { a: true, b: 123 } },
-      5_000
+      5000
     );
 
     await expect(result).resolves.toEqual({ a: true, b: 123, c: 'some-value' });
@@ -57,7 +57,7 @@ describe('unsafe evaluate - async', () => {
   });
 
   it('applies timeout when using setTimeout', async () => {
-    await expect(() =>
+    await expect(async () =>
       unsafeEvaluateAsync(
         `
         const fn = () => {
@@ -73,7 +73,7 @@ describe('unsafe evaluate - async', () => {
   });
 
   it('applies timeout when using setInterval', async () => {
-    await expect(() =>
+    await expect(async () =>
       unsafeEvaluateAsync(
         `
         const fn = () => {
@@ -90,13 +90,13 @@ describe('unsafe evaluate - async', () => {
   });
 
   it('processing can call reject', async () => {
-    await expect(() =>
+    await expect(async () =>
       unsafeEvaluateAsync(`reject(new Error('Rejected by processing snippet.'))`, {}, 50)
     ).rejects.toEqual(new Error('Rejected by processing snippet.'));
   });
 
   it('throws on exception', async () => {
-    await expect(() => unsafeEvaluateAsync("throw new Error('unexpected')", {}, 5_000)).rejects.toEqual(
+    await expect(async () => unsafeEvaluateAsync("throw new Error('unexpected')", {}, 5000)).rejects.toEqual(
       new Error('unexpected')
     );
   });
