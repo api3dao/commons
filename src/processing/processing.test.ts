@@ -1,11 +1,16 @@
 /* eslint-disable jest/prefer-strict-equal */ // Because the errors are thrown from the "vm" module (different context), they are not strictly equal.
 import * as fixtures from '../../test/fixtures';
 
-import { postProcessApiCallResponse, preProcessApiCallParameters } from './processing';
+import {
+  addReservedParameters,
+  postProcessApiCallResponse,
+  preProcessApiCallParameters,
+  removeReservedParameters,
+} from './processing';
 
 // TODO: Remove the not needed fixtures for processing
 // TODO: Add a bit more tests
-describe('pre-processing', () => {
+describe(preProcessApiCallParameters.name, () => {
   it('valid processing code', async () => {
     const config = fixtures.buildConfig();
     const preProcessingSpecifications = [
@@ -83,7 +88,7 @@ describe('pre-processing', () => {
   });
 });
 
-describe('post-processing', () => {
+describe(postProcessApiCallResponse.name, () => {
   it('processes valid code', async () => {
     const config = fixtures.buildConfig();
     const postProcessingSpecifications = [
@@ -148,5 +153,70 @@ describe('post-processing', () => {
     const throwingFunc = async () => postProcessApiCallResponse({ price: 1000 }, endpoint, parameters);
 
     await expect(throwingFunc).rejects.toEqual(new Error('SyntaxError: Unexpected identifier'));
+  });
+});
+
+describe(removeReservedParameters.name, () => {
+  it('removes all reserved parameters', () => {
+    const parameters = {
+      normalParam1: 'value1',
+      _type: 'int256',
+      _path: 'price',
+      normalParam2: 'value2',
+    };
+
+    const result = removeReservedParameters(parameters);
+
+    expect(result).toEqual({
+      normalParam1: 'value1',
+      normalParam2: 'value2',
+    });
+  });
+
+  it('returns same object if no reserved parameters found', () => {
+    const parameters = {
+      normalParam1: 'value1',
+      normalParam2: 'value2',
+    };
+
+    const result = removeReservedParameters(parameters);
+
+    expect(result).toEqual(parameters);
+  });
+});
+
+describe(addReservedParameters.name, () => {
+  it('adds reserved parameters from initial to modified parameters', () => {
+    const initialParameters = {
+      _type: 'int256',
+      _path: 'price',
+    };
+    const modifiedParameters = {
+      normalParam1: 'value1',
+      normalParam2: 'value2',
+    };
+
+    const result = addReservedParameters(initialParameters, modifiedParameters);
+
+    expect(result).toEqual({
+      normalParam1: 'value1',
+      normalParam2: 'value2',
+      _type: 'int256',
+      _path: 'price',
+    });
+  });
+
+  it('does not modify modifiedParameters if no reserved parameters in initialParameters', () => {
+    const initialParameters = {
+      normalParam3: 'value3',
+    };
+    const modifiedParameters = {
+      normalParam1: 'value1',
+      normalParam2: 'value2',
+    };
+
+    const result = addReservedParameters(initialParameters, modifiedParameters);
+
+    expect(result).toEqual(modifiedParameters);
   });
 });

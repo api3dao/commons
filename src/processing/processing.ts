@@ -1,74 +1,99 @@
-import { type Endpoint, type ProcessingSpecification, RESERVED_PARAMETERS } from '@api3/ois';
+import { type Endpoint, RESERVED_PARAMETERS } from '@api3/ois';
 import { type GoAsyncOptions, go } from '@api3/promise-utils';
 
 import { type ApiCallParameters, apiCallParametersSchema } from './schema';
 import { unsafeEvaluate, unsafeEvaluateAsync } from './unsafe-evaluate';
 
-export const PROCESSING_TIMEOUT_MS = 10_000;
+export const DEFAULT_PROCESSING_TIMEOUT_MS = 10_000;
 
 const reservedParameters = RESERVED_PARAMETERS as string[]; // To avoid strict TS checks.
 
 /**
  * Removes reserved parameters from the parameters object.
+ * @param parameters The API call parameters from which reserved parameters will be removed.
+ * @returns The parameters object without reserved parameters.
  */
-const removeReservedParameters = (parameters: ApiCallParameters): ApiCallParameters => {
-  return Object.fromEntries(Object.entries(parameters).filter(([key]) => !reservedParameters.includes(key)));
+export const removeReservedParameters = (parameters: ApiCallParameters): ApiCallParameters => {
+  const result: ApiCallParameters = {};
+
+  for (const key in parameters) {
+    if (!reservedParameters.includes(key)) {
+      result[key] = parameters[key];
+    }
+  }
+
+  return result;
 };
 
 /**
  * Re-inserts reserved parameters from the initial parameters object into the modified parameters object.
+ * @param initialParameters The initial API call parameters that might contain reserved parameters.
+ * @param modifiedParameters The modified API call parameters to which reserved parameters will be added.
+ * @returns The modified parameters object with re-inserted reserved parameters.
  */
-const addReservedParameters = (
+export const addReservedParameters = (
   initialParameters: ApiCallParameters,
   modifiedParameters: ApiCallParameters
 ): ApiCallParameters => {
-  return Object.entries(initialParameters).reduce(
-    (params, [key, value]) => (reservedParameters.includes(key) ? { ...params, [key]: value } : params),
-    modifiedParameters
-  );
+  for (const key in initialParameters) {
+    if (reservedParameters.includes(key)) {
+      modifiedParameters[key] = initialParameters[key];
+    }
+  }
+
+  return modifiedParameters;
 };
 
-// TODO: Consider passing only processing specifications and API params;
+/**
+ * Pre-processes API call parameters based on the provided endpoint's processing specifications.
+ *
+ * @param endpoint The endpoint containing processing specifications.
+ * @param apiCallParameters The parameters to be pre-processed.
+ * @param processingOptions Options to control the async processing behavior like retries and timeouts.
+ *
+ * @returns A promise that resolves to the pre-processed parameters.
+ */
 export const preProcessApiCallParameters = async (
   endpoint: Endpoint,
   apiCallParameters: ApiCallParameters,
-  processingOptions: GoAsyncOptions = { retries: 0, totalTimeoutMs: PROCESSING_TIMEOUT_MS }
+  processingOptions: GoAsyncOptions = { retries: 0, totalTimeoutMs: DEFAULT_PROCESSING_TIMEOUT_MS }
 ): Promise<ApiCallParameters> => {
   const { preProcessingSpecifications } = endpoint;
   if (!preProcessingSpecifications || preProcessingSpecifications.length === 0) {
     return apiCallParameters;
   }
 
-  // Run the code through "go" utils to force a specific retry/timeout conditions.
-  const goProcessedParameters = await go(
-    async () =>
-      // TODO: rewrite from reduce to loop
-      preProcessingSpecifications.reduce(
-        async (currentValue: Promise<unknown>, processing: ProcessingSpecification) => {
-          // Provide endpoint parameters without reserved parameters immutably between steps. Because the processing
-          // snippets can modify the parameters, we recompute them for each snippet independently.
-          const endpointParameters = removeReservedParameters(apiCallParameters);
-          switch (processing.environment) {
-            case 'Node': {
-              return unsafeEvaluate(
-                processing.value,
-                { input: await currentValue, endpointParameters },
-                processing.timeoutMs
-              );
-            }
-            case 'Node async': {
-              return unsafeEvaluateAsync(
-                processing.value,
-                { input: await currentValue, endpointParameters },
-                processing.timeoutMs
-              );
-            }
-          }
-        },
-        Promise.resolve(removeReservedParameters(apiCallParameters))
-      ),
-    processingOptions
-  );
+  // We only wrap the code through "go" utils because of the timeout and retry logic.
+  const goProcessedParameters = await go(async () => {
+    let currentValue: unknown = removeReservedParameters(apiCallParameters);
+
+    for (const processing of preProcessingSpecifications) {
+      // Provide endpoint parameters without reserved parameters immutably between steps. Recompute them for each
+      // snippet independently because processing snippets can modify the parameters.
+      const endpointParameters = removeReservedParameters(apiCallParameters);
+
+      switch (processing.environment) {
+        case 'Node': {
+          currentValue = await unsafeEvaluate(
+            processing.value,
+            { input: currentValue, endpointParameters },
+            processing.timeoutMs
+          );
+          break;
+        }
+        case 'Node async': {
+          currentValue = await unsafeEvaluateAsync(
+            processing.value,
+            { input: currentValue, endpointParameters },
+            processing.timeoutMs
+          );
+          break;
+        }
+      }
+    }
+
+    return currentValue;
+  }, processingOptions);
   if (!goProcessedParameters.success) throw goProcessedParameters.error;
 
   // Let this throw if the processed parameters are invalid.
@@ -78,43 +103,57 @@ export const preProcessApiCallParameters = async (
   return addReservedParameters(apiCallParameters, parsedParameters);
 };
 
+/**
+ * Post-processes the API call response based on the provided endpoint's processing specifications.
+ *
+ * @param apiCallResponse The raw response obtained from the API call.
+ * @param endpoint The endpoint containing processing specifications.
+ * @param apiCallParameters The parameters used in the API call.
+ * @param processingOptions Options to control the async processing behavior like retries and timeouts.
+ *
+ * @returns A promise that resolves to the post-processed API call response.
+ */
 export const postProcessApiCallResponse = async (
   apiCallResponse: unknown,
   endpoint: Endpoint,
   apiCallParameters: ApiCallParameters,
-  processingOptions: GoAsyncOptions = { retries: 0, totalTimeoutMs: PROCESSING_TIMEOUT_MS }
+  processingOptions: GoAsyncOptions = { retries: 0, totalTimeoutMs: DEFAULT_PROCESSING_TIMEOUT_MS }
 ) => {
   const { postProcessingSpecifications } = endpoint;
   if (!postProcessingSpecifications || postProcessingSpecifications?.length === 0) {
     return apiCallResponse;
   }
 
-  // Run the code through "go" utils to force a specific retry/timeout conditions.
-  const goResult = await go(
-    async () =>
-      postProcessingSpecifications.reduce(async (currentValue: any, processing: ProcessingSpecification) => {
-        // Provide endpoint parameters without reserved parameters immutably between steps. Because the processing
-        // snippets can modify the parameters, we recompute them for each snippet independently.
-        const endpointParameters = removeReservedParameters(apiCallParameters);
-        switch (processing.environment) {
-          case 'Node': {
-            return unsafeEvaluate(
-              processing.value,
-              { input: await currentValue, endpointParameters },
-              processing.timeoutMs
-            );
-          }
-          case 'Node async': {
-            return unsafeEvaluateAsync(
-              processing.value,
-              { input: await currentValue, endpointParameters },
-              processing.timeoutMs
-            );
-          }
+  // We only wrap the code through "go" utils because of the timeout and retry logic.
+  const goResult = await go(async () => {
+    let currentValue: unknown = apiCallResponse;
+
+    for (const processing of postProcessingSpecifications) {
+      // Provide endpoint parameters without reserved parameters immutably between steps. Recompute them for each
+      // snippet independently because processing snippets can modify the parameters.
+      const endpointParameters = removeReservedParameters(apiCallParameters);
+      switch (processing.environment) {
+        case 'Node': {
+          currentValue = await unsafeEvaluate(
+            processing.value,
+            { input: currentValue, endpointParameters },
+            processing.timeoutMs
+          );
+          break;
         }
-      }, Promise.resolve(apiCallResponse)),
-    processingOptions
-  );
+        case 'Node async': {
+          currentValue = await unsafeEvaluateAsync(
+            processing.value,
+            { input: currentValue, endpointParameters },
+            processing.timeoutMs
+          );
+          break;
+        }
+      }
+    }
+
+    return currentValue;
+  }, processingOptions);
   if (!goResult.success) throw goResult.error;
 
   return goResult.data;
