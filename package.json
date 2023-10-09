@@ -11,6 +11,10 @@
     "dist",
     "src"
   ],
+  "exports": {
+    "./logger": "./dist/logger/index.js",
+    "./eslint": "./dist/logger/index.js"
+  },
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "clean": "rm -rf coverage dist",
@@ -18,7 +22,7 @@
     "eslint:check": "eslint --report-unused-disable-directives --cache --ext js,ts,tsx,jsx . --max-warnings 0",
     "eslint:fix": "pnpm run eslint:check --fix",
     "prepare": "husky install",
-    "prepublishOnly": "pnpm i && pnpm run build",
+    "prepublishOnly": "pnpm i && pnpm run clean && pnpm run build",
     "prettier:check": "prettier --check \"./**/*.{js,ts,md,json}\"",
     "prettier:fix": "prettier --write \"./**/*.{js,ts,md,json}\"",
     "test": "jest --passWithNoTests",
@@ -42,7 +46,9 @@
     "eslint-plugin-react": "^7.32.1",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-unicorn": "^48.0.1",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "winston": "^3.10.0",
+    "winston-console-format": "^1.0.8"
   },
   "devDependencies": {
     "@types/jest": "^29.5.5",
@@ -56,9 +62,11 @@
     "rimraf": "^5.0.5",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "zod": "^3.22.2"
   },
   "peerDependencies": {
-    "eslint": "^8.50.0"
+    "eslint": "^8.50.0",
+    "zod": "^3.22.2"
   }
 }
