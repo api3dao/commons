@@ -1,7 +1,7 @@
 /* eslint-disable jest/prefer-strict-equal */ // Because the errors are thrown from the "vm" module (different context), they are not strictly equal.
 import * as fixtures from '../../test/fixtures';
 
-import { postProcessApiSpecifications, preProcessApiSpecifications } from './processing';
+import { postProcessApiCallResponse, preProcessApiCallParameters } from './processing';
 
 // TODO: Remove the not needed fixtures for processing
 // TODO: Add a bit more tests
@@ -23,7 +23,7 @@ describe('pre-processing', () => {
     config.ois[0]!.endpoints[0] = { ...config.ois[0]!.endpoints[0]!, preProcessingSpecifications };
     const parameters = { _type: 'int256', _path: 'price' };
 
-    const result = await preProcessApiSpecifications(config.ois[0]!.endpoints[0]!, parameters);
+    const result = await preProcessApiCallParameters(config.ois[0]!.endpoints[0]!, parameters);
 
     expect(result).toEqual({
       _path: 'price',
@@ -50,7 +50,7 @@ describe('pre-processing', () => {
     config.ois[0]!.endpoints[0] = { ...config.ois[0]!.endpoints[0]!, preProcessingSpecifications };
     const parameters = { _type: 'int256', _path: 'price', from: 'TBD' };
 
-    const throwingFunc = async () => preProcessApiSpecifications(config.ois[0]!.endpoints[0]!, parameters);
+    const throwingFunc = async () => preProcessApiCallParameters(config.ois[0]!.endpoints[0]!, parameters);
 
     await expect(throwingFunc).rejects.toEqual(new Error('SyntaxError: Unexpected identifier'));
   });
@@ -70,7 +70,7 @@ describe('pre-processing', () => {
     config.ois[0]!.endpoints[0] = { ...config.ois[0]!.endpoints[0]!, preProcessingSpecifications };
     const parameters = { _type: 'int256', _path: 'price', to: 'USD' };
 
-    const result = await preProcessApiSpecifications(config.ois[0]!.endpoints[0]!, parameters);
+    const result = await preProcessApiCallParameters(config.ois[0]!.endpoints[0]!, parameters);
 
     expect(result).toEqual({
       _path: 'price', // is not overridden
@@ -100,13 +100,8 @@ describe('post-processing', () => {
     ];
     const endpoint = { ...config.ois[0]!.endpoints[0]!, postProcessingSpecifications };
     const parameters = { _type: 'int256', _path: 'price' };
-    const aggregatedApiCall = fixtures.buildAggregatedRegularApiCall({ parameters });
 
-    const result = await postProcessApiSpecifications({ price: 1000 }, endpoint, {
-      type: 'http-gateway',
-      config,
-      aggregatedApiCall,
-    });
+    const result = await postProcessApiCallResponse({ price: 1000 }, endpoint, parameters);
 
     expect(result).toBe(4000);
   });
@@ -124,14 +119,9 @@ describe('post-processing', () => {
     const endpoint = { ...config.ois[0]!.endpoints[0]!, postProcessingSpecifications };
     const myMultiplier = 10;
     const parameters = { _type: 'int256', _path: 'price', myMultiplier };
-    const aggregatedApiCall = fixtures.buildAggregatedRegularApiCall({ parameters });
 
     const price = 1000;
-    const result = await postProcessApiSpecifications({ price }, endpoint, {
-      type: 'http-gateway',
-      config,
-      aggregatedApiCall,
-    });
+    const result = await postProcessApiCallResponse({ price }, endpoint, parameters);
 
     // reserved parameters (_times) should be inaccessible to post-processing for the
     // http-gateway, hence multiplication by 2 instead of 1
@@ -154,14 +144,8 @@ describe('post-processing', () => {
     ];
     const endpoint = { ...config.ois[0]!.endpoints[0]!, postProcessingSpecifications };
     const parameters = { _type: 'int256', _path: 'price' };
-    const aggregatedApiCall = fixtures.buildAggregatedRegularApiCall({ parameters });
 
-    const throwingFunc = async () =>
-      postProcessApiSpecifications({ price: 1000 }, endpoint, {
-        type: 'http-gateway',
-        config,
-        aggregatedApiCall,
-      });
+    const throwingFunc = async () => postProcessApiCallResponse({ price: 1000 }, endpoint, parameters);
 
     await expect(throwingFunc).rejects.toEqual(new Error('SyntaxError: Unexpected identifier'));
   });
