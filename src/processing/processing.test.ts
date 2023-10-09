@@ -3,6 +3,8 @@ import * as fixtures from '../../test/fixtures';
 
 import { postProcessApiSpecifications, preProcessApiSpecifications } from './processing';
 
+// TODO: Remove the not needed fixtures for processing
+// TODO: Add a bit more tests
 describe('pre-processing', () => {
   it('valid processing code', async () => {
     const config = fixtures.buildConfig();
@@ -19,13 +21,11 @@ describe('pre-processing', () => {
       },
     ];
     config.ois[0]!.endpoints[0] = { ...config.ois[0]!.endpoints[0]!, preProcessingSpecifications };
-
     const parameters = { _type: 'int256', _path: 'price' };
-    const aggregatedApiCall = fixtures.buildAggregatedRegularApiCall({ parameters });
 
-    const result = await preProcessApiSpecifications({ type: 'regular', config, aggregatedApiCall });
+    const result = await preProcessApiSpecifications(config.ois[0]!.endpoints[0]!, parameters);
 
-    expect(result.aggregatedApiCall.parameters).toEqual({
+    expect(result).toEqual({
       _path: 'price',
       _type: 'int256',
       from: 'ETH',
@@ -48,11 +48,9 @@ describe('pre-processing', () => {
       },
     ];
     config.ois[0]!.endpoints[0] = { ...config.ois[0]!.endpoints[0]!, preProcessingSpecifications };
-
     const parameters = { _type: 'int256', _path: 'price', from: 'TBD' };
-    const aggregatedApiCall = fixtures.buildAggregatedRegularApiCall({ parameters });
 
-    const throwingFunc = async () => preProcessApiSpecifications({ type: 'regular', config, aggregatedApiCall });
+    const throwingFunc = async () => preProcessApiSpecifications(config.ois[0]!.endpoints[0]!, parameters);
 
     await expect(throwingFunc).rejects.toEqual(new Error('SyntaxError: Unexpected identifier'));
   });
@@ -70,13 +68,11 @@ describe('pre-processing', () => {
       },
     ];
     config.ois[0]!.endpoints[0] = { ...config.ois[0]!.endpoints[0]!, preProcessingSpecifications };
-
     const parameters = { _type: 'int256', _path: 'price', to: 'USD' };
-    const aggregatedApiCall = fixtures.buildAggregatedRegularApiCall({ parameters });
 
-    const result = await preProcessApiSpecifications({ type: 'http-gateway', config, aggregatedApiCall });
+    const result = await preProcessApiSpecifications(config.ois[0]!.endpoints[0]!, parameters);
 
-    expect(result.aggregatedApiCall.parameters).toEqual({
+    expect(result).toEqual({
       _path: 'price', // is not overridden
       _type: 'int256',
       from: 'ETH', // originates from the processing code
