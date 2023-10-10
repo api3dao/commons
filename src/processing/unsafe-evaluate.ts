@@ -78,7 +78,25 @@ const builtInNodeModules = {
 };
 
 /**
- * This function is dangerous. Make sure to use it only with Trusted code.
+ * Evaluates the provided code in a new VM context with the specified global variables.
+ *
+ * **Security Warning:** This function executes the provided code and can have unintended side effects or
+ * vulnerabilities if used with untrusted or malicious input. It's imperative to use this function only with code you
+ * trust completely. Avoid using this function with user-generated code or third-party code that hasn't been thoroughly
+ * reviewed.
+ *
+ * @param code The JavaScript code to evaluate.
+ * @param globalVariables A key-value pair of variables to be made available in the context of the executed code.
+ * @param timeout Duration in milliseconds to wait before terminating the execution.
+ *
+ * @returns The result of the evaluated code.
+ *
+ * @throws Throws an error if the execution exceeds the provided timeout or if there's a problem with the code.
+ *
+ * @example
+ *
+ *const result = unsafeEvaluate('const output = input + 1;', { input: 1 }, 1000);
+ *console.log(result); // Outputs: 2
  */
 export const unsafeEvaluate = (code: string, globalVariables: Record<string, unknown>, timeout: number) => {
   const vmContext = {
@@ -96,16 +114,30 @@ export const unsafeEvaluate = (code: string, globalVariables: Record<string, unk
 };
 
 /**
- * This function runs asynchronous code in a Node VM.
-
- * @code should be written as ({input, resolve}) => {something; resolve({...input, something: 1})};
- * Refer to vmContext here for what's available.
+ * Asynchronously evaluates the provided code in a new VM context with the specified global variables.
  *
- * Some libraries one might expect to be available may not necessarily be available in cloud environments due to
- * being stripped out by webpack. In these cases these libraries may need to be minified and included in the `code`
- * payload.
+ * **Security Warning:** This function executes the provided code and can have unintended side effects or
+ * vulnerabilities if used with untrusted or malicious input. It's imperative to use this function only with code you
+ * trust completely. Avoid using this function with user-generated code or third-party code that hasn't been thoroughly
+ * reviewed.
  *
- * The value given to `resolve` is expected to be the equivalent of `output` above.
+ * @param code The JavaScript code to evaluate. The code should call the `resolve` method to return the result of the
+ * evaluation. You may use async/await syntax in the code.
+ * @param globalVariables A key-value pair of variables to be made available in the context of the executed code.
+ * @param timeout Duration in milliseconds to wait before terminating the execution.
+ *
+ * @returns The result of the evaluated code wrapped in a Promise.
+ *
+ * @throws Throws an error if the execution exceeds the provided timeout or if there's a problem with the code.
+ *
+ * @example
+ *
+ *const result = await unsafeEvaluateAsync(
+ *  "const output = {...input, c: 'some-value'}; resolve(output);",
+ *  { input: { a: true, b: 123 } },
+ *  5000
+ *);
+ *console.log(result); // Outputs: { a: true, b: 123, c: 'some-value' }
  */
 export const unsafeEvaluateAsync = async (code: string, globalVariables: Record<string, unknown>, timeout: number) => {
   let vmReject: (reason: unknown) => void;
