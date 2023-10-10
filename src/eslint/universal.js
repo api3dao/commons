@@ -20,16 +20,7 @@ module.exports = {
     'plugin:promise/recommended',
     'plugin:lodash/recommended',
   ],
-  plugins: [
-    '@typescript-eslint',
-    'deprecation',
-    'functional',
-    'prefer-arrow',
-    'unicorn',
-    'check-file',
-    'import',
-    'lodash',
-  ],
+  plugins: ['@typescript-eslint', 'deprecation', 'functional', 'unicorn', 'check-file', 'import', 'lodash'],
   rules: {
     /* Rule definitions and overrides for standard ESLint rules */
     camelcase: 'error',
@@ -78,16 +69,6 @@ module.exports = {
       },
     ],
 
-    /* Rules to setup enforcement of arrow functions over regular functions */
-    'prefer-arrow/prefer-arrow-functions': [
-      'error',
-      {
-        disallowPrototype: true,
-        singleReturnOnly: false,
-        classPropertiesAllowed: false,
-      },
-    ],
-
     /* Rules to enforce kebab-case folder structure */
     'check-file/folder-naming-convention': [
       'error',
@@ -110,6 +91,7 @@ module.exports = {
     'unicorn/no-array-reduce': 'off', // We are OK with using reduce occasionally, but I agree with the author that the code using reduce can easily get complex.
     'unicorn/no-nested-ternary': 'off', // This rule is smarter than the standard ESLint rule, but conflicts with prettier so it needs to be turned off. Nested ternaries are very unreadable so it's OK if all of them are flagged.
     'unicorn/no-null': 'off', // We use both null and undefined for representing three state objects. We could use a string union instead, but using combination of null and undefined is less verbose.
+    'unicorn/no-object-as-default-parameter': 'off', // Too restrictive. TypeScript can ensure that the default value matches the type.
     'unicorn/no-useless-undefined': ['error', { checkArguments: false }], // We need to disable "checkArguments", because if a function expects a value of type "T | undefined" the undefined value needs to be passed explicitly.
     'unicorn/prefer-module': 'off', // We use CJS for configuration files and tests. There is no rush to migrate to ESM and the configuration files are probably not yet ready for ESM yet.
     'unicorn/prevent-abbreviations': 'off', // This rule reports many false positives and leads to more verbose code.

@@ -41,9 +41,6 @@ dependencies:
   eslint-plugin-no-only-tests:
     specifier: ^3.1.0
     version: 3.1.0
-  eslint-plugin-prefer-arrow:
-    specifier: ^1.2.3
-    version: 1.2.3(eslint@8.50.0)
   eslint-plugin-promise:
     specifier: ^6.1.1
     version: 6.1.1(eslint@8.50.0)
@@ -2055,14 +2052,6 @@ packages:
   /eslint-plugin-no-only-tests@3.1.0:
     resolution: {integrity: sha512-Lf4YW/bL6Un1R6A76pRZyE1dl1vr31G/ev8UzIc/geCgFWyrKil8hVjYqWVKGB/UIGmb6Slzs9T0wNezdSVegw==}
     engines: {node: '>=5.0.0'}
-    dev: false
-
-  /eslint-plugin-prefer-arrow@1.2.3(eslint@8.50.0):
-    resolution: {integrity: sha512-J9I5PKCOJretVuiZRGvPQxCbllxGAV/viI20JO3LYblAodofBxyMnZAJ+WGeClHgANnSJberTNoFWWjrWKBuXQ==}
-    peerDependencies:
-      eslint: '>=2.0.0'
-    dependencies:
-      eslint: 8.50.0
     dev: false
 
   /eslint-plugin-promise@6.1.1(eslint@8.50.0):

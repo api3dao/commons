@@ -40,9 +40,10 @@ import { createLogger } from '@api3/commons/dist/logger';
 
 This is done via `package.json` field called [exports](https://nodejs.org/api/packages.html#package-entry-points). This
 field works for both CJS and ESM starting from Node version 12. In order for TS to support this, you need to make sure
-you use `moduleResolution` and `module` set to `Node16`:
+you use `moduleResolution` and `module` set to `Node16` inside `tsconfig.json`.
 
 ```json
+// tsconfig.json
 {
   "compilerOptions": {
     "module": "Node16",
