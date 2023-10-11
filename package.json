@@ -13,7 +13,8 @@
   ],
   "exports": {
     "./eslint": "./dist/eslint/index.js",
-    "./logger": "./dist/logger/index.js"
+    "./logger": "./dist/logger/index.js",
+    "./processing": "./dist/processing/index.js"
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
@@ -25,10 +26,12 @@
     "prepublishOnly": "pnpm i && pnpm run clean && pnpm run build",
     "prettier:check": "prettier --check \"./**/*.{js,ts,md,json}\"",
     "prettier:fix": "prettier --write \"./**/*.{js,ts,md,json}\"",
-    "test": "jest --passWithNoTests",
+    "test": "jest",
     "tsc": "tsc --project ."
   },
   "dependencies": {
+    "@api3/ois": "^2.2.1",
+    "@api3/promise-utils": "^0.4.0",
     "@typescript-eslint/eslint-plugin": "^6.2.1",
     "@typescript-eslint/parser": "^6.2.1",
     "eslint-config-next": "^13.1.6",
