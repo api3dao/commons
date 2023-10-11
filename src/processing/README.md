@@ -12,6 +12,8 @@ The pre/post processing is only supported for Node.js environments and uses inte
 
 The processing module exports two main functions:
 
+<!-- NOTE: These are copied over from "processing.d.ts" from "dist" file. -->
+
 ```ts
 /**
  * Pre-processes API call parameters based on the provided endpoint's processing specifications.
