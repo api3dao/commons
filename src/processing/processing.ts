@@ -1,7 +1,7 @@
 import { type Endpoint, RESERVED_PARAMETERS } from '@api3/ois';
 import { type GoAsyncOptions, go } from '@api3/promise-utils';
 
-import { type ApiCallParameters, apiCallParametersSchema } from './schema';
+import { type ApiCallParameters, validateApiCallParameters } from './schema';
 import { unsafeEvaluate, unsafeEvaluateAsync } from './unsafe-evaluate';
 
 export const DEFAULT_PROCESSING_TIMEOUT_MS = 10_000;
@@ -97,7 +97,7 @@ export const preProcessApiCallParameters = async (
   if (!goProcessedParameters.success) throw goProcessedParameters.error;
 
   // Let this throw if the processed parameters are invalid.
-  const parsedParameters = apiCallParametersSchema.parse(goProcessedParameters.data);
+  const parsedParameters = validateApiCallParameters(goProcessedParameters.data);
 
   // Having removed reserved parameters for pre-processing, we need to re-insert them for the API call.
   return addReservedParameters(apiCallParameters, parsedParameters);

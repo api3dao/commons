@@ -6,8 +6,7 @@ Backend-only logger for Node.js packages based on Winston logger.
 
 ## Getting started
 
-1. Install `zod` which is a peer dependency of this module. Zod is used for validating the logger configuration.
-2. Use `createLogger` function to create a logger instance.
+Import `createLogger` function to create a logger instance.
 
 ## Configuration
 
