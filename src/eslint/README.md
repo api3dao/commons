@@ -58,11 +58,6 @@ The configurations are a collection of various rulesets and the config is quite 
 - Fix outdated stuff (avoid `!` ts operator when not necessary)
 - Avoid vulnerabilities and errors (Number.parseInt without radix)
 
-But some stylistical rules are too strict for certain projects, for example:
-
-- Enforce `camelCase` for variables and functions, but `kebab-case` for filenames.
-- Prefer arrow functions everywhere instead of regular `function` functions.
-
 Tip: Some rules do have fixer with multiple variants of the fixes. You need to use the IDE to prompt the fixes and
 choose the one you want.
 

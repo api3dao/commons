@@ -42,7 +42,6 @@ module.exports = {
     'react/destructuring-assignment': ['error', 'always', { destructureInSignature: 'ignore' }],
     'react/forbid-component-props': ['error', { forbid: [] }],
     'react/forbid-dom-props': ['error', { forbid: [] }],
-    'react/function-component-definition': 'off', // Arrow functions are managed by other rules.
     'react/jsx-curly-brace-presence': ['error', { props: 'never', children: 'never', propElementValues: 'always' }],
     'react/jsx-curly-newline': 'off', // Conflicts with prettier.
     'react/jsx-filename-extension': 'off', // We use .tsx extension.

@@ -29,6 +29,7 @@ module.exports = {
             allow: ['afterEach', 'afterAll'],
           },
         ],
+        'prefer-lowercase-title': 'off', // Sometimes we want to start the test with a capital letter and some words are all uppercase (e.g. AWS).
       },
     },
   ],

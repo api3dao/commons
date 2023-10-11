@@ -30,19 +30,28 @@ Read the documentation of each module how to use it in the project.
 
 ### Import paths
 
-We want the consumers to import common utilities like this:
+There are two options how to import the commons modules, depending on the module resolution:
 
 ```ts
-import { createLogger } from '@api3/commons/logger';
-// and not like this
+// 1) Import relative to the "node_modules" directory.
 import { createLogger } from '@api3/commons/dist/logger';
+// 2) Cleaner imports based on the "exports" field in "package.json".
+import { createLogger } from '@api3/commons/logger';
 ```
+
+#### Import relative to the "node_modules"
+
+This is the default CommonJS style and it applies if you have `moduleResolution` set to `Node` or `Node10` inside the
+`tsconfig.json`.
+
+#### The "exports" based import
 
 This is done via `package.json` field called [exports](https://nodejs.org/api/packages.html#package-entry-points). This
 field works for both CJS and ESM starting from Node version 12. In order for TS to support this, you need to make sure
-you use `moduleResolution` and `module` set to `Node16`:
+you use `moduleResolution` and `module` set to `Node16` inside `tsconfig.json`.
 
-```json
+```jsonc
+// tsconfig.json
 {
   "compilerOptions": {
     "module": "Node16",

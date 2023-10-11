@@ -4,7 +4,6 @@
 // Credit: https://github.com/facebook/jest/issues/6914#issuecomment-654710111
 const { defineProperty } = Object;
 
-// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 Object.defineProperty = function (object, name, meta) {
   if (meta.get && !meta.configurable) {
     // It might be an ES6 exports object
