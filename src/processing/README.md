@@ -4,10 +4,6 @@
 
 The pre/post processing is only supported for Node.js environments and uses internal Node.js modules.
 
-## Getting started
-
-1. Install `zod` which is a peer dependency of this module. Zod is used for validating the logger configuration.
-
 ## Documentation
 
 The processing module exports two main functions:

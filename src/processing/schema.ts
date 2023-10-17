@@ -1,5 +1,10 @@
-import { z } from 'zod';
+export const validateApiCallParameters = (apiCallParameters: unknown): ApiCallParameters => {
+  // eslint-disable-next-line lodash/prefer-lodash-typecheck
+  if (typeof apiCallParameters !== 'object' || apiCallParameters === null) {
+    throw new TypeError('Invalid API call parameters');
+  }
 
-export const apiCallParametersSchema = z.record(z.string(), z.any());
+  return apiCallParameters as ApiCallParameters;
+};
 
-export type ApiCallParameters = z.infer<typeof apiCallParametersSchema>;
+export type ApiCallParameters = Record<string, any>;

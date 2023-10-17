@@ -1,23 +1,20 @@
 import winston from 'winston';
 import { consoleFormat } from 'winston-console-format';
-import { z } from 'zod';
 
-export const logFormatSchema = z.union([z.literal('json'), z.literal('pretty')]);
+export const logFormatOptions = ['json', 'pretty'] as const;
 
-export type LogType = z.infer<typeof logFormatSchema>;
+export type LogFormat = (typeof logFormatOptions)[number];
 
-export const logLevelSchema = z.union([z.literal('debug'), z.literal('info'), z.literal('warn'), z.literal('error')]);
+export const logLevelOptions = ['debug', 'info', 'warn', 'error'] as const;
 
-export type LogLevel = z.infer<typeof logLevelSchema>;
+export type LogLevel = (typeof logLevelOptions)[number];
 
-export const logConfigSchema = z.object({
-  colorize: z.boolean(),
-  enabled: z.boolean(),
-  format: logFormatSchema,
-  minLevel: logLevelSchema,
-});
-
-export type LogConfig = z.infer<typeof logConfigSchema>;
+export interface LogConfig {
+  colorize: boolean;
+  enabled: boolean;
+  format: LogFormat;
+  minLevel: LogLevel;
+}
 
 const createConsoleTransport = (config: LogConfig) => {
   const { colorize, enabled, format } = config;
@@ -104,7 +101,32 @@ const wrapper = (logger: Logger): Logger => {
   } as Logger;
 };
 
+export const validateLogConfig = (config: unknown): LogConfig => {
+  // eslint-disable-next-line lodash/prefer-lodash-typecheck
+  if (typeof config !== 'object' || config === null) {
+    throw new Error('Invalid logger configuration');
+  }
+
+  const { colorize, enabled, format, minLevel } = config as Partial<LogConfig>;
+  // eslint-disable-next-line lodash/prefer-lodash-typecheck
+  if (typeof colorize !== 'boolean') {
+    throw new TypeError('Invalid logger configuration: colorize must be a boolean');
+  }
+  // eslint-disable-next-line lodash/prefer-lodash-typecheck
+  if (typeof enabled !== 'boolean') {
+    throw new TypeError('Invalid logger configuration: enabled must be a boolean');
+  }
+  if (!logFormatOptions.includes(format as any)) {
+    throw new TypeError('Invalid logger configuration: format must be one of "json" or "pretty"');
+  }
+  if (!logLevelOptions.includes(minLevel as any)) {
+    throw new TypeError('Invalid logger configuration: minLevel must be one of "debug", "info", "warn" or "error"');
+  }
+
+  return config as LogConfig;
+};
+
 export const createLogger = (config: LogConfig) => {
-  // Ensure that the configuration is valid according to the schema.
-  return wrapper(createBaseLogger(logConfigSchema.parse(config)));
+  // Ensure that the logger configuration is valid.
+  return wrapper(createBaseLogger(validateLogConfig(config)));
 };
