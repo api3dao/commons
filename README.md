@@ -39,27 +39,6 @@ import { createLogger } from '@api3/commons/dist/logger';
 import { createLogger } from '@api3/commons/logger';
 ```
 
-#### Import relative to the "node_modules"
-
-This is the default CommonJS style and it applies if you have `moduleResolution` set to `Node` or `Node10` inside the
-`tsconfig.json`.
-
-#### The "exports" based import
-
-This is done via `package.json` field called [exports](https://nodejs.org/api/packages.html#package-entry-points). This
-field works for both CJS and ESM starting from Node version 12. In order for TS to support this, you need to make sure
-you use `moduleResolution` and `module` set to `Node16` inside `tsconfig.json`.
-
-```jsonc
-// tsconfig.json
-{
-  "compilerOptions": {
-    "module": "Node16",
-    "moduleResolution": "Node16"
-  }
-}
-```
-
 ## Release
 
 To release a new version follow these steps:
