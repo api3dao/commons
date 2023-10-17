@@ -56,11 +56,21 @@ To release a new version follow these steps:
 
 1. Create a new directory in `src` with the name of the utility.
 2. Create `index.ts` file in the directory. This file will be the entry point for the utility.
-3. Add the new utility to `package.json` `exports` field. See
-   [exports](https://nodejs.org/api/packages.html#package-entry-points) for more information.
+3. Re-export the new utility from the root `index.ts` file.
 4. Create a `README.md` with documentation.
 
-### Working with verdaccio
+#### Testing the package locally
+
+It is preferred (simpler and faster) to test the package using the `file:` protocol.
+
+1. Implement some changes and run `pnpm run build` to build the commons package.
+2. In some other project, specify `file:<RELATIVE_PATH_TO_COMMONS>`. For example: `"@api3/commons": "file:../commons"`.
+3. Re-install the dependencies in the project (doesn't matter what package manager you use). For example: `pnpm i`.
+
+You can repeat the above steps as many times as you want. The package will be re-installed from the local directory with
+the locally built content.
+
+##### Using Verdaccio
 
 The common pattern is to move some part of implementation to commons and then use it in some other repo. It is valuable
 to see whether nothing broke in the process (before publishing the package). You can use
