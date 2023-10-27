@@ -1,3 +1,5 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
+
 import winston from 'winston';
 import { consoleFormat } from 'winston-console-format';
 
@@ -51,7 +53,7 @@ const createConsoleTransport = (config: LogConfig) => {
   }
 };
 
-const createBaseLogger = (config: LogConfig) => {
+export const createBaseLogger = (config: LogConfig) => {
   const { enabled, minLevel } = config;
 
   return winston.createLogger({
@@ -70,34 +72,68 @@ const createBaseLogger = (config: LogConfig) => {
   });
 };
 
+// TODO: Move to its own file so internalAsyncLocalStorage is not available and rename
+let internalAsyncLocalStorage: AsyncLocalStorage<LogContext>;
+const getAsyncLocalStorage = () => {
+  if (!internalAsyncLocalStorage) internalAsyncLocalStorage = new AsyncLocalStorage<LogContext>();
+  return internalAsyncLocalStorage;
+};
+
 export type LogContext = Record<string, any>;
 
 export interface Logger {
+  runWithContext: <T>(context: LogContext, fn: () => T) => T;
   debug: (message: string, context?: LogContext) => void;
   info: (message: string, context?: LogContext) => void;
   warn: (message: string, context?: LogContext) => void;
-  error: ((message: string, context?: LogContext) => void) &
-    ((message: string, error: Error, context?: LogContext) => void);
+  error:
+    | ((message: string, context?: LogContext) => void)
+    | ((message: string, error: Error, context?: LogContext) => void);
   child: (options: { name: string }) => Logger;
 }
 
 // Winston by default merges content of `context` among the rest of the fields for the JSON format.
 // That's causing an override of fields `name` and `message` if they are present.
-const wrapper = (logger: Logger): Logger => {
+export const wrapper = (logger: winston.Logger): Logger => {
   return {
-    debug: (message, context) => logger.debug(message, context ? { context } : undefined),
-    info: (message, context) => logger.info(message, context ? { context } : undefined),
-    warn: (message, context) => logger.warn(message, context ? { context } : undefined),
+    debug: (message, localContext) => {
+      const globalContext = getAsyncLocalStorage().getStore();
+      const fullContext = globalContext || localContext ? { ...globalContext, ...localContext } : undefined;
+      logger.debug(message, fullContext);
+    },
+    info: (message, localContext) => {
+      const globalContext = getAsyncLocalStorage().getStore();
+      const fullContext = globalContext || localContext ? { ...globalContext, ...localContext } : undefined;
+      logger.info(message, fullContext);
+    },
+    warn: (message, localContext) => {
+      const globalContext = getAsyncLocalStorage().getStore();
+      const fullContext = globalContext || localContext ? { ...globalContext, ...localContext } : undefined;
+      logger.warn(message, fullContext);
+    },
     // We need to handle both overloads of the `error` function
-    error: (message, errorOrContext, context) => {
+    error: (message, errorOrLocalContext, localContext) => {
+      const globalContext = getAsyncLocalStorage().getStore();
       // eslint-disable-next-line lodash/prefer-lodash-typecheck
-      if (errorOrContext instanceof Error) {
-        logger.error(message, errorOrContext, context ? { context } : undefined);
+      if (errorOrLocalContext instanceof Error) {
+        const fullContext = globalContext || localContext ? { ...globalContext, ...localContext } : undefined;
+        logger.error(message, errorOrLocalContext, fullContext);
       } else {
-        logger.error(message, errorOrContext ? { context: errorOrContext } : undefined);
+        const fullContext =
+          globalContext || errorOrLocalContext ? { ...globalContext, ...(errorOrLocalContext as any) } : undefined;
+        logger.error(message, fullContext);
       }
     },
     child: (options) => wrapper(logger.child(options)),
+    runWithContext: (context, fn) => {
+      const asyncStorage = getAsyncLocalStorage();
+      const oldContext = asyncStorage.getStore() ?? {};
+      // From https://nodejs.org/api/async_context.html#asynclocalstoragerunstore-callback-args
+      //
+      // If the callback function throws an error, the error is thrown by run() too. The stacktrace is not impacted by
+      // this call and the context is exited.
+      return asyncStorage.run({ ...oldContext, ...context }, fn);
+    },
   } as Logger;
 };
 
