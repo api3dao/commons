@@ -1,7 +1,7 @@
-import { AsyncLocalStorage } from 'node:async_hooks';
-
 import winston from 'winston';
 import { consoleFormat } from 'winston-console-format';
+
+import { getAsyncLocalStorage } from './async-storage';
 
 export const logFormatOptions = ['json', 'pretty'] as const;
 
@@ -70,13 +70,6 @@ export const createBaseLogger = (config: LogConfig) => {
     exitOnError: false,
     transports: [createConsoleTransport(config)],
   });
-};
-
-// TODO: Move to its own file so internalAsyncLocalStorage is not available and rename
-let internalAsyncLocalStorage: AsyncLocalStorage<LogContext>;
-const getAsyncLocalStorage = () => {
-  if (!internalAsyncLocalStorage) internalAsyncLocalStorage = new AsyncLocalStorage<LogContext>();
-  return internalAsyncLocalStorage;
 };
 
 export type LogContext = Record<string, any>;
