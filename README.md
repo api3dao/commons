@@ -49,6 +49,8 @@ To release a new version follow these steps:
    commit it.
 3. `pnpm publish --access public` - Publish the new version to NPM.
 4. `git push --follow-tags` - Push the tagged commit upstream.
+5. Create a new [release on GitHub](https://github.com/api3dao/commons/releases). Use the "Generate release notes"
+   feature to generate the release notes from the PR titles.
 
 ## Development notes
 
