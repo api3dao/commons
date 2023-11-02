@@ -79,9 +79,12 @@ export interface Logger {
   debug: (message: string, context?: LogContext) => void;
   info: (message: string, context?: LogContext) => void;
   warn: (message: string, context?: LogContext) => void;
-  error:
-    | ((message: string, context?: LogContext) => void)
-    | ((message: string, error: Error, context?: LogContext) => void);
+  // We need to handle both overloads of the `error` function. It may a bit surprising that the variants are joined with
+  // "&" instead of "|", but it forces TypeScript to be more deliberate when resolving overloads. For functions, this
+  // means the implementation must handle all overloads, and TypeScript will look for the correct overload based on the
+  // arguments provided.
+  error: ((message: string, context?: LogContext) => void) &
+    ((message: string, error: Error, context?: LogContext) => void);
   child: (options: { name: string }) => Logger;
 }
 
@@ -105,7 +108,7 @@ export const wrapper = (logger: winston.Logger): Logger => {
       logger.warn(message, fullContext);
     },
     // We need to handle both overloads of the `error` function
-    error: (message, errorOrLocalContext, localContext) => {
+    error: (message, errorOrLocalContext: Error | LogContext, localContext?: LogContext) => {
       const globalContext = getAsyncLocalStorage().getStore();
       // eslint-disable-next-line lodash/prefer-lodash-typecheck
       if (errorOrLocalContext instanceof Error) {
@@ -113,7 +116,7 @@ export const wrapper = (logger: winston.Logger): Logger => {
         logger.error(message, errorOrLocalContext, fullContext);
       } else {
         const fullContext =
-          globalContext || errorOrLocalContext ? { ...globalContext, ...(errorOrLocalContext as any) } : undefined;
+          globalContext || errorOrLocalContext ? { ...globalContext, ...errorOrLocalContext } : undefined;
         logger.error(message, fullContext);
       }
     },

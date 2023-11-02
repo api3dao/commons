@@ -108,4 +108,20 @@ describe('log context', () => {
       })
     ).rejects.toThrow('some-error');
   });
+
+  it('can log using all variants of logger.error', () => {
+    const { baseLogger, logger } = createTestLogger();
+
+    logger.error('only message');
+    logger.error('message and context', { requestId: 'parent' });
+    logger.error('message and error', new Error('some-error'));
+    logger.error('message, error and context', new Error('some-error'), { requestId: 'parent' });
+
+    expect(baseLogger.error).toHaveBeenNthCalledWith(1, 'only message', undefined);
+    expect(baseLogger.error).toHaveBeenNthCalledWith(2, 'message and context', { requestId: 'parent' });
+    expect(baseLogger.error).toHaveBeenNthCalledWith(3, 'message and error', new Error('some-error'), undefined);
+    expect(baseLogger.error).toHaveBeenNthCalledWith(4, 'message, error and context', new Error('some-error'), {
+      requestId: 'parent',
+    });
+  });
 });
