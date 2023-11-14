@@ -1,11 +1,11 @@
 /*
-x deriveTemplateId
-x deriveEndpointId
-x deriveAirnodeXpub
-x deriveSponsorWalletFromPath
-x deriveSponsorWallet
-x deriveBeaconId
-x deriveBeaconSetId
+tx deriveTemplateId
+tx deriveEndpointId
+tx deriveAirnodeXpub
+ x deriveSponsorWalletFromPath
+ x deriveSponsorWallet
+tx deriveBeaconId
+tx deriveBeaconSetId
 */
 
 import { ethers } from 'ethers';
@@ -46,7 +46,7 @@ export const deriveSponsorWallet = (sponsorWalletMnemonic: string, dapiName: str
   const sponsorAddress = ethers.utils.getAddress(dapiName.slice(0, 42));
   const sponsorWallet = ethers.Wallet.fromMnemonic(
     sponsorWalletMnemonic,
-    `m/44'/60'/0'/${deriveWalletPathFromSponsorAddress(sponsorAddress)}`
+    `m/44'/60'/0'/${(deriveWalletPathFromSponsorAddress(sponsorAddress), AIRSEEKER_PROTOCOL_ID)}`
   );
 
   return sponsorWallet;
