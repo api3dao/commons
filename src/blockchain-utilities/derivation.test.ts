@@ -136,7 +136,5 @@ describe('deriveWalletPathFromSponsorAddress', () => {
 
       expect(formattedString).toBe('0x7465737420737472696e67000000000000000000000000000000000000000000');
     });
-
-    it.todo('verifies signed data');
   });
 });
