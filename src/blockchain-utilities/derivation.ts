@@ -1,18 +1,14 @@
-/*
-tx deriveTemplateId
-tx deriveEndpointId
-tx deriveAirnodeXpub
- x deriveSponsorWalletFromPath
- x deriveSponsorWallet
-tx deriveBeaconId
-tx deriveBeaconSetId
-*/
-
 import { ethers } from 'ethers';
 
 import { addressSchema } from './schema';
 
-const AIRSEEKER_PROTOCOL_ID = '5';
+export const PROTOCOL_IDS = {
+  RRP: '1',
+  PSP: '2',
+  RELAYED_RRP: '3',
+  RELAYED_PSP: '4',
+  AIRSEEKER: '5',
+};
 
 export interface Template {
   airnode: string;
@@ -29,7 +25,7 @@ export const deriveEndpointId = (oisTitle: string, endpointName: string) =>
 export const deriveAirnodeXpub = (airnodeMnemonic: string) =>
   ethers.utils.HDNode.fromMnemonic(airnodeMnemonic).derivePath("m/44'/60'/0'").neuter().extendedKey;
 
-export function deriveWalletPathFromSponsorAddress(sponsorAddress: string, protocolId = AIRSEEKER_PROTOCOL_ID) {
+export function deriveWalletPathFromSponsorAddress(sponsorAddress: string, protocolId: string) {
   addressSchema.parse(sponsorAddress);
 
   const sponsorAddressBN = ethers.BigNumber.from(sponsorAddress);
@@ -48,7 +44,9 @@ export const deriveSponsorWallet = (sponsorWalletMnemonic: string, dapiName: str
   const sponsorAddress = ethers.utils.getAddress(dapiName.slice(0, 42));
   const sponsorWallet = ethers.Wallet.fromMnemonic(
     sponsorWalletMnemonic,
-    `m/44'/60'/0'/${(deriveWalletPathFromSponsorAddress(sponsorAddress), AIRSEEKER_PROTOCOL_ID)}`
+    `m/44'/60'/0'/${
+      (deriveWalletPathFromSponsorAddress(sponsorAddress, PROTOCOL_IDS.AIRSEEKER), PROTOCOL_IDS.AIRSEEKER)
+    }`
   );
 
   return sponsorWallet;
