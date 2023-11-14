@@ -41,6 +41,8 @@ export function deriveWalletPathFromSponsorAddress(sponsorAddress: string, proto
   return `${protocolId}/${paths.join('/')}`;
 }
 
+export const formatBytes32String = (input: string) => ethers.utils.formatBytes32String(input);
+
 export const deriveSponsorWallet = (sponsorWalletMnemonic: string, dapiName: string) => {
   // Take first 20 bytes of dapiName as sponsor address together with the "0x" prefix.
   const sponsorAddress = ethers.utils.getAddress(dapiName.slice(0, 42));
