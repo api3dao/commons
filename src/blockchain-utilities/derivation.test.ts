@@ -8,8 +8,9 @@ import {
   deriveSponsorWallet,
   deriveTemplateId,
   deriveWalletPathFromSponsorAddress,
-  formatBytes32String,
+  fromBytes32String,
   PROTOCOL_IDS,
+  toBytes32String,
 } from './derivation';
 
 describe('deriveWalletPathFromSponsorAddress', () => {
@@ -131,10 +132,16 @@ describe('deriveWalletPathFromSponsorAddress', () => {
       expect(beaconSetId).toBe('0x33bf380fd5b06a317a905b23eaf5c61ef0a9b4a20589a1bf1d13133daca34b0e');
     });
 
-    it('formats a string as a bytes32 string', () => {
-      const formattedString = formatBytes32String('test string');
+    it('encodes a string as a bytes32 string', () => {
+      const formattedString = toBytes32String('test string');
 
       expect(formattedString).toBe('0x7465737420737472696e67000000000000000000000000000000000000000000');
+    });
+
+    it('decodes a bytes32 string to a normal string', () => {
+      const formattedString = fromBytes32String('0x7465737420737472696e67000000000000000000000000000000000000000000');
+
+      expect(formattedString).toBe('test string');
     });
   });
 });

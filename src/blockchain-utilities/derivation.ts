@@ -69,7 +69,14 @@ export function deriveWalletPathFromSponsorAddress(sponsorAddress: string, proto
  *
  * @param input the input string
  */
-export const formatBytes32String = (input: string) => ethers.utils.formatBytes32String(input);
+export const toBytes32String = (input: string) => ethers.utils.formatBytes32String(input);
+
+/**
+ * Decodes a hex-encoded bytes32 string to a normal string.
+ *
+ * @param input the input hex string
+ */
+export const fromBytes32String = (input: string) => ethers.utils.parseBytes32String(input);
 
 /**
  * Derives a sponsor wallet, given a mnemonic and dapiName.
