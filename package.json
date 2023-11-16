@@ -45,9 +45,11 @@
     "eslint-plugin-react": "^7.32.1",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-unicorn": "^48.0.1",
+    "ethers": "^5.7.2",
     "lodash": "^4.17.21",
     "winston": "^3.10.0",
-    "winston-console-format": "^1.0.8"
+    "winston-console-format": "^1.0.8",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/jest": "^29.5.5",
