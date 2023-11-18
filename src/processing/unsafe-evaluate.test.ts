@@ -305,8 +305,18 @@ describe(unsafeEvaluateV2.name, () => {
       123,
       100
     );
+    const regularFnReturningPromiseResult = await unsafeEvaluateV2(
+      `
+      function(payload) {
+        return Promise.resolve(payload + 500);
+      }
+      `,
+      123,
+      100
+    );
 
     expect(anonymousArrowFnResult).toBe(623);
     expect(regularFnResult).toBe(623);
+    expect(regularFnReturningPromiseResult).toBe(623);
   });
 });
