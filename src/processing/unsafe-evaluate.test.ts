@@ -1,5 +1,5 @@
 /* eslint-disable jest/prefer-strict-equal */ // Because the errors are thrown from the "vm" module (different context), they are not strictly equal.
-import { unsafeEvaluate, unsafeEvaluateAsync, unsafeEvaluateAsyncV2 } from './unsafe-evaluate';
+import { unsafeEvaluate, unsafeEvaluateAsync, unsafeEvaluateV2 } from './unsafe-evaluate';
 
 describe('unsafe evaluate - sync', () => {
   it('executes harmless code', () => {
@@ -102,9 +102,9 @@ describe('unsafe evaluate - async', () => {
   });
 });
 
-describe(unsafeEvaluateAsyncV2.name, () => {
+describe(unsafeEvaluateV2.name, () => {
   it('has access to node modules and vm context', async () => {
-    const res = await unsafeEvaluateAsyncV2(
+    const res = await unsafeEvaluateV2(
       `
       async () => {
         return Object.keys(this);
@@ -160,7 +160,7 @@ describe(unsafeEvaluateAsyncV2.name, () => {
   });
 
   it('can access vm context values as global variables', async () => {
-    const res = await unsafeEvaluateAsyncV2(
+    const res = await unsafeEvaluateV2(
       `
       async (payload) => {
         return [this.payload, payload];
@@ -174,7 +174,7 @@ describe(unsafeEvaluateAsyncV2.name, () => {
   });
 
   it('works with sync function as well', async () => {
-    const res = await unsafeEvaluateAsyncV2(
+    const res = await unsafeEvaluateV2(
       `
       (payload) => {
         return payload + 500;
@@ -188,7 +188,7 @@ describe(unsafeEvaluateAsyncV2.name, () => {
   });
 
   it('can use setTimeout and setInterval', async () => {
-    const res = await unsafeEvaluateAsyncV2(
+    const res = await unsafeEvaluateV2(
       `
       async (payload) => {
         const intervalId = setInterval(() => payload++, 50);
@@ -209,7 +209,7 @@ describe(unsafeEvaluateAsyncV2.name, () => {
 
   it('applies timeout', async () => {
     await expect(async () =>
-      unsafeEvaluateAsyncV2(
+      unsafeEvaluateV2(
         `
         async () => {
           await new Promise((res) => setTimeout(res, 100));
@@ -223,7 +223,7 @@ describe(unsafeEvaluateAsyncV2.name, () => {
 
   it('rejects on sync error', async () => {
     await expect(async () =>
-      unsafeEvaluateAsyncV2(
+      unsafeEvaluateV2(
         `
         () => {
           return nonDefinedPayload + 500;
@@ -235,7 +235,7 @@ describe(unsafeEvaluateAsyncV2.name, () => {
     ).rejects.toEqual(new ReferenceError('nonDefinedPayload is not defined'));
 
     await expect(async () =>
-      unsafeEvaluateAsyncV2(
+      unsafeEvaluateV2(
         `
         () => {
           throw new Error('some error');
@@ -247,7 +247,7 @@ describe(unsafeEvaluateAsyncV2.name, () => {
     ).rejects.toEqual(new Error('some error'));
 
     await expect(async () =>
-      unsafeEvaluateAsyncV2(
+      unsafeEvaluateV2(
         `
         () => {
           throw 'non-error-value';
@@ -260,7 +260,7 @@ describe(unsafeEvaluateAsyncV2.name, () => {
   });
 
   it('allows using closures for modular code', async () => {
-    const res = await unsafeEvaluateAsyncV2(
+    const res = await unsafeEvaluateV2(
       `
         async (payload) => {
           const isDivisible = (n, k) => n % k === 0;
@@ -287,7 +287,7 @@ describe(unsafeEvaluateAsyncV2.name, () => {
   });
 
   it('can use any async function syntax', async () => {
-    const anonymousArrowFnResult = await unsafeEvaluateAsyncV2(
+    const anonymousArrowFnResult = await unsafeEvaluateV2(
       `
       async (payload) => {
         return await Promise.resolve(payload + 500);
@@ -296,7 +296,7 @@ describe(unsafeEvaluateAsyncV2.name, () => {
       123,
       100
     );
-    const regularFnResult = await unsafeEvaluateAsyncV2(
+    const regularFnResult = await unsafeEvaluateV2(
       `
       async function(payload) {
         return await Promise.resolve(payload + 500);

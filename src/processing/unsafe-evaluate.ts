@@ -115,7 +115,7 @@ export const unsafeEvaluate = (code: string, globalVariables: Record<string, unk
   return vmContext.deferredOutput;
 };
 
-export const unsafeEvaluateAsyncV2 = async (code: string, payload: unknown, timeout: number) => {
+export const unsafeEvaluateV2 = async (code: string, payload: unknown, timeout: number) => {
   const timers = createTimers();
 
   const goEvaluate = await go<Promise<any>, GoWrappedError>(

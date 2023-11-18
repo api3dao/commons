@@ -281,7 +281,7 @@ describe(preProcessApiCallParametersV2.name, () => {
     it('valid processing code', async () => {
       const endpoint = createEndpoint({
         preProcessingSpecificationV2: {
-          environment: 'Node async',
+          environment: 'Node',
           value: `
               async (payload) => {
                 const { apiCallParameters } = payload;
@@ -308,7 +308,7 @@ describe(preProcessApiCallParametersV2.name, () => {
     it('invalid processing code', async () => {
       const endpoint = createEndpoint({
         preProcessingSpecificationV2: {
-          environment: 'Node async',
+          environment: 'Node',
           value: 'something invalid; const output = {...input, from: `ETH`};',
           timeoutMs: 5000,
         },
@@ -324,7 +324,7 @@ describe(preProcessApiCallParametersV2.name, () => {
       const parameters = { _type: 'int256', _path: 'price', to: 'USD' };
       const endpoint = createEndpoint({
         preProcessingSpecificationV2: {
-          environment: 'Node async',
+          environment: 'Node',
           // pretend the user is trying to 1) override _path and 2) set a new parameter based on
           // the presence of the reserved parameter _type (which is inaccessible)
           value: `
@@ -353,7 +353,7 @@ describe(preProcessApiCallParametersV2.name, () => {
     it('uses native modules for processing', async () => {
       const endpoint = createEndpoint({
         preProcessingSpecificationV2: {
-          environment: 'Node async',
+          environment: 'Node',
           value: `
           async ({apiCallParameters}) => {
             const randomValue = crypto.randomBytes(4).toString('hex');
@@ -379,7 +379,7 @@ describe(preProcessApiCallParametersV2.name, () => {
     it('throws error due to processing timeout', async () => {
       const endpoint = createEndpoint({
         preProcessingSpecificationV2: {
-          environment: 'Node async',
+          environment: 'Node',
           value: `
           async ({apiCallParameters}) => {
             const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -404,7 +404,7 @@ describe(postProcessApiCallResponseV2.name, () => {
       const parameters = { _type: 'int256', _path: 'price' };
       const endpoint = createEndpoint({
         postProcessingSpecificationV2: {
-          environment: 'Node async',
+          environment: 'Node',
           value: `
           async (payload) => {
             const { apiCallResponse } = payload;
@@ -424,7 +424,7 @@ describe(postProcessApiCallResponseV2.name, () => {
       const parameters = { _type: 'int256', _path: 'price' };
       const endpoint = createEndpoint({
         postProcessingSpecificationV2: {
-          environment: 'Node async',
+          environment: 'Node',
           value: `
             async (payload) => {
               const { apiCallResponse } = payload;
@@ -453,7 +453,7 @@ describe(postProcessApiCallResponseV2.name, () => {
       const parameters = { _type: 'int256', _path: 'price', myMultiplier };
       const endpoint = createEndpoint({
         postProcessingSpecificationV2: {
-          environment: 'Node async',
+          environment: 'Node',
           value: `
             async (payload) => {
               const {apiCallResponse, endpointParameters} = payload;
@@ -476,7 +476,7 @@ describe(postProcessApiCallResponseV2.name, () => {
       const parameters = { _type: 'int256', _path: 'price' };
       const endpoint = createEndpoint({
         postProcessingSpecificationV2: {
-          environment: 'Node async',
+          environment: 'Node',
           value: 'Something Unexpected;',
           timeoutMs: 5000,
         },
@@ -492,7 +492,7 @@ describe(postProcessApiCallResponseV2.name, () => {
     const parameters = { _type: 'int256', _path: 'price' };
     const endpoint = createEndpoint({
       postProcessingSpecificationV2: {
-        environment: 'Node async',
+        environment: 'Node',
         value: `
               async (payload) => {
                 const { apiCallResponse, timestamp } = payload;
@@ -520,7 +520,7 @@ describe(preProcessApiCallParameters.name, () => {
   it('returns v2 processing result', async () => {
     const endpoint = createEndpoint({
       preProcessingSpecificationV2: {
-        environment: 'Node async',
+        environment: 'Node',
         value: `
             async (payload) => {
               const { apiCallParameters } = payload;
@@ -579,7 +579,7 @@ describe(postProcessApiCallResponse.name, () => {
     const parameters = { _type: 'int256', _path: 'price' };
     const endpoint = createEndpoint({
       postProcessingSpecificationV2: {
-        environment: 'Node async',
+        environment: 'Node',
         value: `
         async (payload) => {
           const { apiCallResponse } = payload;

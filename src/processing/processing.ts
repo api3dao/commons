@@ -9,7 +9,7 @@ import {
   type PreProcessingV2Response,
   type PostProcessingV2Response,
 } from './schema';
-import { unsafeEvaluate, unsafeEvaluateAsync, unsafeEvaluateAsyncV2 } from './unsafe-evaluate';
+import { unsafeEvaluate, unsafeEvaluateAsync, unsafeEvaluateV2 } from './unsafe-evaluate';
 
 export const DEFAULT_PROCESSING_TIMEOUT_MS = 10_000;
 
@@ -191,12 +191,8 @@ export const preProcessApiCallParametersV2 = async (
     const { environment, timeoutMs, value } = preProcessingSpecificationV2;
 
     switch (environment) {
-      case 'Node async': {
-        return unsafeEvaluateAsyncV2(
-          value,
-          { apiCallParameters: removeReservedParameters(apiCallParameters) },
-          timeoutMs
-        );
+      case 'Node': {
+        return unsafeEvaluateV2(value, { apiCallParameters: removeReservedParameters(apiCallParameters) }, timeoutMs);
       }
     }
   }, processingOptions);
@@ -237,8 +233,8 @@ export const postProcessApiCallResponseV2 = async (
     const endpointParameters = removeReservedParameters(apiCallParameters);
 
     switch (environment) {
-      case 'Node async': {
-        return unsafeEvaluateAsyncV2(value, { apiCallResponse, endpointParameters }, timeoutMs);
+      case 'Node': {
+        return unsafeEvaluateV2(value, { apiCallResponse, endpointParameters }, timeoutMs);
       }
     }
   }, processingOptions);
