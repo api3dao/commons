@@ -495,8 +495,8 @@ describe(postProcessApiCallResponseV2.name, () => {
         environment: 'Node',
         value: `
               async (payload) => {
-                const { apiCallResponse, timestamp } = payload;
-                return { apiCallResponse, timestamp: timestamp };
+                const { apiCallResponse } = payload;
+                return { apiCallResponse, timestamp: apiCallResponse.timestamp };
               }
             `,
         timeoutMs: 5000,
@@ -509,10 +509,13 @@ describe(postProcessApiCallResponseV2.name, () => {
       endpoint,
       parameters
     );
-    expect(result1).toEqual({ apiCallResponse: { price: 1000, timestamp: currentTimestamp } });
+    expect(result1).toEqual({
+      apiCallResponse: { price: 1000, timestamp: currentTimestamp },
+      timestamp: currentTimestamp,
+    });
 
     const result2 = await postProcessApiCallResponseV2({ price: 1000 }, endpoint, parameters);
-    expect(result2).toEqual({ apiCallResponse: { price: 1000, timestamp: undefined } });
+    expect(result2).toEqual({ apiCallResponse: { price: 1000 }, timestamp: undefined });
   });
 });
 
