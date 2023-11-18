@@ -155,7 +155,7 @@ describe(unsafeEvaluateAsyncV2.name, () => {
       'setInterval',
       'clearTimeout',
       'clearInterval',
-      '__payload',
+      'payload',
     ]);
   });
 
@@ -163,7 +163,7 @@ describe(unsafeEvaluateAsyncV2.name, () => {
     const res = await unsafeEvaluateAsyncV2(
       `
       async (payload) => {
-        return [this.__payload, payload];
+        return [this.payload, payload];
       }
       `,
       123,

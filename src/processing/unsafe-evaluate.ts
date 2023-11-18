@@ -124,7 +124,7 @@ export const unsafeEvaluateAsyncV2 = async (code: string, payload: unknown, time
       vm.runInNewContext(
         `
           (async () => {
-            return await (${code})(__payload)
+            return await (${code})(payload)
           })();
         `,
         {
@@ -133,7 +133,7 @@ export const unsafeEvaluateAsyncV2 = async (code: string, payload: unknown, time
           setInterval: timers.customSetInterval,
           clearTimeout: timers.customClearTimeout,
           clearInterval: timers.customClearInterval,
-          __payload: payload,
+          payload,
         },
         { displayErrors: true, timeout }
       ),
