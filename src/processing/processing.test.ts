@@ -6,13 +6,15 @@ import { createEndpoint } from '../../test/fixtures';
 import {
   addReservedParameters,
   postProcessApiCallResponse,
+  postProcessApiCallResponseV1,
   postProcessApiCallResponseV2,
   preProcessApiCallParameters,
+  preProcessApiCallParametersV1,
   preProcessApiCallParametersV2,
   removeReservedParameters,
 } from './processing';
 
-describe(preProcessApiCallParameters.name, () => {
+describe(preProcessApiCallParametersV1.name, () => {
   it('valid processing code', async () => {
     const endpoint = createEndpoint({
       preProcessingSpecifications: [
@@ -30,7 +32,7 @@ describe(preProcessApiCallParameters.name, () => {
     });
     const parameters = { _type: 'int256', _path: 'price' };
 
-    const result = await preProcessApiCallParameters(endpoint, parameters);
+    const result = await preProcessApiCallParametersV1(endpoint, parameters);
 
     expect(result).toEqual({
       _path: 'price',
@@ -57,7 +59,7 @@ describe(preProcessApiCallParameters.name, () => {
     });
     const parameters = { _type: 'int256', _path: 'price', from: 'TBD' };
 
-    const throwingFunc = async () => preProcessApiCallParameters(endpoint, parameters);
+    const throwingFunc = async () => preProcessApiCallParametersV1(endpoint, parameters);
 
     await expect(throwingFunc).rejects.toEqual(new Error('SyntaxError: Unexpected identifier'));
   });
@@ -77,7 +79,7 @@ describe(preProcessApiCallParameters.name, () => {
       ],
     });
 
-    const result = await preProcessApiCallParameters(endpoint, parameters);
+    const result = await preProcessApiCallParametersV1(endpoint, parameters);
 
     expect(result).toEqual({
       _path: 'price', // is not overridden
@@ -104,7 +106,7 @@ describe(preProcessApiCallParameters.name, () => {
     });
     const parameters = { _type: 'int256', _path: 'price' };
 
-    const result = await preProcessApiCallParameters(endpoint, parameters);
+    const result = await preProcessApiCallParametersV1(endpoint, parameters);
 
     // Check that the result contains the original parameters and a valid 8-character hex random value.
     expect(result).toMatchObject({
@@ -131,13 +133,13 @@ describe(preProcessApiCallParameters.name, () => {
     });
     const parameters = { _type: 'int256', _path: 'price' };
 
-    const throwingFunc = async () => preProcessApiCallParameters(endpoint, parameters);
+    const throwingFunc = async () => preProcessApiCallParametersV1(endpoint, parameters);
 
     await expect(throwingFunc).rejects.toThrow('Timeout exceeded');
   });
 });
 
-describe(postProcessApiCallResponse.name, () => {
+describe(postProcessApiCallResponseV1.name, () => {
   it('processes valid code', async () => {
     const parameters = { _type: 'int256', _path: 'price' };
     const endpoint = createEndpoint({
@@ -155,7 +157,7 @@ describe(postProcessApiCallResponse.name, () => {
       ],
     });
 
-    const result = await postProcessApiCallResponse({ price: 1000 }, endpoint, parameters);
+    const result = await postProcessApiCallResponseV1({ price: 1000 }, endpoint, parameters);
 
     expect(result).toBe(4000);
   });
@@ -177,7 +179,7 @@ describe(postProcessApiCallResponse.name, () => {
     });
 
     const price = 1000;
-    const result = await postProcessApiCallResponse({ price }, endpoint, parameters);
+    const result = await postProcessApiCallResponseV1({ price }, endpoint, parameters);
 
     // reserved parameters (_times) should be inaccessible to post-processing hence multiplication by 2 instead of 1
     expect(result).toEqual(price * myMultiplier * 2);
@@ -203,7 +205,7 @@ describe(postProcessApiCallResponse.name, () => {
       ],
     });
 
-    const throwingFunc = async () => postProcessApiCallResponse({ price: 1000 }, endpoint, parameters);
+    const throwingFunc = async () => postProcessApiCallResponseV1({ price: 1000 }, endpoint, parameters);
 
     await expect(throwingFunc).rejects.toEqual(new Error('SyntaxError: Unexpected identifier'));
   });
@@ -511,5 +513,107 @@ describe(postProcessApiCallResponseV2.name, () => {
 
     const result2 = await postProcessApiCallResponseV2({ price: 1000 }, endpoint, parameters);
     expect(result2).toEqual({ apiCallResponse: { price: 1000, timestamp: undefined } });
+  });
+});
+
+describe(preProcessApiCallParameters.name, () => {
+  it('returns v2 processing result', async () => {
+    const endpoint = createEndpoint({
+      preProcessingSpecificationV2: {
+        environment: 'Node async',
+        value: `
+            async (payload) => {
+              const { apiCallParameters } = payload;
+              return { apiCallParameters: {...apiCallParameters, from: 'ETH', newProp: 'airnode'} };
+            }
+          `,
+        timeoutMs: 5000,
+      },
+    });
+    const parameters = { _type: 'int256', _path: 'price' };
+
+    const result = await preProcessApiCallParameters(endpoint, parameters);
+
+    expect(result).toEqual({
+      apiCallParameters: {
+        _path: 'price',
+        _type: 'int256',
+        from: 'ETH',
+        newProp: 'airnode',
+      },
+    });
+  });
+
+  it('converts v1 pre-processing to v2', async () => {
+    const endpoint = createEndpoint({
+      preProcessingSpecifications: [
+        {
+          environment: 'Node',
+          value: 'const output = {...input, from: "ETH"};',
+          timeoutMs: 5000,
+        },
+        {
+          environment: 'Node',
+          value: 'const output = {...input, newProp: "airnode"};',
+          timeoutMs: 5000,
+        },
+      ],
+    });
+    const parameters = { _type: 'int256', _path: 'price' };
+
+    const result = await preProcessApiCallParameters(endpoint, parameters);
+
+    expect(result).toEqual({
+      apiCallParameters: {
+        _path: 'price',
+        _type: 'int256',
+        from: 'ETH',
+        newProp: 'airnode',
+      },
+    });
+  });
+});
+
+describe(postProcessApiCallResponse.name, () => {
+  it('returns v2 processing result', async () => {
+    const parameters = { _type: 'int256', _path: 'price' };
+    const endpoint = createEndpoint({
+      postProcessingSpecificationV2: {
+        environment: 'Node async',
+        value: `
+        async (payload) => {
+          const { apiCallResponse } = payload;
+          return { apiCallResponse: parseInt(apiCallResponse.price) * 4 };
+        }
+        `,
+        timeoutMs: 5000,
+      },
+    });
+
+    const result = await postProcessApiCallResponse({ price: 1000 }, endpoint, parameters);
+
+    expect(result).toEqual({ apiCallResponse: 4000 });
+  });
+
+  it('converts v1 post-processing to v2', async () => {
+    const parameters = { _type: 'int256', _path: 'price' };
+    const endpoint = createEndpoint({
+      postProcessingSpecifications: [
+        {
+          environment: 'Node',
+          value: 'const output = parseInt(input.price)*2;',
+          timeoutMs: 5000,
+        },
+        {
+          environment: 'Node',
+          value: 'const output = parseInt(input)*2;',
+          timeoutMs: 5000,
+        },
+      ],
+    });
+
+    const result = await postProcessApiCallResponse({ price: 1000 }, endpoint, parameters);
+
+    expect(result).toStrictEqual({ apiCallResponse: 4000 });
   });
 });
