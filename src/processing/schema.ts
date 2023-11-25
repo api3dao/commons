@@ -1,17 +1,17 @@
 import { z } from 'zod';
 
-export const apiCallParametersSchema = z.record(z.any());
+export const endpointParametersSchema = z.record(z.any());
 
-export type ApiCallParameters = z.infer<typeof apiCallParametersSchema>;
+export type EndpointParameters = z.infer<typeof endpointParametersSchema>;
 
 export const preProcessingV2ResponseSchema = z.object({
-  apiCallParameters: apiCallParametersSchema,
+  endpointParameters: endpointParametersSchema,
 });
 
 export type PreProcessingV2Response = z.infer<typeof preProcessingV2ResponseSchema>;
 
 export const postProcessingV2ResponseSchema = z.object({
-  apiCallResponse: z.any(),
+  response: z.any(),
   timestamp: z.number().nonnegative().int().optional(),
 });
 

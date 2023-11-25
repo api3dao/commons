@@ -284,8 +284,8 @@ describe(preProcessApiCallParametersV2.name, () => {
           environment: 'Node',
           value: `
               async (payload) => {
-                const { apiCallParameters } = payload;
-                return { apiCallParameters: {...apiCallParameters, from: 'ETH', newProp: 'airnode'} };
+                const { endpointParameters } = payload;
+                return { endpointParameters: {...endpointParameters, from: 'ETH', newProp: 'airnode'} };
               }
             `,
           timeoutMs: 5000,
@@ -296,7 +296,7 @@ describe(preProcessApiCallParametersV2.name, () => {
       const result = await preProcessApiCallParametersV2(endpoint, parameters);
 
       expect(result).toEqual({
-        apiCallParameters: {
+        endpointParameters: {
           _path: 'price',
           _type: 'int256',
           from: 'ETH',
@@ -328,8 +328,8 @@ describe(preProcessApiCallParametersV2.name, () => {
           // pretend the user is trying to 1) override _path and 2) set a new parameter based on
           // the presence of the reserved parameter _type (which is inaccessible)
           value: `
-            async ({apiCallParameters}) => {
-              return {apiCallParameters: {...apiCallParameters, from: "ETH", _path: "price.newpath", myVal: apiCallParameters._type ? "123" : "456", newTo: apiCallParameters.to } };
+            async ({endpointParameters}) => {
+              return {endpointParameters: {...endpointParameters, from: "ETH", _path: "price.newpath", myVal: endpointParameters._type ? "123" : "456", newTo: endpointParameters.to } };
             }
             `,
           timeoutMs: 5000,
@@ -339,13 +339,13 @@ describe(preProcessApiCallParametersV2.name, () => {
       const result = await preProcessApiCallParametersV2(endpoint, parameters);
 
       expect(result).toEqual({
-        apiCallParameters: {
+        endpointParameters: {
           _path: 'price', // is not overridden
           _type: 'int256',
           from: 'ETH', // originates from the processing code
           to: 'USD', // should be unchanged from the original parameters
           myVal: '456', // is set to "456" because _type is not present in the environment
-          newTo: 'USD', // demonstrates access to apiCallParameters
+          newTo: 'USD', // demonstrates access to endpointParameters
         },
       });
     });
@@ -355,9 +355,9 @@ describe(preProcessApiCallParametersV2.name, () => {
         preProcessingSpecificationV2: {
           environment: 'Node',
           value: `
-          async ({apiCallParameters}) => {
+          async ({endpointParameters}) => {
             const randomValue = crypto.randomBytes(4).toString('hex');
-            return {apiCallParameters: {...apiCallParameters, randomValue}};
+            return {endpointParameters: {...endpointParameters, randomValue}};
           }
           `,
           timeoutMs: 5000,
@@ -368,12 +368,12 @@ describe(preProcessApiCallParametersV2.name, () => {
       const result = await preProcessApiCallParametersV2(endpoint, parameters);
 
       // Check that the result contains the original parameters and a valid 8-character hex random value.
-      expect(result.apiCallParameters).toEqual({
+      expect(result.endpointParameters).toEqual({
         _path: 'price',
         _type: 'int256',
         randomValue: expect.any(String),
       });
-      expect(/^[\da-f]{8}$/i.test(result.apiCallParameters.randomValue)).toBe(true);
+      expect(/^[\da-f]{8}$/i.test(result.endpointParameters.randomValue)).toBe(true);
     });
 
     it('throws error due to processing timeout', async () => {
@@ -381,10 +381,10 @@ describe(preProcessApiCallParametersV2.name, () => {
         preProcessingSpecificationV2: {
           environment: 'Node',
           value: `
-          async ({apiCallParameters}) => {
+          async ({endpointParameters}) => {
             const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
             await delay(5000);
-            return {apiCallParameters: {...apiCallParameters, from: 'ETH'}};
+            return {endpointParameters: {...endpointParameters, from: 'ETH'}};
           }`,
           timeoutMs: 100, // This timeout is shorter than the delay in the processing code.
         },
@@ -407,8 +407,8 @@ describe(postProcessApiCallResponseV2.name, () => {
           environment: 'Node',
           value: `
           async (payload) => {
-            const { apiCallResponse } = payload;
-            return { apiCallResponse: parseInt(apiCallResponse.price) * 4 };
+            const { response } = payload;
+            return { response: parseInt(response.price) * 4 };
           }
           `,
           timeoutMs: 5000,
@@ -417,7 +417,7 @@ describe(postProcessApiCallResponseV2.name, () => {
 
       const result = await postProcessApiCallResponseV2({ price: 1000 }, endpoint, parameters);
 
-      expect(result).toEqual({ apiCallResponse: 4000 });
+      expect(result).toEqual({ response: 4000 });
     });
 
     it('throws when the code is of incorrect shape', async () => {
@@ -427,8 +427,8 @@ describe(postProcessApiCallResponseV2.name, () => {
           environment: 'Node',
           value: `
             async (payload) => {
-              const { apiCallResponse } = payload;
-              return  parseInt(apiCallResponse.price) * 4;
+              const { response } = payload;
+              return  parseInt(response.price) * 4;
             }
             `,
           timeoutMs: 5000,
@@ -456,9 +456,9 @@ describe(postProcessApiCallResponseV2.name, () => {
           environment: 'Node',
           value: `
             async (payload) => {
-              const {apiCallResponse, endpointParameters} = payload;
+              const {response, endpointParameters} = payload;
               const reservedMultiplier = endpointParameters._times ? 1 : 2;
-              return {apiCallResponse: parseInt(apiCallResponse.price) * endpointParameters.myMultiplier * reservedMultiplier}
+              return {response: parseInt(response.price) * endpointParameters.myMultiplier * reservedMultiplier}
             }
           `,
           timeoutMs: 5000,
@@ -469,7 +469,7 @@ describe(postProcessApiCallResponseV2.name, () => {
       const result = await postProcessApiCallResponseV2({ price }, endpoint, parameters);
 
       // reserved parameters (_times) should be inaccessible to post-processing hence multiplication by 2 instead of 1
-      expect(result).toEqual({ apiCallResponse: price * myMultiplier * 2 });
+      expect(result).toEqual({ response: price * myMultiplier * 2 });
     });
 
     it('throws on invalid code', async () => {
@@ -495,8 +495,8 @@ describe(postProcessApiCallResponseV2.name, () => {
         environment: 'Node',
         value: `
               async (payload) => {
-                const { apiCallResponse } = payload;
-                return { apiCallResponse, timestamp: apiCallResponse.timestamp };
+                const { response } = payload;
+                return { response, timestamp: response.timestamp };
               }
             `,
         timeoutMs: 5000,
@@ -510,12 +510,12 @@ describe(postProcessApiCallResponseV2.name, () => {
       parameters
     );
     expect(result1).toEqual({
-      apiCallResponse: { price: 1000, timestamp: currentTimestamp },
+      response: { price: 1000, timestamp: currentTimestamp },
       timestamp: currentTimestamp,
     });
 
     const result2 = await postProcessApiCallResponseV2({ price: 1000 }, endpoint, parameters);
-    expect(result2).toEqual({ apiCallResponse: { price: 1000 }, timestamp: undefined });
+    expect(result2).toEqual({ response: { price: 1000 }, timestamp: undefined });
   });
 });
 
@@ -526,8 +526,8 @@ describe(preProcessApiCallParameters.name, () => {
         environment: 'Node',
         value: `
             async (payload) => {
-              const { apiCallParameters } = payload;
-              return { apiCallParameters: {...apiCallParameters, from: 'ETH', newProp: 'airnode'} };
+              const { endpointParameters } = payload;
+              return { endpointParameters: {...endpointParameters, from: 'ETH', newProp: 'airnode'} };
             }
           `,
         timeoutMs: 5000,
@@ -538,7 +538,7 @@ describe(preProcessApiCallParameters.name, () => {
     const result = await preProcessApiCallParameters(endpoint, parameters);
 
     expect(result).toEqual({
-      apiCallParameters: {
+      endpointParameters: {
         _path: 'price',
         _type: 'int256',
         from: 'ETH',
@@ -567,7 +567,7 @@ describe(preProcessApiCallParameters.name, () => {
     const result = await preProcessApiCallParameters(endpoint, parameters);
 
     expect(result).toEqual({
-      apiCallParameters: {
+      endpointParameters: {
         _path: 'price',
         _type: 'int256',
         from: 'ETH',
@@ -585,8 +585,8 @@ describe(postProcessApiCallResponse.name, () => {
         environment: 'Node',
         value: `
         async (payload) => {
-          const { apiCallResponse } = payload;
-          return { apiCallResponse: parseInt(apiCallResponse.price) * 4 };
+          const { response } = payload;
+          return { response: parseInt(response.price) * 4 };
         }
         `,
         timeoutMs: 5000,
@@ -595,7 +595,7 @@ describe(postProcessApiCallResponse.name, () => {
 
     const result = await postProcessApiCallResponse({ price: 1000 }, endpoint, parameters);
 
-    expect(result).toEqual({ apiCallResponse: 4000 });
+    expect(result).toEqual({ response: 4000 });
   });
 
   it('converts v1 post-processing to v2', async () => {
@@ -617,6 +617,6 @@ describe(postProcessApiCallResponse.name, () => {
 
     const result = await postProcessApiCallResponse({ price: 1000 }, endpoint, parameters);
 
-    expect(result).toStrictEqual({ apiCallResponse: 4000 });
+    expect(result).toStrictEqual({ response: 4000 });
   });
 });
