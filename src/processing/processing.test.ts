@@ -5,17 +5,17 @@ import { createEndpoint } from '../../test/fixtures';
 
 import {
   addReservedParameters,
-  postProcessApiCallResponse,
-  postProcessApiCallResponseV1,
-  postProcessApiCallResponseV2,
-  preProcessApiCallParameters,
-  preProcessApiCallParametersV1,
-  preProcessApiCallParametersV2,
+  postProcessResponse,
+  postProcessResponseV1,
+  postProcessResponseV2,
+  preProcessEndpointParameters,
+  preProcessEndpointParametersV1,
+  preProcessEndpointParametersV2,
   removeReservedParameters,
 } from './processing';
 import type { ProcessingSpecificationV2, ProcessingSpecifications } from './schema';
 
-describe(preProcessApiCallParametersV1.name, () => {
+describe(preProcessEndpointParametersV1.name, () => {
   it('valid processing code', async () => {
     const preProcessingSpecifications = [
       {
@@ -31,7 +31,7 @@ describe(preProcessApiCallParametersV1.name, () => {
     ] as ProcessingSpecifications;
     const parameters = { _type: 'int256', _path: 'price' };
 
-    const result = await preProcessApiCallParametersV1(preProcessingSpecifications, parameters);
+    const result = await preProcessEndpointParametersV1(preProcessingSpecifications, parameters);
 
     expect(result).toEqual({
       _path: 'price',
@@ -56,7 +56,7 @@ describe(preProcessApiCallParametersV1.name, () => {
     ] as ProcessingSpecifications;
     const parameters = { _type: 'int256', _path: 'price', from: 'TBD' };
 
-    const throwingFunc = async () => preProcessApiCallParametersV1(preProcessingSpecifications, parameters);
+    const throwingFunc = async () => preProcessEndpointParametersV1(preProcessingSpecifications, parameters);
 
     await expect(throwingFunc).rejects.toEqual(new Error('SyntaxError: Unexpected identifier'));
   });
@@ -74,7 +74,7 @@ describe(preProcessApiCallParametersV1.name, () => {
       },
     ] as ProcessingSpecifications;
 
-    const result = await preProcessApiCallParametersV1(preProcessingSpecifications, parameters);
+    const result = await preProcessEndpointParametersV1(preProcessingSpecifications, parameters);
 
     expect(result).toEqual({
       _path: 'price', // is not overridden
@@ -99,7 +99,7 @@ describe(preProcessApiCallParametersV1.name, () => {
     ] as ProcessingSpecifications;
     const parameters = { _type: 'int256', _path: 'price' };
 
-    const result = await preProcessApiCallParametersV1(preProcessingSpecifications, parameters);
+    const result = await preProcessEndpointParametersV1(preProcessingSpecifications, parameters);
 
     // Check that the result contains the original parameters and a valid 8-character hex random value.
     expect(result).toMatchObject({
@@ -124,13 +124,13 @@ describe(preProcessApiCallParametersV1.name, () => {
     ] as ProcessingSpecifications;
     const parameters = { _type: 'int256', _path: 'price' };
 
-    const throwingFunc = async () => preProcessApiCallParametersV1(preProcessingSpecifications, parameters);
+    const throwingFunc = async () => preProcessEndpointParametersV1(preProcessingSpecifications, parameters);
 
     await expect(throwingFunc).rejects.toThrow('Timeout exceeded');
   });
 });
 
-describe(postProcessApiCallResponseV1.name, () => {
+describe(postProcessResponseV1.name, () => {
   it('processes valid code', async () => {
     const parameters = { _type: 'int256', _path: 'price' };
     const postProcessingSpecifications = [
@@ -146,7 +146,7 @@ describe(postProcessApiCallResponseV1.name, () => {
       },
     ] as ProcessingSpecifications;
 
-    const result = await postProcessApiCallResponseV1({ price: 1000 }, postProcessingSpecifications, parameters);
+    const result = await postProcessResponseV1({ price: 1000 }, postProcessingSpecifications, parameters);
 
     expect(result).toBe(4000);
   });
@@ -166,7 +166,7 @@ describe(postProcessApiCallResponseV1.name, () => {
     ] as ProcessingSpecifications;
 
     const price = 1000;
-    const result = await postProcessApiCallResponseV1({ price }, postProcessingSpecifications, parameters);
+    const result = await postProcessResponseV1({ price }, postProcessingSpecifications, parameters);
 
     // reserved parameters (_times) should be inaccessible to post-processing hence multiplication by 2 instead of 1
     expect(result).toEqual(price * myMultiplier * 2);
@@ -190,8 +190,7 @@ describe(postProcessApiCallResponseV1.name, () => {
       },
     ] as ProcessingSpecifications;
 
-    const throwingFunc = async () =>
-      postProcessApiCallResponseV1({ price: 1000 }, postProcessingSpecifications, parameters);
+    const throwingFunc = async () => postProcessResponseV1({ price: 1000 }, postProcessingSpecifications, parameters);
 
     await expect(throwingFunc).rejects.toEqual(new Error('SyntaxError: Unexpected identifier'));
   });
@@ -262,7 +261,7 @@ describe(addReservedParameters.name, () => {
   });
 });
 
-describe(preProcessApiCallParametersV2.name, () => {
+describe(preProcessEndpointParametersV2.name, () => {
   describe('migration from v1 processing', () => {
     it('valid processing code', async () => {
       const preProcessingSpecificationV2 = {
@@ -277,7 +276,7 @@ describe(preProcessApiCallParametersV2.name, () => {
       } as ProcessingSpecificationV2;
       const parameters = { _type: 'int256', _path: 'price' };
 
-      const result = await preProcessApiCallParametersV2(preProcessingSpecificationV2, parameters);
+      const result = await preProcessEndpointParametersV2(preProcessingSpecificationV2, parameters);
 
       expect(result).toEqual({
         endpointParameters: {
@@ -297,7 +296,7 @@ describe(preProcessApiCallParametersV2.name, () => {
       } as ProcessingSpecificationV2;
       const parameters = { _type: 'int256', _path: 'price', from: 'TBD' };
 
-      const throwingFunc = async () => preProcessApiCallParametersV2(preProcessingSpecificationV2, parameters);
+      const throwingFunc = async () => preProcessEndpointParametersV2(preProcessingSpecificationV2, parameters);
 
       await expect(throwingFunc).rejects.toEqual(new Error('SyntaxError: Unexpected identifier'));
     });
@@ -316,7 +315,7 @@ describe(preProcessApiCallParametersV2.name, () => {
         timeoutMs: 5000,
       } as ProcessingSpecificationV2;
 
-      const result = await preProcessApiCallParametersV2(preProcessingSpecificationV2, parameters);
+      const result = await preProcessEndpointParametersV2(preProcessingSpecificationV2, parameters);
 
       expect(result).toEqual({
         endpointParameters: {
@@ -343,7 +342,7 @@ describe(preProcessApiCallParametersV2.name, () => {
       } as ProcessingSpecificationV2;
       const parameters = { _type: 'int256', _path: 'price' };
 
-      const result = await preProcessApiCallParametersV2(preProcessingSpecificationV2, parameters);
+      const result = await preProcessEndpointParametersV2(preProcessingSpecificationV2, parameters);
 
       // Check that the result contains the original parameters and a valid 8-character hex random value.
       expect(result.endpointParameters).toEqual({
@@ -367,14 +366,14 @@ describe(preProcessApiCallParametersV2.name, () => {
       } as ProcessingSpecificationV2;
       const parameters = { _type: 'int256', _path: 'price' };
 
-      const throwingFunc = async () => preProcessApiCallParametersV2(preProcessingSpecificationV2, parameters);
+      const throwingFunc = async () => preProcessEndpointParametersV2(preProcessingSpecificationV2, parameters);
 
       await expect(throwingFunc).rejects.toThrow('Full timeout exceeded');
     });
   });
 });
 
-describe(postProcessApiCallResponseV2.name, () => {
+describe(postProcessResponseV2.name, () => {
   describe('migration from v1 processing', () => {
     it('processes valid code', async () => {
       const parameters = { _type: 'int256', _path: 'price' };
@@ -389,7 +388,7 @@ describe(postProcessApiCallResponseV2.name, () => {
         timeoutMs: 5000,
       } as ProcessingSpecificationV2;
 
-      const result = await postProcessApiCallResponseV2({ price: 1000 }, postProcessingSpecificationV2, parameters);
+      const result = await postProcessResponseV2({ price: 1000 }, postProcessingSpecificationV2, parameters);
 
       expect(result).toEqual({ response: 4000 });
     });
@@ -408,7 +407,7 @@ describe(postProcessApiCallResponseV2.name, () => {
       } as ProcessingSpecificationV2;
 
       await expect(async () =>
-        postProcessApiCallResponseV2({ price: 1000 }, postProcessingSpecificationV2, parameters)
+        postProcessResponseV2({ price: 1000 }, postProcessingSpecificationV2, parameters)
       ).rejects.toEqual(
         new ZodError([
           {
@@ -438,7 +437,7 @@ describe(postProcessApiCallResponseV2.name, () => {
       } as ProcessingSpecificationV2;
 
       const price = 1000;
-      const result = await postProcessApiCallResponseV2({ price }, postProcessingSpecificationV2, parameters);
+      const result = await postProcessResponseV2({ price }, postProcessingSpecificationV2, parameters);
 
       // reserved parameters (_times) should be inaccessible to post-processing hence multiplication by 2 instead of 1
       expect(result).toEqual({ response: price * myMultiplier * 2 });
@@ -453,7 +452,7 @@ describe(postProcessApiCallResponseV2.name, () => {
       } as ProcessingSpecificationV2;
 
       const throwingFunc = async () =>
-        postProcessApiCallResponseV2({ price: 1000 }, postProcessingSpecificationV2, parameters);
+        postProcessResponseV2({ price: 1000 }, postProcessingSpecificationV2, parameters);
 
       await expect(throwingFunc).rejects.toEqual(new Error('SyntaxError: Unexpected identifier'));
     });
@@ -473,7 +472,7 @@ describe(postProcessApiCallResponseV2.name, () => {
     } as ProcessingSpecificationV2;
 
     const currentTimestamp = Math.floor(Date.now() / 1000);
-    const result1 = await postProcessApiCallResponseV2(
+    const result1 = await postProcessResponseV2(
       { price: 1000, timestamp: currentTimestamp },
       postProcessingSpecificationV2,
       parameters
@@ -483,12 +482,12 @@ describe(postProcessApiCallResponseV2.name, () => {
       timestamp: currentTimestamp,
     });
 
-    const result2 = await postProcessApiCallResponseV2({ price: 1000 }, postProcessingSpecificationV2, parameters);
+    const result2 = await postProcessResponseV2({ price: 1000 }, postProcessingSpecificationV2, parameters);
     expect(result2).toEqual({ response: { price: 1000 }, timestamp: undefined });
   });
 });
 
-describe(preProcessApiCallParameters.name, () => {
+describe(preProcessEndpointParameters.name, () => {
   it('returns v2 processing result', async () => {
     const endpoint = createEndpoint({
       preProcessingSpecificationV2: {
@@ -504,7 +503,7 @@ describe(preProcessApiCallParameters.name, () => {
     });
     const parameters = { _type: 'int256', _path: 'price' };
 
-    const result = await preProcessApiCallParameters(endpoint, parameters);
+    const result = await preProcessEndpointParameters(endpoint, parameters);
 
     expect(result).toEqual({
       endpointParameters: {
@@ -533,7 +532,7 @@ describe(preProcessApiCallParameters.name, () => {
     });
     const parameters = { _type: 'int256', _path: 'price' };
 
-    const result = await preProcessApiCallParameters(endpoint, parameters);
+    const result = await preProcessEndpointParameters(endpoint, parameters);
 
     expect(result).toEqual({
       endpointParameters: {
@@ -546,7 +545,7 @@ describe(preProcessApiCallParameters.name, () => {
   });
 });
 
-describe(postProcessApiCallResponse.name, () => {
+describe(postProcessResponse.name, () => {
   it('returns v2 processing result', async () => {
     const parameters = { _type: 'int256', _path: 'price' };
     const endpoint = createEndpoint({
@@ -562,7 +561,7 @@ describe(postProcessApiCallResponse.name, () => {
       },
     });
 
-    const result = await postProcessApiCallResponse({ price: 1000 }, endpoint, parameters);
+    const result = await postProcessResponse({ price: 1000 }, endpoint, parameters);
 
     expect(result).toEqual({ response: 4000 });
   });
@@ -584,7 +583,7 @@ describe(postProcessApiCallResponse.name, () => {
       ],
     });
 
-    const result = await postProcessApiCallResponse({ price: 1000 }, endpoint, parameters);
+    const result = await postProcessResponse({ price: 1000 }, endpoint, parameters);
 
     expect(result).toStrictEqual({ response: 4000 });
   });

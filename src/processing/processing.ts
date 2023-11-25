@@ -62,7 +62,7 @@ export const addReservedParameters = (
  *
  * @returns A promise that resolves to the pre-processed parameters.
  */
-export const preProcessApiCallParametersV1 = async (
+export const preProcessEndpointParametersV1 = async (
   preProcessingSpecifications: ProcessingSpecifications | undefined,
   endpointParameters: EndpointParameters,
   processingOptions: GoAsyncOptions = { retries: 0, totalTimeoutMs: DEFAULT_PROCESSING_TIMEOUT_MS }
@@ -124,7 +124,7 @@ export const preProcessApiCallParametersV1 = async (
  *
  * @returns A promise that resolves to the post-processed response.
  */
-export const postProcessApiCallResponseV1 = async (
+export const postProcessResponseV1 = async (
   response: unknown,
   postProcessingSpecifications: ProcessingSpecifications | undefined,
   endpointParameters: EndpointParameters,
@@ -179,7 +179,7 @@ export const postProcessApiCallResponseV1 = async (
  *
  * @returns A promise that resolves to the pre-processed parameters.
  */
-export const preProcessApiCallParametersV2 = async (
+export const preProcessEndpointParametersV2 = async (
   preProcessingSpecificationV2: ProcessingSpecificationV2 | undefined,
   endpointParameters: EndpointParameters,
   processingOptions: GoAsyncOptions = { retries: 0, totalTimeoutMs: DEFAULT_PROCESSING_TIMEOUT_MS }
@@ -218,7 +218,7 @@ export const preProcessApiCallParametersV2 = async (
  *
  * @returns A promise that resolves to the post-processed response.
  */
-export const postProcessApiCallResponseV2 = async (
+export const postProcessResponseV2 = async (
   response: unknown,
   postProcessingSpecificationV2: ProcessingSpecificationV2 | undefined,
   endpointParameters: EndpointParameters,
@@ -246,6 +246,34 @@ export const postProcessApiCallResponseV2 = async (
 };
 
 /**
+ * Pre-processes endpoint parameters based on the provided endpoint's processing specifications. Internally it
+ * determines what processing implementation should be used.
+ *
+ * @param endpoint The endpoint containing processing specifications.
+ * @param endpointParameters The parameters to be pre-processed.
+ * @param processingOptions Options to control the async processing behavior like retries and timeouts.
+ *
+ * @returns A promise that resolves to the pre-processed parameters.
+ */
+export const preProcessEndpointParameters = async (
+  endpoint: Endpoint,
+  endpointParameters: EndpointParameters,
+  processingOptions: GoAsyncOptions = { retries: 0, totalTimeoutMs: DEFAULT_PROCESSING_TIMEOUT_MS }
+): Promise<PreProcessingV2Response> => {
+  const { preProcessingSpecificationV2, preProcessingSpecifications } = endpoint;
+  if (preProcessingSpecificationV2) {
+    return preProcessEndpointParametersV2(preProcessingSpecificationV2, endpointParameters);
+  }
+
+  const preProcessV1Response = await preProcessEndpointParametersV1(
+    preProcessingSpecifications,
+    endpointParameters,
+    processingOptions
+  );
+  return { endpointParameters: preProcessV1Response };
+};
+
+/**
  * Post-processes the response based on the provided endpoint's processing specifications. The response is usually the
  * API call response, but this logic depends on how the processing is used by the target service. For example, Airnode
  * allows skipping API calls in which case the response is the result of pre-processing.
@@ -260,7 +288,7 @@ export const postProcessApiCallResponseV2 = async (
  *
  * @returns A promise that resolves to the post-processed response.
  */
-export const postProcessApiCallResponse = async (
+export const postProcessResponse = async (
   response: unknown,
   endpoint: Endpoint,
   endpointParameters: EndpointParameters,
@@ -268,42 +296,14 @@ export const postProcessApiCallResponse = async (
 ): Promise<PostProcessingV2Response> => {
   const { postProcessingSpecificationV2, postProcessingSpecifications } = endpoint;
   if (postProcessingSpecificationV2) {
-    return postProcessApiCallResponseV2(response, postProcessingSpecificationV2, endpointParameters);
+    return postProcessResponseV2(response, postProcessingSpecificationV2, endpointParameters);
   }
 
-  const postProcessV1Response = await postProcessApiCallResponseV1(
+  const postProcessV1Response = await postProcessResponseV1(
     response,
     postProcessingSpecifications,
     endpointParameters,
     processingOptions
   );
   return { response: postProcessV1Response };
-};
-
-/**
- * Pre-processes endpoint parameters based on the provided endpoint's processing specifications. Internally it
- * determines what processing implementation should be used.
- *
- * @param endpoint The endpoint containing processing specifications.
- * @param endpointParameters The parameters to be pre-processed.
- * @param processingOptions Options to control the async processing behavior like retries and timeouts.
- *
- * @returns A promise that resolves to the pre-processed parameters.
- */
-export const preProcessApiCallParameters = async (
-  endpoint: Endpoint,
-  endpointParameters: EndpointParameters,
-  processingOptions: GoAsyncOptions = { retries: 0, totalTimeoutMs: DEFAULT_PROCESSING_TIMEOUT_MS }
-): Promise<PreProcessingV2Response> => {
-  const { preProcessingSpecificationV2, preProcessingSpecifications } = endpoint;
-  if (preProcessingSpecificationV2) {
-    return preProcessApiCallParametersV2(preProcessingSpecificationV2, endpointParameters);
-  }
-
-  const preProcessV1Response = await preProcessApiCallParametersV1(
-    preProcessingSpecifications,
-    endpointParameters,
-    processingOptions
-  );
-  return { endpointParameters: preProcessV1Response };
 };
