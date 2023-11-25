@@ -13,26 +13,25 @@ import {
   preProcessApiCallParametersV2,
   removeReservedParameters,
 } from './processing';
+import type { ProcessingSpecificationV2, ProcessingSpecifications } from './schema';
 
 describe(preProcessApiCallParametersV1.name, () => {
   it('valid processing code', async () => {
-    const endpoint = createEndpoint({
-      preProcessingSpecifications: [
-        {
-          environment: 'Node',
-          value: 'const output = {...input, from: "ETH"};',
-          timeoutMs: 5000,
-        },
-        {
-          environment: 'Node',
-          value: 'const output = {...input, newProp: "airnode"};',
-          timeoutMs: 5000,
-        },
-      ],
-    });
+    const preProcessingSpecifications = [
+      {
+        environment: 'Node',
+        value: 'const output = {...input, from: "ETH"};',
+        timeoutMs: 5000,
+      },
+      {
+        environment: 'Node',
+        value: 'const output = {...input, newProp: "airnode"};',
+        timeoutMs: 5000,
+      },
+    ] as ProcessingSpecifications;
     const parameters = { _type: 'int256', _path: 'price' };
 
-    const result = await preProcessApiCallParametersV1(endpoint, parameters);
+    const result = await preProcessApiCallParametersV1(preProcessingSpecifications, parameters);
 
     expect(result).toEqual({
       _path: 'price',
@@ -43,43 +42,39 @@ describe(preProcessApiCallParametersV1.name, () => {
   });
 
   it('invalid processing code', async () => {
-    const endpoint = createEndpoint({
-      preProcessingSpecifications: [
-        {
-          environment: 'Node',
-          value: 'something invalid; const output = {...input, from: `ETH`};',
-          timeoutMs: 5000,
-        },
-        {
-          environment: 'Node',
-          value: 'const output = {...input, newProp: "airnode"};',
-          timeoutMs: 5000,
-        },
-      ],
-    });
+    const preProcessingSpecifications = [
+      {
+        environment: 'Node',
+        value: 'something invalid; const output = {...input, from: `ETH`};',
+        timeoutMs: 5000,
+      },
+      {
+        environment: 'Node',
+        value: 'const output = {...input, newProp: "airnode"};',
+        timeoutMs: 5000,
+      },
+    ] as ProcessingSpecifications;
     const parameters = { _type: 'int256', _path: 'price', from: 'TBD' };
 
-    const throwingFunc = async () => preProcessApiCallParametersV1(endpoint, parameters);
+    const throwingFunc = async () => preProcessApiCallParametersV1(preProcessingSpecifications, parameters);
 
     await expect(throwingFunc).rejects.toEqual(new Error('SyntaxError: Unexpected identifier'));
   });
 
   it('demonstrates access to endpointParameters, but reserved parameters are inaccessible', async () => {
     const parameters = { _type: 'int256', _path: 'price', to: 'USD' };
-    const endpoint = createEndpoint({
-      preProcessingSpecifications: [
-        {
-          environment: 'Node',
-          // pretend the user is trying to 1) override _path and 2) set a new parameter based on
-          // the presence of the reserved parameter _type (which is inaccessible)
-          value:
-            'const output = {...input, from: "ETH", _path: "price.newpath", myVal: input._type ? "123" : "456", newTo: endpointParameters.to };',
-          timeoutMs: 5000,
-        },
-      ],
-    });
+    const preProcessingSpecifications = [
+      {
+        environment: 'Node',
+        // pretend the user is trying to 1) override _path and 2) set a new parameter based on
+        // the presence of the reserved parameter _type (which is inaccessible)
+        value:
+          'const output = {...input, from: "ETH", _path: "price.newpath", myVal: input._type ? "123" : "456", newTo: endpointParameters.to };',
+        timeoutMs: 5000,
+      },
+    ] as ProcessingSpecifications;
 
-    const result = await preProcessApiCallParametersV1(endpoint, parameters);
+    const result = await preProcessApiCallParametersV1(preProcessingSpecifications, parameters);
 
     expect(result).toEqual({
       _path: 'price', // is not overridden
@@ -92,21 +87,19 @@ describe(preProcessApiCallParametersV1.name, () => {
   });
 
   it('uses native modules for processing', async () => {
-    const endpoint = createEndpoint({
-      preProcessingSpecifications: [
-        {
-          environment: 'Node',
-          value: `
+    const preProcessingSpecifications = [
+      {
+        environment: 'Node',
+        value: `
           const randomValue = crypto.randomBytes(4).toString('hex');
           const output = {...input, randomValue};
         `,
-          timeoutMs: 5000,
-        },
-      ],
-    });
+        timeoutMs: 5000,
+      },
+    ] as ProcessingSpecifications;
     const parameters = { _type: 'int256', _path: 'price' };
 
-    const result = await preProcessApiCallParametersV1(endpoint, parameters);
+    const result = await preProcessApiCallParametersV1(preProcessingSpecifications, parameters);
 
     // Check that the result contains the original parameters and a valid 8-character hex random value.
     expect(result).toMatchObject({
@@ -118,22 +111,20 @@ describe(preProcessApiCallParametersV1.name, () => {
   });
 
   it('throws error due to processing timeout', async () => {
-    const endpoint = createEndpoint({
-      preProcessingSpecifications: [
-        {
-          environment: 'Node async',
-          value: `
+    const preProcessingSpecifications = [
+      {
+        environment: 'Node async',
+        value: `
           const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
           delay(5000);
           const output = {...input, from: 'ETH'};
         `,
-          timeoutMs: 100, // This timeout is shorter than the delay in the processing code.
-        },
-      ],
-    });
+        timeoutMs: 100, // This timeout is shorter than the delay in the processing code.
+      },
+    ] as ProcessingSpecifications;
     const parameters = { _type: 'int256', _path: 'price' };
 
-    const throwingFunc = async () => preProcessApiCallParametersV1(endpoint, parameters);
+    const throwingFunc = async () => preProcessApiCallParametersV1(preProcessingSpecifications, parameters);
 
     await expect(throwingFunc).rejects.toThrow('Timeout exceeded');
   });
@@ -142,22 +133,20 @@ describe(preProcessApiCallParametersV1.name, () => {
 describe(postProcessApiCallResponseV1.name, () => {
   it('processes valid code', async () => {
     const parameters = { _type: 'int256', _path: 'price' };
-    const endpoint = createEndpoint({
-      postProcessingSpecifications: [
-        {
-          environment: 'Node',
-          value: 'const output = parseInt(input.price)*2;',
-          timeoutMs: 5000,
-        },
-        {
-          environment: 'Node',
-          value: 'const output = parseInt(input)*2;',
-          timeoutMs: 5000,
-        },
-      ],
-    });
+    const postProcessingSpecifications = [
+      {
+        environment: 'Node',
+        value: 'const output = parseInt(input.price)*2;',
+        timeoutMs: 5000,
+      },
+      {
+        environment: 'Node',
+        value: 'const output = parseInt(input)*2;',
+        timeoutMs: 5000,
+      },
+    ] as ProcessingSpecifications;
 
-    const result = await postProcessApiCallResponseV1({ price: 1000 }, endpoint, parameters);
+    const result = await postProcessApiCallResponseV1({ price: 1000 }, postProcessingSpecifications, parameters);
 
     expect(result).toBe(4000);
   });
@@ -165,21 +154,19 @@ describe(postProcessApiCallResponseV1.name, () => {
   it('demonstrates access to endpointParameters, but reserved parameters are inaccessible', async () => {
     const myMultiplier = 10;
     const parameters = { _type: 'int256', _path: 'price', myMultiplier };
-    const endpoint = createEndpoint({
-      postProcessingSpecifications: [
-        {
-          environment: 'Node',
-          value: `
+    const postProcessingSpecifications = [
+      {
+        environment: 'Node',
+        value: `
             const reservedMultiplier = endpointParameters._times ? 1 : 2;
             const output = parseInt(input.price) * endpointParameters.myMultiplier * reservedMultiplier
           `,
-          timeoutMs: 5000,
-        },
-      ],
-    });
+        timeoutMs: 5000,
+      },
+    ] as ProcessingSpecifications;
 
     const price = 1000;
-    const result = await postProcessApiCallResponseV1({ price }, endpoint, parameters);
+    const result = await postProcessApiCallResponseV1({ price }, postProcessingSpecifications, parameters);
 
     // reserved parameters (_times) should be inaccessible to post-processing hence multiplication by 2 instead of 1
     expect(result).toEqual(price * myMultiplier * 2);
@@ -187,25 +174,24 @@ describe(postProcessApiCallResponseV1.name, () => {
 
   it('throws on invalid code', async () => {
     const parameters = { _type: 'int256', _path: 'price' };
-    const endpoint = createEndpoint({
-      postProcessingSpecifications: [
-        {
-          environment: 'Node',
-          value: 'const output = parseInt(input.price)*1000;',
-          timeoutMs: 5000,
-        },
-        {
-          environment: 'Node',
-          value: `
+    const postProcessingSpecifications = [
+      {
+        environment: 'Node',
+        value: 'const output = parseInt(input.price)*1000;',
+        timeoutMs: 5000,
+      },
+      {
+        environment: 'Node',
+        value: `
             Something Unexpected;
             const output = parseInt(input)*2;
           `,
-          timeoutMs: 5000,
-        },
-      ],
-    });
+        timeoutMs: 5000,
+      },
+    ] as ProcessingSpecifications;
 
-    const throwingFunc = async () => postProcessApiCallResponseV1({ price: 1000 }, endpoint, parameters);
+    const throwingFunc = async () =>
+      postProcessApiCallResponseV1({ price: 1000 }, postProcessingSpecifications, parameters);
 
     await expect(throwingFunc).rejects.toEqual(new Error('SyntaxError: Unexpected identifier'));
   });
@@ -279,21 +265,19 @@ describe(addReservedParameters.name, () => {
 describe(preProcessApiCallParametersV2.name, () => {
   describe('migration from v1 processing', () => {
     it('valid processing code', async () => {
-      const endpoint = createEndpoint({
-        preProcessingSpecificationV2: {
-          environment: 'Node',
-          value: `
+      const preProcessingSpecificationV2 = {
+        environment: 'Node',
+        value: `
               async (payload) => {
                 const { endpointParameters } = payload;
                 return { endpointParameters: {...endpointParameters, from: 'ETH', newProp: 'airnode'} };
               }
             `,
-          timeoutMs: 5000,
-        },
-      });
+        timeoutMs: 5000,
+      } as ProcessingSpecificationV2;
       const parameters = { _type: 'int256', _path: 'price' };
 
-      const result = await preProcessApiCallParametersV2(endpoint, parameters);
+      const result = await preProcessApiCallParametersV2(preProcessingSpecificationV2, parameters);
 
       expect(result).toEqual({
         endpointParameters: {
@@ -306,37 +290,33 @@ describe(preProcessApiCallParametersV2.name, () => {
     });
 
     it('invalid processing code', async () => {
-      const endpoint = createEndpoint({
-        preProcessingSpecificationV2: {
-          environment: 'Node',
-          value: 'something invalid; const output = {...input, from: `ETH`};',
-          timeoutMs: 5000,
-        },
-      });
+      const preProcessingSpecificationV2 = {
+        environment: 'Node',
+        value: 'something invalid; const output = {...input, from: `ETH`};',
+        timeoutMs: 5000,
+      } as ProcessingSpecificationV2;
       const parameters = { _type: 'int256', _path: 'price', from: 'TBD' };
 
-      const throwingFunc = async () => preProcessApiCallParametersV2(endpoint, parameters);
+      const throwingFunc = async () => preProcessApiCallParametersV2(preProcessingSpecificationV2, parameters);
 
       await expect(throwingFunc).rejects.toEqual(new Error('SyntaxError: Unexpected identifier'));
     });
 
     it('reserved parameters are inaccessible', async () => {
       const parameters = { _type: 'int256', _path: 'price', to: 'USD' };
-      const endpoint = createEndpoint({
-        preProcessingSpecificationV2: {
-          environment: 'Node',
-          // pretend the user is trying to 1) override _path and 2) set a new parameter based on
-          // the presence of the reserved parameter _type (which is inaccessible)
-          value: `
+      const preProcessingSpecificationV2 = {
+        environment: 'Node',
+        // pretend the user is trying to 1) override _path and 2) set a new parameter based on
+        // the presence of the reserved parameter _type (which is inaccessible)
+        value: `
             async ({endpointParameters}) => {
               return {endpointParameters: {...endpointParameters, from: "ETH", _path: "price.newpath", myVal: endpointParameters._type ? "123" : "456", newTo: endpointParameters.to } };
             }
             `,
-          timeoutMs: 5000,
-        },
-      });
+        timeoutMs: 5000,
+      } as ProcessingSpecificationV2;
 
-      const result = await preProcessApiCallParametersV2(endpoint, parameters);
+      const result = await preProcessApiCallParametersV2(preProcessingSpecificationV2, parameters);
 
       expect(result).toEqual({
         endpointParameters: {
@@ -351,21 +331,19 @@ describe(preProcessApiCallParametersV2.name, () => {
     });
 
     it('uses native modules for processing', async () => {
-      const endpoint = createEndpoint({
-        preProcessingSpecificationV2: {
-          environment: 'Node',
-          value: `
+      const preProcessingSpecificationV2 = {
+        environment: 'Node',
+        value: `
           async ({endpointParameters}) => {
             const randomValue = crypto.randomBytes(4).toString('hex');
             return {endpointParameters: {...endpointParameters, randomValue}};
           }
           `,
-          timeoutMs: 5000,
-        },
-      });
+        timeoutMs: 5000,
+      } as ProcessingSpecificationV2;
       const parameters = { _type: 'int256', _path: 'price' };
 
-      const result = await preProcessApiCallParametersV2(endpoint, parameters);
+      const result = await preProcessApiCallParametersV2(preProcessingSpecificationV2, parameters);
 
       // Check that the result contains the original parameters and a valid 8-character hex random value.
       expect(result.endpointParameters).toEqual({
@@ -377,21 +355,19 @@ describe(preProcessApiCallParametersV2.name, () => {
     });
 
     it('throws error due to processing timeout', async () => {
-      const endpoint = createEndpoint({
-        preProcessingSpecificationV2: {
-          environment: 'Node',
-          value: `
+      const preProcessingSpecificationV2 = {
+        environment: 'Node',
+        value: `
           async ({endpointParameters}) => {
             const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
             await delay(5000);
             return {endpointParameters: {...endpointParameters, from: 'ETH'}};
           }`,
-          timeoutMs: 100, // This timeout is shorter than the delay in the processing code.
-        },
-      });
+        timeoutMs: 100, // This timeout is shorter than the delay in the processing code.
+      } as ProcessingSpecificationV2;
       const parameters = { _type: 'int256', _path: 'price' };
 
-      const throwingFunc = async () => preProcessApiCallParametersV2(endpoint, parameters);
+      const throwingFunc = async () => preProcessApiCallParametersV2(preProcessingSpecificationV2, parameters);
 
       await expect(throwingFunc).rejects.toThrow('Full timeout exceeded');
     });
@@ -402,40 +378,38 @@ describe(postProcessApiCallResponseV2.name, () => {
   describe('migration from v1 processing', () => {
     it('processes valid code', async () => {
       const parameters = { _type: 'int256', _path: 'price' };
-      const endpoint = createEndpoint({
-        postProcessingSpecificationV2: {
-          environment: 'Node',
-          value: `
+      const postProcessingSpecificationV2 = {
+        environment: 'Node',
+        value: `
           async (payload) => {
             const { response } = payload;
             return { response: parseInt(response.price) * 4 };
           }
           `,
-          timeoutMs: 5000,
-        },
-      });
+        timeoutMs: 5000,
+      } as ProcessingSpecificationV2;
 
-      const result = await postProcessApiCallResponseV2({ price: 1000 }, endpoint, parameters);
+      const result = await postProcessApiCallResponseV2({ price: 1000 }, postProcessingSpecificationV2, parameters);
 
       expect(result).toEqual({ response: 4000 });
     });
 
     it('throws when the code is of incorrect shape', async () => {
       const parameters = { _type: 'int256', _path: 'price' };
-      const endpoint = createEndpoint({
-        postProcessingSpecificationV2: {
-          environment: 'Node',
-          value: `
+      const postProcessingSpecificationV2 = {
+        environment: 'Node',
+        value: `
             async (payload) => {
               const { response } = payload;
               return  parseInt(response.price) * 4;
             }
             `,
-          timeoutMs: 5000,
-        },
-      });
+        timeoutMs: 5000,
+      } as ProcessingSpecificationV2;
 
-      await expect(async () => postProcessApiCallResponseV2({ price: 1000 }, endpoint, parameters)).rejects.toEqual(
+      await expect(async () =>
+        postProcessApiCallResponseV2({ price: 1000 }, postProcessingSpecificationV2, parameters)
+      ).rejects.toEqual(
         new ZodError([
           {
             code: 'invalid_type',
@@ -451,22 +425,20 @@ describe(postProcessApiCallResponseV2.name, () => {
     it('demonstrates access to endpointParameters, but reserved parameters are inaccessible', async () => {
       const myMultiplier = 10;
       const parameters = { _type: 'int256', _path: 'price', myMultiplier };
-      const endpoint = createEndpoint({
-        postProcessingSpecificationV2: {
-          environment: 'Node',
-          value: `
+      const postProcessingSpecificationV2 = {
+        environment: 'Node',
+        value: `
             async (payload) => {
               const {response, endpointParameters} = payload;
               const reservedMultiplier = endpointParameters._times ? 1 : 2;
               return {response: parseInt(response.price) * endpointParameters.myMultiplier * reservedMultiplier}
             }
           `,
-          timeoutMs: 5000,
-        },
-      });
+        timeoutMs: 5000,
+      } as ProcessingSpecificationV2;
 
       const price = 1000;
-      const result = await postProcessApiCallResponseV2({ price }, endpoint, parameters);
+      const result = await postProcessApiCallResponseV2({ price }, postProcessingSpecificationV2, parameters);
 
       // reserved parameters (_times) should be inaccessible to post-processing hence multiplication by 2 instead of 1
       expect(result).toEqual({ response: price * myMultiplier * 2 });
@@ -474,15 +446,14 @@ describe(postProcessApiCallResponseV2.name, () => {
 
     it('throws on invalid code', async () => {
       const parameters = { _type: 'int256', _path: 'price' };
-      const endpoint = createEndpoint({
-        postProcessingSpecificationV2: {
-          environment: 'Node',
-          value: 'Something Unexpected;',
-          timeoutMs: 5000,
-        },
-      });
+      const postProcessingSpecificationV2 = {
+        environment: 'Node',
+        value: 'Something Unexpected;',
+        timeoutMs: 5000,
+      } as ProcessingSpecificationV2;
 
-      const throwingFunc = async () => postProcessApiCallResponseV2({ price: 1000 }, endpoint, parameters);
+      const throwingFunc = async () =>
+        postProcessApiCallResponseV2({ price: 1000 }, postProcessingSpecificationV2, parameters);
 
       await expect(throwingFunc).rejects.toEqual(new Error('SyntaxError: Unexpected identifier'));
     });
@@ -490,23 +461,21 @@ describe(postProcessApiCallResponseV2.name, () => {
 
   it('can post-process timestamp', async () => {
     const parameters = { _type: 'int256', _path: 'price' };
-    const endpoint = createEndpoint({
-      postProcessingSpecificationV2: {
-        environment: 'Node',
-        value: `
+    const postProcessingSpecificationV2 = {
+      environment: 'Node',
+      value: `
               async (payload) => {
                 const { response } = payload;
                 return { response, timestamp: response.timestamp };
               }
             `,
-        timeoutMs: 5000,
-      },
-    });
+      timeoutMs: 5000,
+    } as ProcessingSpecificationV2;
 
     const currentTimestamp = Math.floor(Date.now() / 1000);
     const result1 = await postProcessApiCallResponseV2(
       { price: 1000, timestamp: currentTimestamp },
-      endpoint,
+      postProcessingSpecificationV2,
       parameters
     );
     expect(result1).toEqual({
@@ -514,7 +483,7 @@ describe(postProcessApiCallResponseV2.name, () => {
       timestamp: currentTimestamp,
     });
 
-    const result2 = await postProcessApiCallResponseV2({ price: 1000 }, endpoint, parameters);
+    const result2 = await postProcessApiCallResponseV2({ price: 1000 }, postProcessingSpecificationV2, parameters);
     expect(result2).toEqual({ response: { price: 1000 }, timestamp: undefined });
   });
 });

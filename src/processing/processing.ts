@@ -8,6 +8,8 @@ import {
   preProcessingV2ResponseSchema,
   type PreProcessingV2Response,
   type PostProcessingV2Response,
+  type ProcessingSpecificationV2,
+  type ProcessingSpecifications,
 } from './schema';
 import { unsafeEvaluate, unsafeEvaluateAsync, unsafeEvaluateV2 } from './unsafe-evaluate';
 
@@ -54,18 +56,17 @@ export const addReservedParameters = (
 /**
  * Pre-processes endpoint parameters based on the provided endpoint's processing specifications.
  *
- * @param endpoint The endpoint containing processing specifications.
+ * @param preProcessingSpecifications The v1 pre-processing specifications.
  * @param endpointParameters The parameters to be pre-processed.
  * @param processingOptions Options to control the async processing behavior like retries and timeouts.
  *
  * @returns A promise that resolves to the pre-processed parameters.
  */
 export const preProcessApiCallParametersV1 = async (
-  endpoint: Endpoint,
+  preProcessingSpecifications: ProcessingSpecifications | undefined,
   endpointParameters: EndpointParameters,
   processingOptions: GoAsyncOptions = { retries: 0, totalTimeoutMs: DEFAULT_PROCESSING_TIMEOUT_MS }
 ): Promise<EndpointParameters> => {
-  const { preProcessingSpecifications } = endpoint;
   if (!preProcessingSpecifications || preProcessingSpecifications.length === 0) {
     return endpointParameters;
   }
@@ -117,7 +118,7 @@ export const preProcessApiCallParametersV1 = async (
  * allows skipping API calls in which case the response is the result of pre-processing.
  *
  * @param response The response to be post-processed.
- * @param endpoint The endpoint containing processing specifications.
+ * @param postProcessingSpecifications The v1 post-processing specifications.
  * @param endpointParameters The endpoint parameters.
  * @param processingOptions Options to control the async processing behavior like retries and timeouts.
  *
@@ -125,11 +126,10 @@ export const preProcessApiCallParametersV1 = async (
  */
 export const postProcessApiCallResponseV1 = async (
   response: unknown,
-  endpoint: Endpoint,
+  postProcessingSpecifications: ProcessingSpecifications | undefined,
   endpointParameters: EndpointParameters,
   processingOptions: GoAsyncOptions = { retries: 0, totalTimeoutMs: DEFAULT_PROCESSING_TIMEOUT_MS }
 ) => {
-  const { postProcessingSpecifications } = endpoint;
   if (!postProcessingSpecifications || postProcessingSpecifications?.length === 0) {
     return response;
   }
@@ -173,18 +173,17 @@ export const postProcessApiCallResponseV1 = async (
 /**
  * Pre-processes endpoint parameters based on the provided endpoint's processing specifications.
  *
- * @param endpoint The endpoint containing processing specifications.
+ * @param preProcessingSpecificationV2 The v2 pre-processing specification.
  * @param endpointParameters The parameters to be pre-processed.
  * @param processingOptions Options to control the async processing behavior like retries and timeouts.
  *
  * @returns A promise that resolves to the pre-processed parameters.
  */
 export const preProcessApiCallParametersV2 = async (
-  endpoint: Endpoint,
+  preProcessingSpecificationV2: ProcessingSpecificationV2 | undefined,
   endpointParameters: EndpointParameters,
   processingOptions: GoAsyncOptions = { retries: 0, totalTimeoutMs: DEFAULT_PROCESSING_TIMEOUT_MS }
 ): Promise<PreProcessingV2Response> => {
-  const { preProcessingSpecificationV2 } = endpoint;
   if (!preProcessingSpecificationV2) return { endpointParameters };
 
   // We only wrap the code through "go" utils because of the timeout and retry logic.  In case of error, the function
@@ -213,7 +212,7 @@ export const preProcessApiCallParametersV2 = async (
  * allows skipping API calls in which case the response is the result of pre-processing.
  *
  * @param response The response to be post-processed.
- * @param endpoint The endpoint containing processing specifications.
+ * @param postProcessingSpecificationV2 The v2 post-processing specification.
  * @param endpointParameters The endpoint parameters.
  * @param processingOptions Options to control the async processing behavior like retries and timeouts.
  *
@@ -221,11 +220,10 @@ export const preProcessApiCallParametersV2 = async (
  */
 export const postProcessApiCallResponseV2 = async (
   response: unknown,
-  endpoint: Endpoint,
+  postProcessingSpecificationV2: ProcessingSpecificationV2 | undefined,
   endpointParameters: EndpointParameters,
   processingOptions: GoAsyncOptions = { retries: 0, totalTimeoutMs: DEFAULT_PROCESSING_TIMEOUT_MS }
 ): Promise<PostProcessingV2Response> => {
-  const { postProcessingSpecificationV2 } = endpoint;
   if (!postProcessingSpecificationV2) return { response };
 
   // We only wrap the code through "go" utils because of the timeout and retry logic. In case of error, the function
@@ -268,12 +266,14 @@ export const postProcessApiCallResponse = async (
   endpointParameters: EndpointParameters,
   processingOptions: GoAsyncOptions = { retries: 0, totalTimeoutMs: DEFAULT_PROCESSING_TIMEOUT_MS }
 ): Promise<PostProcessingV2Response> => {
-  const { postProcessingSpecificationV2 } = endpoint;
-  if (postProcessingSpecificationV2) return postProcessApiCallResponseV2(response, endpoint, endpointParameters);
+  const { postProcessingSpecificationV2, postProcessingSpecifications } = endpoint;
+  if (postProcessingSpecificationV2) {
+    return postProcessApiCallResponseV2(response, postProcessingSpecificationV2, endpointParameters);
+  }
 
   const postProcessV1Response = await postProcessApiCallResponseV1(
     response,
-    endpoint,
+    postProcessingSpecifications,
     endpointParameters,
     processingOptions
   );
@@ -295,9 +295,15 @@ export const preProcessApiCallParameters = async (
   endpointParameters: EndpointParameters,
   processingOptions: GoAsyncOptions = { retries: 0, totalTimeoutMs: DEFAULT_PROCESSING_TIMEOUT_MS }
 ): Promise<PreProcessingV2Response> => {
-  const { preProcessingSpecificationV2 } = endpoint;
-  if (preProcessingSpecificationV2) return preProcessApiCallParametersV2(endpoint, endpointParameters);
+  const { preProcessingSpecificationV2, preProcessingSpecifications } = endpoint;
+  if (preProcessingSpecificationV2) {
+    return preProcessApiCallParametersV2(preProcessingSpecificationV2, endpointParameters);
+  }
 
-  const preProcessV1Response = await preProcessApiCallParametersV1(endpoint, endpointParameters, processingOptions);
+  const preProcessV1Response = await preProcessApiCallParametersV1(
+    preProcessingSpecifications,
+    endpointParameters,
+    processingOptions
+  );
   return { endpointParameters: preProcessV1Response };
 };

@@ -1,4 +1,9 @@
+import type { processingSpecificationSchemaV2, ProcessingSpecification } from '@api3/ois';
 import { z } from 'zod';
+
+export type ProcessingSpecificationV2 = z.infer<typeof processingSpecificationSchemaV2>;
+
+export type ProcessingSpecifications = ProcessingSpecification[];
 
 export const endpointParametersSchema = z.record(z.any());
 
