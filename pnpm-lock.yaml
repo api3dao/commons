@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@api3/ois':
-    specifier: file:../ois
-    version: file:../ois
+    specifier: ^2.3.0
+    version: 2.3.0
   '@api3/promise-utils':
     specifier: ^0.4.0
     version: 0.4.0
@@ -125,6 +125,13 @@ packages:
     dependencies:
       '@jridgewell/gen-mapping': 0.3.3
       '@jridgewell/trace-mapping': 0.3.19
+
+  /@api3/ois@2.3.0:
+    resolution: {integrity: sha512-B/F9sirQLBZNGClnpK/U585/gqYvjEHNKR5Xgc92LTvPe6F8w9RSW3JNZo4qAc+7Tzly9xr6kmoWQJsgnwD9iQ==}
+    dependencies:
+      lodash: 4.17.21
+      zod: 3.22.4
+    dev: false
 
   /@api3/promise-utils@0.4.0:
     resolution: {integrity: sha512-+8fcNjjQeQAuuSXFwu8PMZcYzjwjDiGYcMUfAQ0lpREb1zHonwWZ2N0B9h/g1cvWzg9YhElbeb/SyhCrNm+b/A==}
@@ -5052,12 +5059,4 @@ packages:
 
   /zod@3.22.4:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
-    dev: false
-
-  file:../ois:
-    resolution: {directory: ../ois, type: directory}
-    name: '@api3/ois'
-    dependencies:
-      lodash: 4.17.21
-      zod: 3.22.4
     dev: false
