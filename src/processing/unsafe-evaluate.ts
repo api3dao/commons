@@ -36,6 +36,8 @@ import vm from 'node:vm';
 import worker_threads from 'node:worker_threads';
 import zlib from 'node:zlib';
 
+import { type GoWrappedError, go } from '@api3/promise-utils';
+
 import { createTimers } from './vm-timers';
 
 const builtInNodeModules = {
@@ -111,6 +113,43 @@ export const unsafeEvaluate = (code: string, globalVariables: Record<string, unk
   });
 
   return vmContext.deferredOutput;
+};
+
+export const unsafeEvaluateV2 = async (code: string, payload: unknown, timeout: number) => {
+  const timers = createTimers();
+
+  const goEvaluate = await go<Promise<any>, GoWrappedError>(
+    // eslint-disable-next-line @typescript-eslint/require-await
+    async () =>
+      vm.runInNewContext(
+        `
+          (async () => {
+            return await (${code})(payload)
+          })();
+        `,
+        {
+          ...builtInNodeModules,
+          setTimeout: timers.customSetTimeout,
+          setInterval: timers.customSetInterval,
+          clearTimeout: timers.customClearTimeout,
+          clearInterval: timers.customClearInterval,
+          payload,
+        },
+        { displayErrors: true, timeout }
+      ),
+    // Make sure the timeout is applied. When the processing snippet uses setTimeout or setInterval, the timeout option
+    // from VM is broken. See: https://github.com/nodejs/node/issues/3020.
+    { totalTimeoutMs: timeout }
+  );
+
+  // We need to manually clear all timers and reject the processing manually.
+  timers.clearAll();
+
+  if (goEvaluate.success) {
+    return goEvaluate.data;
+  } else {
+    throw (goEvaluate.error.reason as Error) ?? goEvaluate.error;
+  }
 };
 
 /**

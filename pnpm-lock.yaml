@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@api3/ois':
-    specifier: ^2.2.1
-    version: 2.2.1
+    specifier: ^2.3.0
+    version: 2.3.0
   '@api3/promise-utils':
     specifier: ^0.4.0
     version: 0.4.0
@@ -126,8 +126,8 @@ packages:
       '@jridgewell/gen-mapping': 0.3.3
       '@jridgewell/trace-mapping': 0.3.19
 
-  /@api3/ois@2.2.1:
-    resolution: {integrity: sha512-C4tSMBccDlD8NkZMVATQXOKctI46fSOlzpbZmZoFknsIdYfQvGNU49StGRJZ6fJJkwXEX1TlkRC7rY2yHEJjqw==}
+  /@api3/ois@2.3.0:
+    resolution: {integrity: sha512-B/F9sirQLBZNGClnpK/U585/gqYvjEHNKR5Xgc92LTvPe6F8w9RSW3JNZo4qAc+7Tzly9xr6kmoWQJsgnwD9iQ==}
     dependencies:
       lodash: 4.17.21
       zod: 3.22.4
