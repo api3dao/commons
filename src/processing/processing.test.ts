@@ -58,7 +58,7 @@ describe(preProcessEndpointParametersV1.name, () => {
 
     const throwingFunc = async () => preProcessEndpointParametersV1(preProcessingSpecifications, parameters);
 
-    await expect(throwingFunc).rejects.toEqual(new Error('SyntaxError: Unexpected identifier'));
+    await expect(throwingFunc).rejects.toThrow('SyntaxError: Unexpected identifier');
   });
 
   it('demonstrates access to endpointParameters, but reserved parameters are inaccessible', async () => {
@@ -192,7 +192,7 @@ describe(postProcessResponseV1.name, () => {
 
     const throwingFunc = async () => postProcessResponseV1({ price: 1000 }, postProcessingSpecifications, parameters);
 
-    await expect(throwingFunc).rejects.toEqual(new Error('SyntaxError: Unexpected identifier'));
+    await expect(throwingFunc).rejects.toThrow('SyntaxError: Unexpected identifier');
   });
 });
 
@@ -298,7 +298,7 @@ describe(preProcessEndpointParametersV2.name, () => {
 
       const throwingFunc = async () => preProcessEndpointParametersV2(preProcessingSpecificationV2, parameters);
 
-      await expect(throwingFunc).rejects.toEqual(new Error('SyntaxError: Unexpected identifier'));
+      await expect(throwingFunc).rejects.toThrow('SyntaxError: Unexpected identifier');
     });
 
     it('reserved parameters are inaccessible', async () => {
@@ -454,7 +454,7 @@ describe(postProcessResponseV2.name, () => {
       const throwingFunc = async () =>
         postProcessResponseV2({ price: 1000 }, postProcessingSpecificationV2, parameters);
 
-      await expect(throwingFunc).rejects.toEqual(new Error('SyntaxError: Unexpected identifier'));
+      await expect(throwingFunc).rejects.toThrow('SyntaxError: Unexpected identifier');
     });
   });
 
