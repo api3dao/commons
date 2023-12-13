@@ -19,7 +19,10 @@ jobs:
 
   lint-build-test:
     runs-on: ubuntu-latest
-    name: Build, lint and test
+    strategy:
+      matrix:
+        node-version: [18, 20]
+    name: Build, lint and test - Node ${{ matrix.node-version }}
     steps:
       - name: Clone repo
         uses: actions/checkout@v4
@@ -30,7 +33,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: '18.x'
+          node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
