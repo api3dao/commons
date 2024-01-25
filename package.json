@@ -11,8 +11,14 @@
     "dist",
     "src"
   ],
-  "main": "./dist/index.js",
-  "exports": "./dist/index.js",
+  "browser": "./dist/universal-index.js",
+  "main": "./dist/node-index.js",
+  "exports": {
+    ".": {
+      "browser": "./dist/universal-index.js",
+      "default": "./dist/node-index.js"
+    }
+  },
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "clean": "rm -rf coverage dist",
