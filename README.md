@@ -4,13 +4,9 @@
 
 The commons library is meant to stop "reinventing the wheel". It holds the canonical implementations that can be
 imported in other packages. This way we ensure that all package use the same logic, simplify bug fixes and avoid code
-duplication.
+duplication. The package is cross platform and can be used in Node.js and browser.
 
-The commons library is a single repo and a collection of multiple modules:
-
-- [`eslint`](./src/eslint/README.md) - The configrations for ESLint.
-
-Read the documentation of each module for more information.
+The commons library is a collection of multiple modules, with each module having its own README that you can refer to.
 
 ## Related repositories
 
@@ -26,17 +22,23 @@ Read the documentation of each module for more information.
 pnpm add @api3/commons
 ```
 
-Read the documentation of each module how to use it in the project.
+Read the documentation and sources of each module how to use it in the project.
 
-### Import paths
+## Using the package in universal context
 
-There are two options how to import the commons modules, depending on the module resolution:
+Some modules may be used only in both browser and Node.js context and some are Node.js only. To support this
+requirement, we use different entrypoints for each context. Note, there is no support for browser-only modules.
 
-```ts
-// 1) Import relative to the "node_modules" directory.
-import { createLogger } from '@api3/commons/dist/logger';
-// 2) Cleaner imports based on the "exports" field in "package.json".
-import { createLogger } from '@api3/commons/logger';
+The bundler or Node.js picks up the right entrypoint automatically, but bear in mind that only a subset of modules is
+available when using universal modules. If you use TypeScript, it may not pick up the correct types. You can set these
+manually, by adding the following to your `tsconfig.json`:
+
+```json
+"compilerOptions": {
+  "paths": {
+    "@api3/commons": ["./node_modules/@api3/commons/dist/universal-index.d.ts"]
+  }
+}
 ```
 
 ## Release
@@ -60,7 +62,7 @@ To release a new version follow these steps:
 
 1. Create a new directory in `src` with the name of the utility.
 2. Create `index.ts` file in the directory. This file will be the entry point for the utility.
-3. Re-export the new utility from the root `index.ts` file.
+3. Re-export the new utility from `universal-index.ts` or `node-index.ts` file.
 4. Create a `README.md` with documentation.
 
 #### Testing the package locally
