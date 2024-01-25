@@ -29,8 +29,8 @@ Read the documentation and sources of each module how to use it in the project.
 Some modules may be used only in both browser and Node.js context and some are Node.js only. To support this
 requirement, we use different entrypoints for each context. Note, there is no support for browser-only modules.
 
-The bunder or Node.js picks up the right entrypoint automatically, but bear in mind that only a subset of modules is
-avaliable when using universal modules. If you use TypeScript, it may not pick up the correct types. You can set these
+The bundler or Node.js picks up the right entrypoint automatically, but bear in mind that only a subset of modules is
+available when using universal modules. If you use TypeScript, it may not pick up the correct types. You can set these
 manually, by adding the following to your `tsconfig.json`:
 
 ```json
