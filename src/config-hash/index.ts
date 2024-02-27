@@ -22,4 +22,4 @@ export const serializePlainObject = (plainObject: any) => {
   return JSON.stringify(sortedObject);
 };
 
-export const createSha256Hash = (value: string) => createHash('sha256').update(value).digest('hex');
+export const createSha256Hash = (value: string) => `0x${createHash('sha256').update(value).digest('hex')}`;

@@ -73,7 +73,7 @@ describe(createSha256Hash.name, () => {
     // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest#converting_a_digest_to_a_hex_string
     const text = 'An obscure body in the S-K System, your majesty. The inhabitants refer to it as the planet Earth.';
 
-    expect(createSha256Hash(text)).toBe('6efd383745a964768989b9df420811abc6e5873f874fc22a76fe9258e020c2e1');
+    expect(createSha256Hash(text)).toBe('0x6efd383745a964768989b9df420811abc6e5873f874fc22a76fe9258e020c2e1');
   });
 });
 
@@ -86,7 +86,7 @@ test('can produce the same hash on UNIX', () => {
   const hash = createSha256Hash(serializedConfig);
 
   // Compute the hash using UNIX commands
-  const unixCommand = `jq --sort-keys --compact-output . ${fixturePath} | tr -d '\n' | sha256sum | awk '{ print $1 }'`;
+  const unixCommand = `jq --sort-keys --compact-output . ${fixturePath} | tr -d '\n' | sha256sum | awk '{ print "0x"$1 }'`;
   const unixCommandHash = execSync(unixCommand, { encoding: 'utf8' }).trim();
 
   expect(hash).toBe(unixCommandHash);

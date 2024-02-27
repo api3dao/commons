@@ -21,5 +21,5 @@ To simulate the same behavior in UNIX shell, you can use the following command:
 
 ```sh
 # Assumes jq, tr, sha256sum and awk are available
-jq --sort-keys --compact-output . ./file.json | tr -d '\n' | sha256sum | awk '{ print $1 }'
+jq --sort-keys --compact-output . ./file.json | tr -d '\n' | sha256sum | awk '{ print "0x"$1 }'
 ```
