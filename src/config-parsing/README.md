@@ -6,7 +6,7 @@
 
 ### Parsing a configuration file and secrets
 
-You can use the following helper functions to read the configuration and secrets file:
+You can use the following helper functions to read the configuration and secrets file from filesystem:
 
 ```ts
 const rawConfig = loadConfig(join(__dirname, 'config.json'));
