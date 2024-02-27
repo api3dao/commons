@@ -18,7 +18,7 @@ dependencies:
     specifier: ^6.2.1
     version: 6.7.4(eslint@8.50.0)(typescript@5.2.2)
   dotenv:
-    specifier: ^16.4.4
+    specifier: ^16.4.5
     version: 16.4.5
   eslint-config-next:
     specifier: ^13.1.6
