@@ -55,7 +55,8 @@
     "lodash": "^4.17.21",
     "winston": "^3.10.0",
     "winston-console-format": "^1.0.8",
-    "zod": "^3.22.4"
+    "zod": "^3.22.4",
+    "dotenv": "^16.4.4"
   },
   "devDependencies": {
     "@types/jest": "^29.5.5",

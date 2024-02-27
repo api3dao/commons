@@ -1,7 +1,7 @@
 /* eslint-disable jest/prefer-strict-equal */ // Because the errors are thrown from the "vm" module (different context), they are not strictly equal.
 import { ZodError } from 'zod';
 
-import { createEndpoint } from '../../test/fixtures';
+import { createEndpoint } from '../../test/fixtures/processing';
 
 import {
   addReservedParameters,
