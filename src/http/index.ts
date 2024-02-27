@@ -28,7 +28,20 @@ export const extractAxiosErrorData = (error: AxiosError): ErrorResponse => {
   } as ErrorResponse;
 };
 
-export async function executeRequest<T>(request: Request) {
+interface ExecuteRequestSuccess<T> {
+  success: true;
+  errorData: undefined;
+  data: T;
+}
+interface ExecuteRequestError {
+  success: false;
+  errorData: ErrorResponse;
+  data: undefined;
+}
+
+export type ExecuteRequestResult<T> = ExecuteRequestError | ExecuteRequestSuccess<T>;
+
+export async function executeRequest<T>(request: Request): Promise<ExecuteRequestResult<T>> {
   const { url, method, body, headers = {}, queryParams = {}, timeout = DEFAULT_TIMEOUT_MS } = request;
 
   const goAxios = await go<Promise<AxiosResponse<T>>, AxiosError>(async () =>
@@ -41,8 +54,8 @@ export async function executeRequest<T>(request: Request) {
       timeout,
     })
   );
-  if (!goAxios.success) return extractAxiosErrorData(goAxios.error);
+  if (!goAxios.success) return { success: false, errorData: extractAxiosErrorData(goAxios.error), data: undefined };
   const response = goAxios.data;
 
-  return response.data;
+  return { success: true, errorData: undefined, data: response.data };
 }

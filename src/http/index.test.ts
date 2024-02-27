@@ -31,9 +31,13 @@ describe(executeRequest.name, () => {
     const response = await executeRequest(request);
 
     expect(response).toStrictEqual({
-      axiosResponse: undefined,
-      message: '',
-      code: 'ECONNREFUSED',
+      data: undefined,
+      errorData: {
+        axiosResponse: undefined,
+        code: 'ECONNREFUSED',
+        message: '',
+      },
+      success: false,
     });
   });
 });
