@@ -1,8 +1,12 @@
 import { ZodError } from 'zod';
 
-import { rawConfig } from '../../test/fixtures/config-parsing';
-
 import { interpolateSecretsIntoConfig } from './index';
+
+const rawConfig = {
+  property: 'value',
+  secretB: '${SECRET_B}',
+  secretA: '${SECRET_A}',
+};
 
 describe(interpolateSecretsIntoConfig.name, () => {
   it('interpolates secrets into config', () => {
