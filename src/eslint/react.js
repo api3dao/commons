@@ -1,4 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-var-requires, lodash/import-scope
 const { merge } = require('lodash');
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires

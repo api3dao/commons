@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 
-import { isObject } from 'lodash';
+import isObject from 'lodash/isObject';
 
 // We need to make sure the object is stringified in the same way every time, so we sort the keys alphabetically.
 export const sortObjectKeysRecursively = (value: any) => {
