@@ -35,7 +35,7 @@ describe(executeRequest.name, () => {
       errorData: {
         axiosResponse: undefined,
         code: 'ECONNREFUSED',
-        message: '',
+        message: expect.any(String), // The message is empty in node@20, but "connect ECONNREFUSED ::1:9999" on node@18
       },
       success: false,
     });
