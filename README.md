@@ -24,6 +24,17 @@ pnpm add @api3/commons
 
 Read the documentation and sources of each module how to use it in the project.
 
+### Modules
+
+- [blockchain-utilities](./src/blockchain-utilities/README.md)
+- [config-hash](./src/config-hash/README.md)
+- [config-parsing](./src/config-parsing/README.md)
+- [eslint](./src/eslint/README.md)
+- [logger](./src/logger/README.md)
+- [node-index.ts](./src/node-index.ts/README.md)
+- [processing](./src/processing/README.md)
+- [universal-index.ts](./src/universal-index.ts/README.md)
+
 ## Using the package in universal context
 
 Some modules may be used only in both browser and Node.js context and some are Node.js only. To support this
