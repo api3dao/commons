@@ -112,13 +112,11 @@ export const wrapper = (logger: winston.Logger): Logger => {
     },
     // We need to handle both overloads of the `error` function
     error: (message, errorOrLocalContext: Error | LogContext, localContext?: LogContext) => {
-      const globalContext = getAsyncLocalStorage().getStore();
       // eslint-disable-next-line lodash/prefer-lodash-typecheck
       if (errorOrLocalContext instanceof Error) {
-        const fullContext = globalContext || localContext ? { ...globalContext, ...localContext } : undefined;
-        logger.error(message, errorOrLocalContext, fullContext);
+        logger.error(message, errorOrLocalContext, createFullContext(localContext));
       } else {
-        logger.error(message, createFullContext(localContext));
+        logger.error(message, createFullContext(errorOrLocalContext));
       }
     },
     child: (options) => wrapper(logger.child(options)),
