@@ -30,6 +30,7 @@ Read the documentation and sources of each module how to use it in the project.
 - [config-hash](./src/config-hash/README.md)
 - [config-parsing](./src/config-parsing/README.md)
 - [eslint](./src/eslint/README.md)
+- [http](./src/http/README.md)
 - [logger](./src/logger/README.md)
 - [processing](./src/processing/README.md)
 
