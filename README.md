@@ -31,9 +31,7 @@ Read the documentation and sources of each module how to use it in the project.
 - [config-parsing](./src/config-parsing/README.md)
 - [eslint](./src/eslint/README.md)
 - [logger](./src/logger/README.md)
-- [node-index.ts](./src/node-index.ts/README.md)
 - [processing](./src/processing/README.md)
-- [universal-index.ts](./src/universal-index.ts/README.md)
 
 ## Using the package in universal context
 

@@ -7,7 +7,9 @@ test('provides README links to all modules', () => {
   const readmeModules = readme.split('### Modules')[1]!.split('## Using the package in universal context')[0]!.trim();
 
   // Parse the source code and extract the list of modules
-  const srcModules = readdirSync(join(__dirname, '../src'));
+  const srcModules = readdirSync(join(__dirname, '../src'), { withFileTypes: true })
+    .filter((dirent) => dirent.isDirectory())
+    .map((dirent) => dirent.name);
   const expectedReadmeLinks = srcModules.map((module) => `- [${module}](./src/${module}/README.md)`).join('\n');
 
   expect(readmeModules).toStrictEqual(expectedReadmeLinks);
