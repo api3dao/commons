@@ -143,7 +143,6 @@ describe(unsafeEvaluateV2.name, () => {
       'string_decoder',
       'timers',
       'tls',
-      'trace_events',
       'tty',
       'url',
       'util',

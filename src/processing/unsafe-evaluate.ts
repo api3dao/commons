@@ -27,7 +27,6 @@ import stream from 'node:stream';
 import string_decoder from 'node:string_decoder';
 import timers from 'node:timers';
 import tls from 'node:tls';
-import trace_events from 'node:trace_events';
 import tty from 'node:tty';
 import url from 'node:url';
 import util from 'node:util';
@@ -69,7 +68,6 @@ const builtInNodeModules = {
   string_decoder,
   timers,
   tls,
-  trace_events,
   tty,
   url,
   util,
