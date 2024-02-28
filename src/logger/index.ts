@@ -61,7 +61,6 @@ export const createBaseLogger = (config: LogConfig) => {
     // This format is recommended by the "winston-console-format" package.
     format: winston.format.combine(
       winston.format.timestamp(),
-      winston.format.ms(),
       winston.format.errors({ stack: true }),
       winston.format.splat(),
       winston.format.json()
@@ -88,36 +87,36 @@ export interface Logger {
   child: (options: { name: string }) => Logger;
 }
 
+const createFullContext = (localContext: LogContext | undefined) => {
+  const globalContext = getAsyncLocalStorage().getStore();
+  if (!globalContext && !localContext) return;
+  const fullContext = { ...globalContext, ...localContext };
+
+  // If the context contains a `name` or `message` field, it will override the `name` and `message` fields of the log
+  // entry. To avoid this, we return the context as a separate field.
+  return { ctx: fullContext };
+};
+
 // Winston by default merges content of `context` among the rest of the fields for the JSON format.
 // That's causing an override of fields `name` and `message` if they are present.
 export const wrapper = (logger: winston.Logger): Logger => {
   return {
     debug: (message, localContext) => {
-      const globalContext = getAsyncLocalStorage().getStore();
-      const fullContext = globalContext || localContext ? { ...globalContext, ...localContext } : undefined;
-      logger.debug(message, fullContext);
+      logger.debug(message, createFullContext(localContext));
     },
     info: (message, localContext) => {
-      const globalContext = getAsyncLocalStorage().getStore();
-      const fullContext = globalContext || localContext ? { ...globalContext, ...localContext } : undefined;
-      logger.info(message, fullContext);
+      logger.info(message, createFullContext(localContext));
     },
     warn: (message, localContext) => {
-      const globalContext = getAsyncLocalStorage().getStore();
-      const fullContext = globalContext || localContext ? { ...globalContext, ...localContext } : undefined;
-      logger.warn(message, fullContext);
+      logger.warn(message, createFullContext(localContext));
     },
     // We need to handle both overloads of the `error` function
     error: (message, errorOrLocalContext: Error | LogContext, localContext?: LogContext) => {
-      const globalContext = getAsyncLocalStorage().getStore();
       // eslint-disable-next-line lodash/prefer-lodash-typecheck
       if (errorOrLocalContext instanceof Error) {
-        const fullContext = globalContext || localContext ? { ...globalContext, ...localContext } : undefined;
-        logger.error(message, errorOrLocalContext, fullContext);
+        logger.error(message, errorOrLocalContext, createFullContext(localContext));
       } else {
-        const fullContext =
-          globalContext || errorOrLocalContext ? { ...globalContext, ...errorOrLocalContext } : undefined;
-        logger.error(message, fullContext);
+        logger.error(message, createFullContext(errorOrLocalContext));
       }
     },
     child: (options) => wrapper(logger.child(options)),

@@ -29,9 +29,9 @@ describe('log context', () => {
       logger.debug('parent end');
     });
 
-    expect(baseLogger.debug).toHaveBeenCalledWith('parent start', { requestId: 'parent' });
-    expect(baseLogger.debug).toHaveBeenCalledWith('child', { requestId: 'child' });
-    expect(baseLogger.debug).toHaveBeenCalledWith('parent end', { requestId: 'parent' });
+    expect(baseLogger.debug).toHaveBeenCalledWith('parent start', { ctx: { requestId: 'parent' } });
+    expect(baseLogger.debug).toHaveBeenCalledWith('child', { ctx: { requestId: 'child' } });
+    expect(baseLogger.debug).toHaveBeenCalledWith('parent end', { ctx: { requestId: 'parent' } });
   });
 
   it('works with async functions', async () => {
@@ -48,9 +48,9 @@ describe('log context', () => {
     });
 
     expect(baseLogger.debug).toHaveBeenCalledTimes(3);
-    expect(baseLogger.debug).toHaveBeenCalledWith('parent start', { requestId: 'parent' });
-    expect(baseLogger.debug).toHaveBeenCalledWith('child', { requestId: 'child' });
-    expect(baseLogger.debug).toHaveBeenCalledWith('parent end', { requestId: 'parent' });
+    expect(baseLogger.debug).toHaveBeenCalledWith('parent start', { ctx: { requestId: 'parent' } });
+    expect(baseLogger.debug).toHaveBeenCalledWith('child', { ctx: { requestId: 'child' } });
+    expect(baseLogger.debug).toHaveBeenCalledWith('parent end', { ctx: { requestId: 'parent' } });
   });
 
   it('works with deeply nested functions', async () => {
@@ -78,14 +78,14 @@ describe('log context', () => {
     });
 
     expect(baseLogger.debug).toHaveBeenCalledTimes(8);
-    expect(baseLogger.debug).toHaveBeenCalledWith('parent start', { parent: true });
-    expect(baseLogger.debug).toHaveBeenCalledWith('A start', { parent: true, A: true });
-    expect(baseLogger.debug).toHaveBeenCalledWith('C', { parent: true, A: true, B: true });
-    expect(baseLogger.debug).toHaveBeenCalledWith('D', { parent: true, A: true, B: true });
-    expect(baseLogger.debug).toHaveBeenCalledWith('E', { parent: true, A: true, B: true });
-    expect(baseLogger.debug).toHaveBeenCalledWith('B end', { parent: true, A: true, B: true });
-    expect(baseLogger.debug).toHaveBeenCalledWith('A end', { parent: true, A: true });
-    expect(baseLogger.debug).toHaveBeenCalledWith('parent end', { parent: true });
+    expect(baseLogger.debug).toHaveBeenCalledWith('parent start', { ctx: { parent: true } });
+    expect(baseLogger.debug).toHaveBeenCalledWith('A start', { ctx: { parent: true, A: true } });
+    expect(baseLogger.debug).toHaveBeenCalledWith('C', { ctx: { parent: true, A: true, B: true } });
+    expect(baseLogger.debug).toHaveBeenCalledWith('D', { ctx: { parent: true, A: true, B: true } });
+    expect(baseLogger.debug).toHaveBeenCalledWith('E', { ctx: { parent: true, A: true, B: true } });
+    expect(baseLogger.debug).toHaveBeenCalledWith('B end', { ctx: { parent: true, A: true, B: true } });
+    expect(baseLogger.debug).toHaveBeenCalledWith('A end', { ctx: { parent: true, A: true } });
+    expect(baseLogger.debug).toHaveBeenCalledWith('parent end', { ctx: { parent: true } });
   });
 
   it('throws if the sync callback function throws', () => {
@@ -118,10 +118,12 @@ describe('log context', () => {
     logger.error('message, error and context', new Error('some-error'), { requestId: 'parent' });
 
     expect(baseLogger.error).toHaveBeenNthCalledWith(1, 'only message', undefined);
-    expect(baseLogger.error).toHaveBeenNthCalledWith(2, 'message and context', { requestId: 'parent' });
+    expect(baseLogger.error).toHaveBeenNthCalledWith(2, 'message and context', { ctx: { requestId: 'parent' } });
     expect(baseLogger.error).toHaveBeenNthCalledWith(3, 'message and error', new Error('some-error'), undefined);
     expect(baseLogger.error).toHaveBeenNthCalledWith(4, 'message, error and context', new Error('some-error'), {
-      requestId: 'parent',
+      ctx: {
+        requestId: 'parent',
+      },
     });
   });
 });
