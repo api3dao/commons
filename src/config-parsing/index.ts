@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 
 import dotenv from 'dotenv';
-import { reduce, template } from 'lodash';
+import reduce from 'lodash/reduce';
+import template from 'lodash/template';
 import { z } from 'zod';
 
 export const secretNamePattern = /^[A-Z][\dA-Z_]*$/;
