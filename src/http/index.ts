@@ -1,6 +1,6 @@
 import { go } from '@api3/promise-utils';
 import axios, { type Method, type AxiosError, type AxiosResponse } from 'axios';
-import { pick } from 'lodash';
+import pick from 'lodash/pick';
 
 const DEFAULT_TIMEOUT_MS = 10_000;
 
