@@ -10,7 +10,7 @@ export const strictSecretNamePattern = /^[A-Z][\dA-Z_]*$/;
 export const strictSecretNameSchema = z
   .string()
   .regex(
-    /^[A-Z][\dA-Z_]*$/,
+    strictSecretNamePattern,
     `Secret name is not a valid. Secret name must match ${strictSecretNamePattern.toString()}`
   );
 
