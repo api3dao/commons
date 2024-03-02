@@ -127,6 +127,38 @@ describe(interpolateSecretsIntoConfig.name, () => {
     );
   });
 
+  it('allows parsing secrets without validating secret names', () => {
+    const rawSecrets = {
+      SECRET_A: 'secretValueA',
+      SECRET_B: 'secretValueB',
+      'CANNOT-CONTAIN-HYPHEN': 'invalid',
+      lowercasedSecret: 'valid',
+    };
+
+    expect(() => interpolateSecretsIntoConfig(rawConfig, rawSecrets)).toThrow(
+      new ZodError([
+        {
+          validation: 'regex',
+          code: 'invalid_string',
+          message: 'Secret name is not a valid. Secret name must match /^[A-Z][\\dA-Z_]*$/',
+          path: ['CANNOT-CONTAIN-HYPHEN'],
+        },
+        {
+          validation: 'regex',
+          code: 'invalid_string',
+          message: 'Secret name is not a valid. Secret name must match /^[A-Z][\\dA-Z_]*$/',
+          path: ['lowercasedSecret'],
+        },
+      ])
+    );
+
+    expect(interpolateSecretsIntoConfig(rawConfig, rawSecrets, { validateSecretName: false })).toStrictEqual({
+      property: 'value',
+      secretA: 'secretValueA',
+      secretB: 'secretValueB',
+    });
+  });
+
   it('provides up to date README examples', () => {
     // Basic interpolation
     const basicInterpolationConfig = {

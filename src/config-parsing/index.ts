@@ -5,18 +5,16 @@ import reduce from 'lodash/reduce';
 import template from 'lodash/template';
 import { z } from 'zod';
 
-export const secretNamePattern = /^[A-Z][\dA-Z_]*$/;
+export const strictSecretNamePattern = /^[A-Z][\dA-Z_]*$/;
 
-export const secretNameSchema = z
+export const strictSecretNameSchema = z
   .string()
-  .regex(secretNamePattern, `Secret name is not a valid. Secret name must match ${secretNamePattern.toString()}`);
+  .regex(
+    strictSecretNamePattern,
+    `Secret name is not a valid. Secret name must match ${strictSecretNamePattern.toString()}`
+  );
 
-export const secretsSchema = z.record(secretNameSchema, z.string());
-
-export const nonBlankSecretsSchema = z.record(
-  secretNameSchema,
-  z.string().min(1, { message: 'Secret cannot be blank' })
-);
+export const nonBlankSecretValueSchema = z.string().min(1, { message: 'Secret cannot be blank' });
 
 export type Secrets = Record<string, string>;
 
@@ -34,7 +32,8 @@ const ES_MATCH_REGEXP = /(?<!\\)\${([^\\}]*(?:\\.[^\\}]*)*)}/g;
 const ESCAPED_ES_MATCH_REGEXP = /\\\\(\${([^\\}]*(?:\\.[^\\}]*)*)})/g;
 
 export interface InterpolationOptions {
-  allowBlankSecretValue: boolean;
+  allowBlankSecretValue?: boolean;
+  validateSecretName?: boolean;
 }
 
 export type AnyObject = Record<string, unknown>;
@@ -42,10 +41,12 @@ export type AnyObject = Record<string, unknown>;
 export function interpolateSecretsIntoConfig<T = AnyObject>(
   config: T,
   secrets: unknown,
-  options: InterpolationOptions = { allowBlankSecretValue: true }
+  options?: InterpolationOptions
 ) {
-  const { allowBlankSecretValue } = options;
-  const validatedSecrets = (allowBlankSecretValue ? secretsSchema : nonBlankSecretsSchema).parse(secrets);
+  const { allowBlankSecretValue = true, validateSecretName = true } = options ?? {};
+  const secretNameSchema = validateSecretName ? strictSecretNameSchema : z.string();
+  const secretValueSchema = allowBlankSecretValue ? z.string() : nonBlankSecretValueSchema;
+  const validatedSecrets = z.record(secretNameSchema, secretValueSchema).parse(secrets);
 
   const stringifiedSecrets = reduce(
     validatedSecrets,
