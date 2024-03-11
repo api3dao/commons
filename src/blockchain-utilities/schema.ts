@@ -4,6 +4,6 @@ export const addressSchema = z.string().regex(/^0x[\dA-Fa-f]{40}$/, 'Must be a v
 
 export type Address = z.infer<typeof addressSchema>;
 
-export const idSchema = z.string().regex(/^0x[\dA-Fa-f]{64}$/, 'Must be a valid EVM hash');
+export const keccak256HashSchema = z.string().regex(/^0x[\dA-Fa-f]{64}$/, 'Must be a valid EVM keccak256 hash');
 
-export type Id = z.infer<typeof idSchema>;
+export type Keccak256Hash = z.infer<typeof keccak256HashSchema>;
