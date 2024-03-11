@@ -6,7 +6,8 @@ import {
   deriveBeaconSetId,
   deriveEndpointId,
   deriveSponsorWallet,
-  deriveTemplateId,
+  deriveTemplateIdV0,
+  deriveTemplateIdV1,
   deriveWalletPathFromSponsorAddress,
   fromBytes32String,
   PROTOCOL_IDS,
@@ -101,14 +102,23 @@ describe('deriveWalletPathFromSponsorAddress', () => {
       expect(endpointId).toBe('0x5a82d40e44ecd3ef0906e9e82c1a20f2f4ffe4f613ac70f999047496a9cd4635');
     });
 
-    it(`it derives a template ID`, () => {
-      const templateId = deriveTemplateId({
-        airnode: '0x4E95C31894a89CdC4288669A6F294836948c862b',
-        endpointId: '0x5a82d40e44ecd3ef0906e9e82c1a20f2f4ffe4f613ac70f999047496a9cd4635',
-        encodedParameters: '0x1234',
-      });
+    it(`it derives a template ID V0`, () => {
+      const templateId = deriveTemplateIdV0(
+        '0x4E95C31894a89CdC4288669A6F294836948c862b',
+        '0x5a82d40e44ecd3ef0906e9e82c1a20f2f4ffe4f613ac70f999047496a9cd4635',
+        '0x1234'
+      );
 
       expect(templateId).toBe('0x7655363f294273f84bcc7c47d79858cf46f21951deee92746d9f17a69ac0b0c0');
+    });
+
+    it('derives templateId for V1', () => {
+      const expectedTemplateIdV1 = deriveTemplateIdV1(
+        '0x6466726f6d63455448',
+        '0x2f3a3adf6daf5a3bb00ab83aa82262a6a84b59b0a89222386135330a1819ab48'
+      );
+
+      expect(expectedTemplateIdV1).toBe('0xe5d99287b5a870c3453bc0b42769c6f37cf4a3143890e9c34753181171fac842');
     });
 
     it('derives a beacon ID', () => {

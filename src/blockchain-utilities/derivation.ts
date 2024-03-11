@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 
-import { addressSchema } from './schema';
+import { type Address, addressSchema } from './schema';
 
 export const PROTOCOL_IDS = {
   RRP: '1',
@@ -11,23 +11,17 @@ export const PROTOCOL_IDS = {
 };
 
 /**
- * An interface that reflects the structure of a Template
- */
-export interface Template {
-  airnode: string;
-  encodedParameters: string;
-  endpointId: string;
-}
-
-/**
  * Derives a template ID from the input parameters
  *
  * @param airnode an Airnode address
  * @param encodedParameters encoded parameters, see the airnode/abi package's encode function
  * @param endpointId An endpointID (see deriveEndpointId)
  */
-export const deriveTemplateId = ({ airnode, encodedParameters, endpointId }: Template) =>
+export const deriveTemplateIdV0 = (airnode: Address, encodedParameters: string, endpointId: string) =>
   ethers.utils.solidityKeccak256(['address', 'bytes32', 'bytes'], [airnode, endpointId, encodedParameters]);
+
+export const deriveTemplateIdV1 = (encodedParameters: string, endpointId: string) =>
+  ethers.utils.solidityKeccak256(['bytes32', 'bytes'], [endpointId, encodedParameters]);
 
 /**
  * Derives an endpoint ID
