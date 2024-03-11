@@ -1,8 +1,10 @@
 import { addressSchema, keccak256HashSchema } from './schema';
 
 describe('schema', () => {
-  it('validates a valid address', () => {
-    expect(() => addressSchema.parse('0x8A45eac0267dD0803Fd957723EdE10693A076698')).not.toThrow();
+  it('validates a valid address and returns its checksum', () => {
+    expect(addressSchema.parse('0x8a45eac0267dd0803fd957723ede10693a076698')).toBe(
+      '0x8A45eac0267dD0803Fd957723EdE10693A076698'
+    );
   });
 
   it('throws for an invalid address', () => {
