@@ -25,7 +25,10 @@ export const keccak256HashSchema = z
 
 export type Keccak256Hash = z.infer<typeof keccak256HashSchema>;
 
-export const chainIdSchema = z.string().regex(/^\d+$/);
+export const chainIdSchema = z
+  .string()
+  .regex(/^\d+$/, 'Must be a valid chain ID')
+  .refine((chainId) => Number(chainId) > 0, 'Chain ID must be greater than 0');
 
 export type ChainId = z.infer<typeof chainIdSchema>;
 
