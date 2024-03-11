@@ -8,7 +8,11 @@ export const PROTOCOL_IDS = {
   RELAYED_RRP: '3',
   RELAYED_PSP: '4',
   AIRSEEKER: '5',
-};
+} as const;
+
+export type ProtocolName = keyof typeof PROTOCOL_IDS;
+
+export type ProtocolId = (typeof PROTOCOL_IDS)[ProtocolName];
 
 /**
  * Derives a template ID from the input parameters
@@ -46,7 +50,7 @@ export const deriveAirnodeXpub = (airnodeMnemonic: Mnemonic) =>
  * @param sponsorAddress an EVM-compatible address
  * @param protocolId an API application protocol ID
  */
-export function deriveWalletPathFromSponsorAddress(sponsorAddress: Address, protocolId: string) {
+export function deriveWalletPathFromSponsorAddress(sponsorAddress: Address, protocolId: ProtocolId) {
   addressSchema.parse(sponsorAddress);
 
   const sponsorAddressBN = ethers.BigNumber.from(sponsorAddress);
@@ -75,17 +79,15 @@ export const fromBytes32String = (input: Hex) => ethers.utils.parseBytes32String
 /**
  * Derives a sponsor wallet, given a mnemonic and dapiName.
  *
- * @param sponsorWalletMnemonic the sponsor wallet mnemonic
+ * @param airnodeMnemonic the sponsor wallet mnemonic
  * @param dapiName the dapi name
  */
-export const deriveSponsorWallet = (sponsorWalletMnemonic: Mnemonic, dapiName: string) => {
+export const deriveSponsorWallet = (airnodeMnemonic: Mnemonic, dapiName: string, protocolName: ProtocolName) => {
   // Take first 20 bytes of dapiName as sponsor address together with the "0x" prefix.
   const sponsorAddress = ethers.utils.getAddress(dapiName.slice(0, 42)) as Address;
   const sponsorWallet = ethers.Wallet.fromMnemonic(
-    sponsorWalletMnemonic,
-    `m/44'/60'/0'/${
-      (deriveWalletPathFromSponsorAddress(sponsorAddress, PROTOCOL_IDS.AIRSEEKER), PROTOCOL_IDS.AIRSEEKER)
-    }`
+    airnodeMnemonic,
+    `m/44'/60'/0'/${deriveWalletPathFromSponsorAddress(sponsorAddress, protocolName)}`
   );
 
   return sponsorWallet;
