@@ -79,8 +79,9 @@ export const fromBytes32String = (input: Hex) => ethers.utils.parseBytes32String
 /**
  * Derives a sponsor wallet, given a mnemonic and dapiName.
  *
- * @param airnodeMnemonic the sponsor wallet mnemonic
+ * @param airnodeMnemonic the airnode mnemonic
  * @param dapiName the dapi name
+ * @param protocolName one of "RRP", "PSP", "RELAYED_RRP", "RELAYED_PSP" and "AIRSEEKER"
  */
 export const deriveSponsorWallet = (airnodeMnemonic: Mnemonic, dapiName: string, protocolName: ProtocolName) => {
   // Take first 20 bytes of dapiName as sponsor address together with the "0x" prefix.
