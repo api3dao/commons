@@ -79,7 +79,7 @@ describe('deriveWalletPathFromSponsorAddress', () => {
         'AIRSEEKER'
       );
 
-      expect(sponsorWallet.address).toBe('0x1e6f0dfb1775f5032f12f56a01526351eD3F07aF');
+      expect(sponsorWallet.address).toBe('0xfc552598E39b33d91EBE7759EC082b4fbC835dE4');
     });
 
     it('throws deriving a sponsor wallet due to an invalid DApi name', () => {
@@ -91,9 +91,9 @@ describe('deriveWalletPathFromSponsorAddress', () => {
     });
 
     it('derives the same sponsor wallet as Airnode', () => {
-      function deriveSponsorWalletAirnode(masterHDNode: ethers.utils.HDNode, sponsorAddress: string): ethers.Wallet {
+      function deriveSponsorWalletAirnode(masterHDNode: ethers.utils.HDNode, sponsorAddress: Address): ethers.Wallet {
         const sponsorWalletHdNode = masterHDNode.derivePath(
-          `m/44'/60'/0'/${deriveWalletPathFromSponsorAddress(sponsorAddress, 'RRP')}`
+          `m/44'/60'/0'/${deriveWalletPathFromSponsorAddress(sponsorAddress, '1')}`
         );
         return new ethers.Wallet(sponsorWalletHdNode.privateKey);
       }

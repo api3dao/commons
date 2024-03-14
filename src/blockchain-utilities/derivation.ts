@@ -88,7 +88,7 @@ export const deriveSponsorWallet = (airnodeMnemonic: Mnemonic, dapiName: string,
   const sponsorAddress = ethers.utils.getAddress(dapiName.slice(0, 42)) as Address;
   const sponsorWallet = ethers.Wallet.fromMnemonic(
     airnodeMnemonic,
-    `m/44'/60'/0'/${deriveWalletPathFromSponsorAddress(sponsorAddress, protocolName)}`
+    `m/44'/60'/0'/${deriveWalletPathFromSponsorAddress(sponsorAddress, PROTOCOL_IDS[protocolName])}`
   );
 
   return sponsorWallet;
