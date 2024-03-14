@@ -10,9 +10,7 @@ export const PROTOCOL_IDS = {
   AIRSEEKER: '5',
 } as const;
 
-export type ProtocolName = keyof typeof PROTOCOL_IDS;
-
-export type ProtocolId = (typeof PROTOCOL_IDS)[ProtocolName];
+export type ProtocolId = (typeof PROTOCOL_IDS)[keyof typeof PROTOCOL_IDS];
 
 /**
  * Derives a template ID from the input parameters
@@ -83,12 +81,12 @@ export const fromBytes32String = (input: Hex) => ethers.utils.parseBytes32String
  * @param dapiName the dapi name
  * @param protocolName one of "RRP", "PSP", "RELAYED_RRP", "RELAYED_PSP" and "AIRSEEKER"
  */
-export const deriveSponsorWallet = (airnodeMnemonic: Mnemonic, dapiName: string, protocolName: ProtocolName) => {
+export const deriveSponsorWallet = (airnodeMnemonic: Mnemonic, dapiName: string, protocolId: ProtocolId) => {
   // Take first 20 bytes of dapiName as sponsor address together with the "0x" prefix.
   const sponsorAddress = ethers.utils.getAddress(dapiName.slice(0, 42)) as Address;
   const sponsorWallet = ethers.Wallet.fromMnemonic(
     airnodeMnemonic,
-    `m/44'/60'/0'/${deriveWalletPathFromSponsorAddress(sponsorAddress, PROTOCOL_IDS[protocolName])}`
+    `m/44'/60'/0'/${deriveWalletPathFromSponsorAddress(sponsorAddress, protocolId)}`
   );
 
   return sponsorWallet;

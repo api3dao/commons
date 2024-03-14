@@ -76,7 +76,7 @@ describe('deriveWalletPathFromSponsorAddress', () => {
       const sponsorWallet = deriveSponsorWallet(
         'test test test test test test test test test test test junk',
         dapiName,
-        'AIRSEEKER'
+        '5'
       );
 
       expect(sponsorWallet.address).toBe('0xfc552598E39b33d91EBE7759EC082b4fbC835dE4');
@@ -85,7 +85,7 @@ describe('deriveWalletPathFromSponsorAddress', () => {
     it('throws deriving a sponsor wallet due to an invalid DApi name', () => {
       const dapiName = 'invalid dapi name';
       const throwingFn = () =>
-        deriveSponsorWallet('test test test test test test test test test test test junk', dapiName, 'AIRSEEKER');
+        deriveSponsorWallet('test test test test test test test test test test test junk', dapiName, '5');
 
       expect(throwingFn).toThrow(expect.objectContaining({ name: expect.stringContaining('Error') }));
     });
@@ -101,7 +101,7 @@ describe('deriveWalletPathFromSponsorAddress', () => {
       const hdNode = ethers.utils.HDNode.fromMnemonic(mnemonic);
 
       const expectedSponsorWallet = deriveSponsorWalletAirnode(hdNode, '0xd22967044D175bfa7c12DE8f8aE3c6fF773A3C9f');
-      const actualSponsorWallet = deriveSponsorWallet(mnemonic, '0xd22967044D175bfa7c12DE8f8aE3c6fF773A3C9f', 'RRP');
+      const actualSponsorWallet = deriveSponsorWallet(mnemonic, '0xd22967044D175bfa7c12DE8f8aE3c6fF773A3C9f', '1');
 
       expect(actualSponsorWallet.address).toBe(expectedSponsorWallet.address);
     });
