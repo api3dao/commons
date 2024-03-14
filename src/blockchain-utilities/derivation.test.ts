@@ -13,6 +13,7 @@ import {
   PROTOCOL_IDS,
   toBytes32String,
 } from './derivation';
+import type { Address } from './schema';
 
 describe('deriveWalletPathFromSponsorAddress', () => {
   it('converts address to derivation path', () => {
@@ -20,7 +21,7 @@ describe('deriveWalletPathFromSponsorAddress', () => {
     const res = deriveWalletPathFromSponsorAddress(sponsorAddress, PROTOCOL_IDS.AIRSEEKER);
     expect(res).toBe('5/973563544/2109481170/2137349576/871269377/610184194/17');
 
-    const randomAddress = ethers.utils.getAddress(ethers.utils.hexlify(ethers.utils.randomBytes(20)));
+    const randomAddress = ethers.utils.getAddress(ethers.utils.hexlify(ethers.utils.randomBytes(20))) as Address;
     const randomPath = deriveWalletPathFromSponsorAddress(randomAddress, PROTOCOL_IDS.AIRSEEKER);
     expect(res).not.toStrictEqual(randomPath);
   });
@@ -46,24 +47,24 @@ describe('deriveWalletPathFromSponsorAddress', () => {
   });
 
   it('throws if address is an empty string', () => {
-    const sponsorAddress = '';
+    const sponsorAddress = '' as Address;
     expect(() => deriveWalletPathFromSponsorAddress(sponsorAddress, PROTOCOL_IDS.AIRSEEKER)).toThrow(
       expect.objectContaining({ name: expect.stringContaining('Error') })
     );
   });
 
   it('throws if address is invalid', () => {
-    let sponsorAddress = '7dD0803Fd957723EdE10693A076698';
+    let sponsorAddress = '7dD0803Fd957723EdE10693A076698' as Address;
     expect(() => deriveWalletPathFromSponsorAddress(sponsorAddress, PROTOCOL_IDS.AIRSEEKER)).toThrow(
       expect.objectContaining({ name: expect.stringContaining('Error') })
     );
 
-    sponsorAddress = ethers.utils.hexlify(ethers.utils.randomBytes(4));
+    sponsorAddress = ethers.utils.hexlify(ethers.utils.randomBytes(4)) as Address;
     expect(() => deriveWalletPathFromSponsorAddress(sponsorAddress, PROTOCOL_IDS.AIRSEEKER)).toThrow(
       expect.objectContaining({ name: expect.stringContaining('Error') })
     );
 
-    sponsorAddress = ethers.utils.hexlify(ethers.utils.randomBytes(32));
+    sponsorAddress = ethers.utils.hexlify(ethers.utils.randomBytes(32)) as Address;
     expect(() => deriveWalletPathFromSponsorAddress(sponsorAddress, PROTOCOL_IDS.AIRSEEKER)).toThrow(
       expect.objectContaining({ name: expect.stringContaining('Error') })
     );
