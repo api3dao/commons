@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 
-import { type Address, addressSchema, type Hex, type Mnemonic } from './schema';
+import type { Address, Hex, Mnemonic } from './schema';
 
 export const PROTOCOL_IDS = {
   RRP: '1',
@@ -25,8 +25,6 @@ export const deriveAirnodeXpub = (airnodeMnemonic: Mnemonic) =>
   ethers.utils.HDNode.fromMnemonic(airnodeMnemonic).derivePath("m/44'/60'/0'").neuter().extendedKey;
 
 export function deriveWalletPathFromSponsorAddress(sponsorAddress: Address, protocolId: ProtocolId) {
-  addressSchema.parse(sponsorAddress);
-
   const sponsorAddressBN = ethers.BigNumber.from(sponsorAddress);
   const paths = [];
   for (let i = 0; i < 6; i++) {

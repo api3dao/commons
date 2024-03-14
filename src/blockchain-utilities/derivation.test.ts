@@ -53,33 +53,16 @@ describe('deriveWalletPathFromSponsorAddress', () => {
     );
   });
 
-  it('throws if address is invalid', () => {
-    let sponsorAddress = '7dD0803Fd957723EdE10693A076698' as Address;
-    expect(() => deriveWalletPathFromSponsorAddress(sponsorAddress, PROTOCOL_IDS.AIRSEEKER)).toThrow(
-      expect.objectContaining({ name: expect.stringContaining('Error') })
-    );
-
-    sponsorAddress = ethers.utils.hexlify(ethers.utils.randomBytes(4)) as Address;
-    expect(() => deriveWalletPathFromSponsorAddress(sponsorAddress, PROTOCOL_IDS.AIRSEEKER)).toThrow(
-      expect.objectContaining({ name: expect.stringContaining('Error') })
-    );
-
-    sponsorAddress = ethers.utils.hexlify(ethers.utils.randomBytes(32)) as Address;
-    expect(() => deriveWalletPathFromSponsorAddress(sponsorAddress, PROTOCOL_IDS.AIRSEEKER)).toThrow(
-      expect.objectContaining({ name: expect.stringContaining('Error') })
-    );
-  });
-
   describe('blockchain utilities', () => {
     it('derives a sponsor wallet', () => {
       const dapiName = ethers.utils.formatBytes32String('BTC/ETH');
       const sponsorWallet = deriveSponsorWallet(
         'test test test test test test test test test test test junk',
         dapiName,
-        '5'
+        '1'
       );
 
-      expect(sponsorWallet.address).toBe('0xfc552598E39b33d91EBE7759EC082b4fbC835dE4');
+      expect(sponsorWallet.address).toBe('0x4f86228e0Bc58829Cd77547224291bb8d212174D');
     });
 
     it('throws deriving a sponsor wallet due to an invalid DApi name', () => {
@@ -97,13 +80,15 @@ describe('deriveWalletPathFromSponsorAddress', () => {
         );
         return new ethers.Wallet(sponsorWalletHdNode.privateKey);
       }
-      const mnemonic = 'test test test test test test test test test test test junk';
+      const mnemonic = 'achieve climb couple wait accident symbol spy blouse reduce foil echo label';
       const hdNode = ethers.utils.HDNode.fromMnemonic(mnemonic);
 
-      const expectedSponsorWallet = deriveSponsorWalletAirnode(hdNode, '0xd22967044D175bfa7c12DE8f8aE3c6fF773A3C9f');
-      const actualSponsorWallet = deriveSponsorWallet(mnemonic, '0xd22967044D175bfa7c12DE8f8aE3c6fF773A3C9f', '1');
+      // https://github.com/api3dao/airnode/blob/a4c17c28c8b31c9fb13d2828764b89f1063b702f/packages/airnode-node/src/evm/wallet.test.ts#L25
+      const expectedSponsorWallet = deriveSponsorWalletAirnode(hdNode, '0x06f509f73eefba36352bc8228f9112c3786100da');
+      const actualSponsorWallet = deriveSponsorWallet(mnemonic, '0x06f509f73eefba36352bc8228f9112c3786100da', '1');
 
       expect(actualSponsorWallet.address).toBe(expectedSponsorWallet.address);
+      expect(actualSponsorWallet.address).toBe('0x228A54F33E46fbb32a62ca650Fcc9eD3C730511d');
     });
 
     it(`derives an airnode's xpub from a mnemonic`, () => {
