@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 export const hexSchema = z.string().regex(/^0x[\dA-Fa-f]+$/, 'Must be a valid hex string');
 
-export type Hex = `0x${string}`;
+export type Hex = `0x${string}`; // Not using z.infer<typeof hexSchema> because the inferred type is just `string`.
 
 export const addressSchema = z.string().transform((value, ctx) => {
   const goParseAddress = goSync(() => ethers.utils.getAddress(value));

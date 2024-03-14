@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 
-import { type Address, addressSchema } from './schema';
+import { type Address, addressSchema, type Hex, type Mnemonic } from './schema';
 
 export const PROTOCOL_IDS = {
   RRP: '1',
@@ -17,10 +17,10 @@ export const PROTOCOL_IDS = {
  * @param encodedParameters encoded parameters, see the airnode/abi package's encode function
  * @param endpointId An endpointID (see deriveEndpointId)
  */
-export const deriveTemplateIdV0 = (airnode: Address, endpointId: string, encodedParameters: string) =>
+export const deriveTemplateIdV0 = (airnode: Address, endpointId: Hex, encodedParameters: Hex) =>
   ethers.utils.solidityKeccak256(['address', 'bytes32', 'bytes'], [airnode, endpointId, encodedParameters]);
 
-export const deriveTemplateIdV1 = (endpointId: string, encodedParameters: string) =>
+export const deriveTemplateIdV1 = (endpointId: Hex, encodedParameters: Hex) =>
   ethers.utils.solidityKeccak256(['bytes32', 'bytes'], [endpointId, encodedParameters]);
 
 /**
@@ -37,7 +37,7 @@ export const deriveEndpointId = (oisTitle: string, endpointName: string) =>
  *
  * @param airnodeMnemonic the airnode's mnemonic
  */
-export const deriveAirnodeXpub = (airnodeMnemonic: string) =>
+export const deriveAirnodeXpub = (airnodeMnemonic: Mnemonic) =>
   ethers.utils.HDNode.fromMnemonic(airnodeMnemonic).derivePath("m/44'/60'/0'").neuter().extendedKey;
 
 /**
@@ -46,7 +46,7 @@ export const deriveAirnodeXpub = (airnodeMnemonic: string) =>
  * @param sponsorAddress an EVM-compatible address
  * @param protocolId an API application protocol ID
  */
-export function deriveWalletPathFromSponsorAddress(sponsorAddress: string, protocolId: string) {
+export function deriveWalletPathFromSponsorAddress(sponsorAddress: Address, protocolId: string) {
   addressSchema.parse(sponsorAddress);
 
   const sponsorAddressBN = ethers.BigNumber.from(sponsorAddress);
@@ -70,7 +70,7 @@ export const toBytes32String = (input: string) => ethers.utils.formatBytes32Stri
  *
  * @param input the input hex string
  */
-export const fromBytes32String = (input: string) => ethers.utils.parseBytes32String(input);
+export const fromBytes32String = (input: Hex) => ethers.utils.parseBytes32String(input);
 
 /**
  * Derives a sponsor wallet, given a mnemonic and dapiName.
@@ -78,9 +78,9 @@ export const fromBytes32String = (input: string) => ethers.utils.parseBytes32Str
  * @param sponsorWalletMnemonic the sponsor wallet mnemonic
  * @param dapiName the dapi name
  */
-export const deriveSponsorWallet = (sponsorWalletMnemonic: string, dapiName: string) => {
+export const deriveSponsorWallet = (sponsorWalletMnemonic: Mnemonic, dapiName: string) => {
   // Take first 20 bytes of dapiName as sponsor address together with the "0x" prefix.
-  const sponsorAddress = ethers.utils.getAddress(dapiName.slice(0, 42));
+  const sponsorAddress = ethers.utils.getAddress(dapiName.slice(0, 42)) as Address;
   const sponsorWallet = ethers.Wallet.fromMnemonic(
     sponsorWalletMnemonic,
     `m/44'/60'/0'/${
@@ -97,7 +97,7 @@ export const deriveSponsorWallet = (sponsorWalletMnemonic: string, dapiName: str
  * @param airnodeAddress the airnode address of the provider that supplies the data used to update this beacon
  * @param templateId the templateId of the template used to generate the data used to update this beacon
  */
-export const deriveBeaconId = (airnodeAddress: string, templateId: string) =>
+export const deriveBeaconId = (airnodeAddress: Address, templateId: Hex) =>
   ethers.utils.solidityKeccak256(['address', 'bytes32'], [airnodeAddress, templateId]);
 
 /**
@@ -106,5 +106,5 @@ export const deriveBeaconId = (airnodeAddress: string, templateId: string) =>
  *
  * @param beaconIds an ordered array of beacon ids
  */
-export const deriveBeaconSetId = (beaconIds: string[]) =>
+export const deriveBeaconSetId = (beaconIds: Hex[]) =>
   ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(['bytes32[]'], [beaconIds]));
