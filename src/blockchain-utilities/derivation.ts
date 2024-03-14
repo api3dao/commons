@@ -17,10 +17,10 @@ export const PROTOCOL_IDS = {
  * @param encodedParameters encoded parameters, see the airnode/abi package's encode function
  * @param endpointId An endpointID (see deriveEndpointId)
  */
-export const deriveTemplateIdV0 = (airnode: Address, encodedParameters: string, endpointId: string) =>
+export const deriveTemplateIdV0 = (airnode: Address, endpointId: string, encodedParameters: string) =>
   ethers.utils.solidityKeccak256(['address', 'bytes32', 'bytes'], [airnode, endpointId, encodedParameters]);
 
-export const deriveTemplateIdV1 = (encodedParameters: string, endpointId: string) =>
+export const deriveTemplateIdV1 = (endpointId: string, encodedParameters: string) =>
   ethers.utils.solidityKeccak256(['bytes32', 'bytes'], [endpointId, encodedParameters]);
 
 /**
