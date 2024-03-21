@@ -6,12 +6,14 @@ import {
   deriveBeaconSetId,
   deriveEndpointId,
   deriveSponsorWallet,
+  deriveSponsorWalletAddress,
   deriveTemplateIdV0,
   deriveTemplateIdV1,
   deriveWalletPathFromSponsorAddress,
   fromBytes32String,
   PROTOCOL_IDS,
   toBytes32String,
+  verifyAirnodeXpub,
 } from './derivation';
 import type { Address } from './schema';
 
@@ -156,5 +158,38 @@ describe('deriveWalletPathFromSponsorAddress', () => {
 
       expect(formattedString).toBe('test string');
     });
+  });
+});
+
+describe(verifyAirnodeXpub.name, () => {
+  it('does not throw for valid xpub/airnode combination', () => {
+    expect(() =>
+      verifyAirnodeXpub(
+        'xpub6CvZvZuFtPUtNirE36eMqYu8pRa1CEQuDon9tT4G8fisU3jj38Sn53TxdHb1SUvWiwVjJ68ytPZf45gnPM7Kg4g4CNTdyjJMevDQ1wk4tYD',
+        '0x02F5BD238B866c36f7d7b144D2889fB5e594474e'
+      )
+    ).not.toThrow();
+  });
+
+  it('throws when the xpub is invalid', () => {
+    expect(() =>
+      verifyAirnodeXpub(
+        'xpub6CvZvZuFtPUtNirE36eMqYu8pRa1CEQuDon9tT4G8fisU3jj38Sn53TxdHb1SUvWiwVjJ68ytPZf45gnPM7Kg4g4CNTdyjJMevDQ1wk4tYD',
+        '0xDdfd47366cA427e75C26c9F3364EE37b33e1DD38'
+      )
+    ).toThrow('xpub does not belong to Airnode: 0xDdfd47366cA427e75C26c9F3364EE37b33e1DD38');
+  });
+});
+
+describe(deriveSponsorWalletAddress, () => {
+  it('derives the sponsor wallet address', () => {
+    const sponsorWalletAddress = deriveSponsorWalletAddress(
+      'xpub6CvZvZuFtPUtNirE36eMqYu8pRa1CEQuDon9tT4G8fisU3jj38Sn53TxdHb1SUvWiwVjJ68ytPZf45gnPM7Kg4g4CNTdyjJMevDQ1wk4tYD',
+      '0x02F5BD238B866c36f7d7b144D2889fB5e594474e',
+      '0xE9232cde1f37B029dfbB403f79429f912D7405F3',
+      '1'
+    );
+
+    expect(sponsorWalletAddress).toBe('0xDdfd47366cA427e75C26c9F3364EE37b33e1DD38');
   });
 });
