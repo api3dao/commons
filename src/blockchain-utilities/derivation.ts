@@ -55,3 +55,26 @@ export const deriveBeaconId = (airnodeAddress: Address, templateId: Hex) =>
 export const deriveBeaconSetId = (beaconIds: Hex[]) =>
   // By convention beacon IDs are sorted alphabetically - the ordering impacts the resulting hash.
   ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(['bytes32[]'], [beaconIds]));
+
+export const deriveHdNodeFromXpub = (xpub: string) => ethers.utils.HDNode.fromExtendedKey(xpub);
+
+export const verifyAirnodeXpub = (airnodeXpub: string, airnodeAddress: Address): ethers.utils.HDNode => {
+  // The xpub is expected to belong to the hardened path m/44'/60'/0' so we must derive the child default derivation
+  // path m/44'/60'/0'/0/0 to compare it and check if xpub belongs to the Airnode wallet.
+  const hdNode = deriveHdNodeFromXpub(airnodeXpub);
+  if (airnodeAddress !== hdNode.derivePath('0/0').address) {
+    throw new Error(`xpub does not belong to Airnode: ${airnodeAddress}`);
+  }
+  return hdNode;
+};
+
+export function deriveSponsorWalletAddress(
+  airnodeXpub: string,
+  sponsorAddress: Address,
+  protocolId: ProtocolId,
+  airnodeAddress?: Address
+) {
+  const hdNode = airnodeAddress ? verifyAirnodeXpub(airnodeXpub, airnodeAddress) : deriveHdNodeFromXpub(airnodeXpub);
+  const derivationPath = deriveWalletPathFromSponsorAddress(sponsorAddress, protocolId);
+  return hdNode.derivePath(derivationPath).address;
+}
