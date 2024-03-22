@@ -198,14 +198,35 @@ describe(verifyAirnodeXpub.name, () => {
 });
 
 describe(deriveSponsorWalletAddress, () => {
-  it('derives the sponsor wallet address', () => {
+  it('derives the sponsor wallet address and verifies airnode address', () => {
     const sponsorWalletAddress = deriveSponsorWalletAddress(
       'xpub6CvZvZuFtPUtNirE36eMqYu8pRa1CEQuDon9tT4G8fisU3jj38Sn53TxdHb1SUvWiwVjJ68ytPZf45gnPM7Kg4g4CNTdyjJMevDQ1wk4tYD',
-      '0x02F5BD238B866c36f7d7b144D2889fB5e594474e',
+      '0xE9232cde1f37B029dfbB403f79429f912D7405F3',
+      '1',
+      '0x02F5BD238B866c36f7d7b144D2889fB5e594474e'
+    );
+
+    expect(sponsorWalletAddress).toBe('0xDdfd47366cA427e75C26c9F3364EE37b33e1DD38');
+  });
+
+  it('derives the sponsor wallet without xpub verifification', () => {
+    const sponsorWalletAddress = deriveSponsorWalletAddress(
+      'xpub6CvZvZuFtPUtNirE36eMqYu8pRa1CEQuDon9tT4G8fisU3jj38Sn53TxdHb1SUvWiwVjJ68ytPZf45gnPM7Kg4g4CNTdyjJMevDQ1wk4tYD',
       '0xE9232cde1f37B029dfbB403f79429f912D7405F3',
       '1'
     );
 
     expect(sponsorWalletAddress).toBe('0xDdfd47366cA427e75C26c9F3364EE37b33e1DD38');
+  });
+
+  it('verifies that xpub is valid when airnode address is provided', () => {
+    expect(() =>
+      deriveSponsorWalletAddress(
+        'xpub6CvZvZuFtPUtNirE36eMqYu8pRa1CEQuDon9tT4G8fisU3jj38Sn53TxdHb1SUvWiwVjJ68ytPZf45gnPM7Kg4g4CNTdyjJMevDQ1wk4tYD',
+        '0xE9232cde1f37B029dfbB403f79429f912D7405F3',
+        '1',
+        '0xA143283e75c8e0a3174d51e6ccA38B334E1D6b12'
+      )
+    ).toThrow('xpub does not belong to Airnode: 0xA143283e75c8e0a3174d51e6ccA38B334E1D6b12');
   });
 });
