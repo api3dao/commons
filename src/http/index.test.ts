@@ -11,12 +11,9 @@ describe(extractAxiosErrorData.name, () => {
     } as any as AxiosResponse);
 
     expect(extractAxiosErrorData(axiosError)).toStrictEqual({
-      axiosResponse: {
-        data: 'error data',
-        status: 500,
-      },
-      code: '500',
+      response: 'error data',
       message: 'error message',
+      code: '500',
     });
   });
 });
@@ -33,10 +30,11 @@ describe(executeRequest.name, () => {
     expect(response).toStrictEqual({
       data: undefined,
       errorData: {
-        axiosResponse: undefined,
+        response: undefined,
         code: 'ECONNREFUSED',
         message: expect.any(String), // The message is empty in node@20, but "connect ECONNREFUSED ::1:9999" on node@18
       },
+      statusCode: undefined,
       success: false,
     });
   });
