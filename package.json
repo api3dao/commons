@@ -21,7 +21,6 @@
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "clean": "rm -rf coverage dist",
-    "dev": "nodemon --ext ts,js,json,env  --exec \"pnpm ts-node src/index.ts\"",
     "eslint:check": "eslint --report-unused-disable-directives --cache --ext js,ts,tsx,jsx . --max-warnings 0",
     "eslint:fix": "pnpm run eslint:check --fix",
     "prepare": "husky install",
