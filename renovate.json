@@ -7,20 +7,15 @@
       "enabled": false
     },
     {
-      "matchPackageNames": ["ethers"],
-      "matchUpdateTypes": ["major"],
-      "enabled": false
-    },
-    {
       "matchDepTypes": ["devDependencies"],
       "matchUpdateTypes": ["patch", "minor"],
-      "schedule": ["before 1am on the first day of the month"],
+      "schedule": ["before 4am on Monday"],
       "groupName": "non-major-dev-dependencies"
     },
     {
       "matchDepTypes": ["dependencies"],
       "matchUpdateTypes": ["patch", "minor"],
-      "schedule": ["before 1am on the first day of the month"],
+      "schedule": ["before 4am on Monday"],
       "groupName": "non-major-dependencies"
     }
   ],
