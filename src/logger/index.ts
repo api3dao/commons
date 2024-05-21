@@ -1,3 +1,4 @@
+import isError from 'lodash/isError';
 import winston from 'winston';
 import { consoleFormat } from 'winston-console-format';
 
@@ -87,10 +88,17 @@ export interface Logger {
   child: (options: { name: string }) => Logger;
 }
 
+const parseLocalContext = (localContext: LogContext | undefined) => {
+  // Sometimes an error passed as a context, but when JS error has no own enumerable properties, so when it is spread
+  // (using ...) we get an empty object and lose all the context.
+  if (isError(localContext)) return { error: localContext.message, name: localContext.name };
+  return localContext;
+};
+
 const createFullContext = (localContext: LogContext | undefined) => {
   const globalContext = getAsyncLocalStorage().getStore();
   if (!globalContext && !localContext) return;
-  const fullContext = { ...globalContext, ...localContext };
+  const fullContext = { ...globalContext, ...parseLocalContext(localContext) };
 
   // If the context contains a `name` or `message` field, it will override the `name` and `message` fields of the log
   // entry. To avoid this, we return the context as a separate field.
