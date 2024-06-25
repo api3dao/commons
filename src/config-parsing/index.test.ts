@@ -1,3 +1,4 @@
+import { describe, expect, it } from '@jest/globals';
 import { ZodError } from 'zod';
 
 import { interpolateSecretsIntoConfig } from './index';
@@ -48,7 +49,7 @@ describe(interpolateSecretsIntoConfig.name, () => {
     }).toThrow('Secret cannot be blank');
   });
 
-  it('can use "\\" to escape interpolation', () => {
+  it(String.raw`can use "\" to escape interpolation`, () => {
     const escapedConfig = {
       ...rawConfig,
       secretA: '\\${SECRET_A}',
@@ -104,7 +105,7 @@ describe(interpolateSecretsIntoConfig.name, () => {
         {
           validation: 'regex',
           code: 'invalid_string',
-          message: 'Secret name is not a valid. Secret name must match /^[A-Z][\\dA-Z_]*$/',
+          message: String.raw`Secret name is not a valid. Secret name must match /^[A-Z][\dA-Z_]*$/`,
           path: ['0_SECRET_STARTING_WITH_NUMBER'],
         },
       ])
@@ -120,7 +121,7 @@ describe(interpolateSecretsIntoConfig.name, () => {
         {
           validation: 'regex',
           code: 'invalid_string',
-          message: 'Secret name is not a valid. Secret name must match /^[A-Z][\\dA-Z_]*$/',
+          message: String.raw`Secret name is not a valid. Secret name must match /^[A-Z][\dA-Z_]*$/`,
           path: ['CANNOT-CONTAIN-HYPHEN'],
         },
       ])
@@ -140,13 +141,13 @@ describe(interpolateSecretsIntoConfig.name, () => {
         {
           validation: 'regex',
           code: 'invalid_string',
-          message: 'Secret name is not a valid. Secret name must match /^[A-Z][\\dA-Z_]*$/',
+          message: String.raw`Secret name is not a valid. Secret name must match /^[A-Z][\dA-Z_]*$/`,
           path: ['CANNOT-CONTAIN-HYPHEN'],
         },
         {
           validation: 'regex',
           code: 'invalid_string',
-          message: 'Secret name is not a valid. Secret name must match /^[A-Z][\\dA-Z_]*$/',
+          message: String.raw`Secret name is not a valid. Secret name must match /^[A-Z][\dA-Z_]*$/`,
           path: ['lowercasedSecret'],
         },
       ])

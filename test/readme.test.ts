@@ -1,6 +1,8 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { expect, test } from '@jest/globals';
+
 test('provides README links to all modules', () => {
   // Parse the README file and extract the list of modules
   const readme = readFileSync(join(__dirname, '../README.md'), 'utf8');

@@ -2,6 +2,8 @@ import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { describe, expect, it, test } from '@jest/globals';
+
 import { createSha256Hash, serializePlainObject, sortObjectKeysRecursively } from '.';
 
 describe(sortObjectKeysRecursively.name, () => {

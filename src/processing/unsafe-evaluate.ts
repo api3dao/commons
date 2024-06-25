@@ -117,7 +117,6 @@ export const unsafeEvaluateV2 = async (code: string, payload: unknown, timeout: 
   const timers = createTimers();
 
   const goEvaluate = await go<Promise<any>, GoWrappedError>(
-    // eslint-disable-next-line @typescript-eslint/require-await
     async () =>
       vm.runInNewContext(
         `

@@ -1,3 +1,5 @@
+import { describe, expect, it } from '@jest/globals';
+
 import { addressSchema, hexSchema, keccak256HashSchema, chainIdSchema, ethUnitsSchema, mnemonicSchema } from './schema';
 
 describe('addressSchema', () => {
