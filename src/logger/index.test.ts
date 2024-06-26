@@ -101,7 +101,6 @@ test('returns rejected promise if the async callback function rejects', async ()
   const { logger } = createTestLogger();
 
   await expect(async () =>
-     
     logger.runWithContext({}, async () => {
       throw new Error('some-error');
     })
