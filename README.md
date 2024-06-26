@@ -22,7 +22,6 @@ Read the documentation and sources of each module how to use it in the project.
 - [blockchain-utilities](./src/blockchain-utilities/README.md)
 - [config-hash](./src/config-hash/README.md)
 - [config-parsing](./src/config-parsing/README.md)
-- [eslint](./src/eslint/README.md)
 - [http](./src/http/README.md)
 - [logger](./src/logger/README.md)
 - [processing](./src/processing/README.md)
@@ -46,10 +45,11 @@ manually, by adding the following to your `tsconfig.json`:
 
 ## Related repositories
 
-- [promise-utils](https://github.com/api3dao/promise-utils)
-- [ois](https://github.com/api3dao/ois)
 - [chains](https://github.com/api3dao/chains)
 - [contracts](https://github.com/api3dao/contracts)
+- [eslint-plugin-commons](https://github.com/api3dao/eslint-plugin-commons)
+- [ois](https://github.com/api3dao/ois)
+- [promise-utils](https://github.com/api3dao/promise-utils)
 
 ## For developers
 

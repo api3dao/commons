@@ -22,10 +22,5 @@
     "noPropertyAccessFromIndexSignature": false
   },
   "exclude": ["dist/**/*", "coverage/**/*", "node_modules/**/*"],
-  "include": [
-    "**/*",
-    // Files/folders starting with "." are ignored by glob patters and need to be included explicitly. See:
-    // https://github.com/microsoft/TypeScript/issues/13399#issuecomment-271939777
-    ".eslintrc.js"
-  ]
+  "include": ["**/*"]
 }
