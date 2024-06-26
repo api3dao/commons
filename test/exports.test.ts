@@ -1,8 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { expect, test } from '@jest/globals';
-
 const getExports = (filename: string) => {
   return readFileSync(join(__dirname, '../src', filename), 'utf8')
     .split('\n')

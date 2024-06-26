@@ -1,4 +1,3 @@
-import { expect, jest, test } from '@jest/globals';
 import noop from 'lodash/noop';
 
 import { type LogConfig, createBaseLogger, wrapper } from '.';
@@ -102,6 +101,7 @@ test('returns rejected promise if the async callback function rejects', async ()
   const { logger } = createTestLogger();
 
   await expect(async () =>
+    // eslint-disable-next-line @typescript-eslint/require-await
     logger.runWithContext({}, async () => {
       throw new Error('some-error');
     })
