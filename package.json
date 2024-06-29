@@ -36,15 +36,15 @@
     "tsc": "tsc --project ."
   },
   "dependencies": {
-    "@api3/ois": "^2.3.0",
+    "@api3/ois": "^2.3.2",
     "@api3/promise-utils": "^0.4.0",
-    "axios": "^1.6.7",
+    "axios": "^1.7.2",
     "dotenv": "^16.4.5",
     "ethers": "^5.7.2",
     "lodash": "^4.17.21",
-    "winston": "^3.10.0",
+    "winston": "^3.13.0",
     "winston-console-format": "^1.0.8",
-    "zod": "^3.22.4"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@api3/eslint-plugin-commons": "^1.0.1",
