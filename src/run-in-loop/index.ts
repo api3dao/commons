@@ -9,6 +9,11 @@ export interface RunInLoopOptions {
   /** Part of every message logged by the logger. */
   logLabel?: Lowercase<string>;
   /**
+   * The initial delay to to wait before executing the callback for the first time. Default is 0, which means the
+   * callback is executed immediately.
+   */
+  initialDelayMs?: number;
+  /**
    * Minimum time to wait between executions. E.g. value 500 means that the next execution will be started only after
    * 500ms from the start of the previous one (even if the previous one ended after 150ms). Default is 0.
    */
@@ -17,12 +22,12 @@ export interface RunInLoopOptions {
    * Minimum time to wait between executions. E.g. value 50 means that next execution will start 50ms after the previous
    * one ended. Default is 0.
    */
-  minWaitTime?: number;
+  minWaitTimeMs?: number;
   /**
    * Maximum time to wait between executions. E.g. value 100 means that the next execution will be started at most after
    * 100ms from the end of the previous one. The maxWaitTime has higher precedence than minWaitTime of frequencyMs.
    */
-  maxWaitTime?: number;
+  maxWaitTimeMs?: number;
   /**
    * Maximum time to wait for the execution to finish. If the execution exceeds this time a warning is logged.
    */
@@ -45,16 +50,19 @@ export const runInLoop = async (fn: () => Promise<void>, options: RunInLoopOptio
     logger,
     logLabel,
     frequencyMs = 0,
-    minWaitTime = 0,
-    maxWaitTime,
+    minWaitTimeMs = 0,
+    maxWaitTimeMs,
     softTimeoutMs,
     hardTimeoutMs,
     enabled = true,
+    initialDelayMs,
   } = options;
 
   if (softTimeoutMs && hardTimeoutMs && hardTimeoutMs < softTimeoutMs) {
     throw new Error('hardTimeoutMs must not be smaller than softTimeoutMs');
   }
+
+  if (initialDelayMs) await sleep(initialDelayMs);
 
   while (true) {
     const executionStart = performance.now();
@@ -82,8 +90,8 @@ export const runInLoop = async (fn: () => Promise<void>, options: RunInLoopOptio
     }
 
     const remainingWaitTime = Math.max(frequencyMs - (performance.now() - executionStart), 0);
-    const waitTime = Math.max(minWaitTime, remainingWaitTime);
-    const actualWaitTime = maxWaitTime ? Math.min(waitTime, maxWaitTime) : waitTime;
+    const waitTime = Math.max(minWaitTimeMs, remainingWaitTime);
+    const actualWaitTime = maxWaitTimeMs ? Math.min(waitTime, maxWaitTimeMs) : waitTime;
     if (actualWaitTime > 0) await sleep(actualWaitTime);
   }
 };
