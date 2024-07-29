@@ -9,11 +9,6 @@ export interface RunInLoopOptions {
   /** Part of every message logged by the logger. */
   logLabel?: Lowercase<string>;
   /**
-   * The initial delay to to wait before executing the callback for the first time. Default is 0, which means the
-   * callback is executed immediately.
-   */
-  initialDelayMs?: number;
-  /**
    * Minimum time to wait between executions. E.g. value 500 means that the next execution will be started only after
    * 500ms from the start of the previous one (even if the previous one ended after 150ms). Default is 0.
    */
@@ -25,7 +20,7 @@ export interface RunInLoopOptions {
   minWaitTimeMs?: number;
   /**
    * Maximum time to wait between executions. E.g. value 100 means that the next execution will be started at most after
-   * 100ms from the end of the previous one. The maxWaitTime has higher precedence than minWaitTime of frequencyMs.
+   * 100ms from the end of the previous one. The maxWaitTime has higher precedence than minWaitTime and frequencyMs.
    */
   maxWaitTimeMs?: number;
   /**
@@ -33,7 +28,7 @@ export interface RunInLoopOptions {
    */
   softTimeoutMs?: number;
   /**
-   * Maximum time to wait for the execution to finish. If the execution exceeds this time an error is logged and the
+   * Maximum time to wait for the callback execution to finish. If the execution exceeds this time an error is logged and the
    * execution is force-stopped.
    */
   hardTimeoutMs?: number;
@@ -43,6 +38,11 @@ export interface RunInLoopOptions {
    * true.
    */
   enabled?: boolean;
+  /**
+   * The initial delay to to wait before executing the callback for the first time. Default is 0, which means the
+   * callback is executed immediately.
+   */
+  initialDelayMs?: number;
 }
 
 export const runInLoop = async (fn: () => Promise<void>, options: RunInLoopOptions) => {
@@ -60,6 +60,9 @@ export const runInLoop = async (fn: () => Promise<void>, options: RunInLoopOptio
 
   if (softTimeoutMs && hardTimeoutMs && hardTimeoutMs < softTimeoutMs) {
     throw new Error('hardTimeoutMs must not be smaller than softTimeoutMs');
+  }
+  if (minWaitTimeMs && maxWaitTimeMs && maxWaitTimeMs < minWaitTimeMs) {
+    throw new Error('maxWaitTimeMs must not be smaller than minWaitTimeMs');
   }
 
   if (initialDelayMs) await sleep(initialDelayMs);
