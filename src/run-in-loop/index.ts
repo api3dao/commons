@@ -45,7 +45,10 @@ export interface RunInLoopOptions {
   initialDelayMs?: number;
 }
 
-export const runInLoop = async (fn: () => Promise<void>, options: RunInLoopOptions) => {
+export const runInLoop = async (
+  fn: () => Promise<{ shouldContinueRunning: boolean } | void>,
+  options: RunInLoopOptions
+) => {
   const {
     logger,
     logLabel,
@@ -73,7 +76,7 @@ export const runInLoop = async (fn: () => Promise<void>, options: RunInLoopOptio
 
     if (enabled) {
       const context = logLabel ? { executionId, label: logLabel } : { executionId };
-      await logger.runWithContext(context, async () => {
+      const shouldContinueRunning = await logger.runWithContext(context, async () => {
         const goRes = await go(fn, hardTimeoutMs ? { totalTimeoutMs: hardTimeoutMs } : {}); // NOTE: This is a safety net to prevent the loop from hanging
         if (!goRes.success) {
           logger.error(`Unexpected runInLoop error`, goRes.error);
@@ -85,7 +88,14 @@ export const runInLoop = async (fn: () => Promise<void>, options: RunInLoopOptio
         } else {
           logger.info(`Execution finished`, { executionTimeMs });
         }
+
+        return goRes.data?.shouldContinueRunning === false ? false : true;
       });
+
+      // Stop loop execution if the callback return value indicates it should stop
+      if (!shouldContinueRunning) {
+        break;
+      }
     } else {
       // If the bot is disabled, we still want to run the loop to prevent the process from hanging. We also want to
       // sleep according to the wait time logic.
