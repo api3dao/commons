@@ -4,11 +4,11 @@
 // generated automatically using the commit information
 //
 // The following secrets are required:
-// 
+//
 //  1. GH_ACCESS_TOKEN - A "fine-grained personal access token" generated through the
 //     Github UI. It seems like these tokens are scoped to a user, rather than an
 //     organisation.
-// 
+//
 //     The following minimum permissions are required:
 //       Read - access to metadata
 //       Read & write - access to actions and code
