@@ -68,7 +68,7 @@ jobs:
     name: Tag and release
     runs-on: ubuntu-latest
     needs: required-checks-passed
-    # Only build images on pushes to main, not pull requests
+    # Only tag and release on pushes to main
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     strategy:
       matrix:
