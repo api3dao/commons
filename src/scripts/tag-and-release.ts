@@ -33,7 +33,7 @@ const execSyncWithErrorHandling = (command: string) => {
   }
 };
 
-const createGithubRelease = async (repo: string, tagName: `v${string}`) => {
+export const createGithubRelease = async (repo: string, tagName: `v${string}`) => {
   if (!process.env.GH_ACCESS_TOKEN) {
     console.info(`GH_ACCESS_TOKEN not set. Skipping release creation`);
     return null;
@@ -58,9 +58,9 @@ const createGithubRelease = async (repo: string, tagName: `v${string}`) => {
   return goRes.data;
 };
 
-const main = async () => {
+export const main = async () => {
   const repo = process.argv[2];
-  if (!repo) throw new Error('First argument must be the repo name')
+  if (!repo) throw new Error(`First argument must be the repo name`);
 
   console.info('Ensuring working directory is clean...');
   const gitStatus = execSyncWithErrorHandling('git status --porcelain');

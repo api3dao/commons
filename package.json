@@ -32,13 +32,15 @@
     "prepublishOnly": "pnpm i && pnpm run clean && pnpm run build",
     "prettier:check": "prettier --check \"./**/*.{js,ts,md,json}\"",
     "prettier:fix": "prettier --write \"./**/*.{js,ts,md,json}\"",
-    "release:tag": "ts-node scripts/tag-and-release.ts",
+    "release:tag": "ts-node src/scripts/tag-and-release.ts",
     "test": "jest",
     "tsc": "tsc --project ."
   },
   "dependencies": {
     "@api3/ois": "^2.3.2",
     "@api3/promise-utils": "^0.4.0",
+    "@octokit/rest": "^20.1.1",
+    "@octokit/types": "^13.5.0",
     "axios": "^1.7.4",
     "dotenv": "^16.4.5",
     "ethers": "^5.7.2",
@@ -49,7 +51,6 @@
   },
   "devDependencies": {
     "@api3/eslint-plugin-commons": "^2.0.1",
-    "@octokit/rest": "^20.1.1",
     "@types/jest": "^29.5.12",
     "@types/lodash": "^4.17.7",
     "@types/node": "^20.16.1",
