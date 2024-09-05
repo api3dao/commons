@@ -1,4 +1,4 @@
-# Scripts
+# Release Scripts
 
 The following scripts are exposed for use:
 
