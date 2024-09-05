@@ -15,7 +15,7 @@ Git tags are created with the following naming scheme: `v1.2.3`. i.e. a `v` is p
 ```ts
 // The following environment variable is expected. See the script itself for more details
 //
-//   GH_ACCESS_TOKEN - created through the Github UI with relevant permissions to the repo. S
+//   GH_ACCESS_TOKEN - created through the Github UI with relevant permissions to the repo. See the tag-and-release source for more information
 
 import { tagAndRelease } from '@api3/commons';
 
