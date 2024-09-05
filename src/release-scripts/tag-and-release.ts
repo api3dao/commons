@@ -91,4 +91,3 @@ export const tagAndRelease = async (repo: string, branch: string = 'main') => {
 
   console.info(`Done!`);
 };
-
