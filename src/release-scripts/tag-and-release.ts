@@ -33,7 +33,7 @@ const execSyncWithErrorHandling = (command: string) => {
   }
 };
 
-export const createGithubRelease = async (repo: string, tagName: `v${string}`) => {
+const createGithubRelease = async (repo: string, tagName: `v${string}`) => {
   if (!process.env.GH_ACCESS_TOKEN) {
     console.info(`GH_ACCESS_TOKEN not set. Skipping release creation`);
     return null;
@@ -58,22 +58,19 @@ export const createGithubRelease = async (repo: string, tagName: `v${string}`) =
   return goRes.data;
 };
 
-export const main = async () => {
-  const repo = process.argv[2];
-  if (!repo) throw new Error(`First argument must be the repo name`);
-
+export const tagAndRelease = async (repo: string, branch: string = 'main') => {
   console.info('Ensuring working directory is clean...');
   const gitStatus = execSyncWithErrorHandling('git status --porcelain');
   if (gitStatus !== '') throw new Error('Working directory is not clean');
 
-  console.info('Ensuring we are on the main branch...');
-  const branch = execSyncWithErrorHandling('git branch --show-current');
-  if (branch !== 'main\n') throw new Error('Not on the main branch');
+  console.info(`Ensuring we are on the ${branch} branch...`);
+  const currentBranch = execSyncWithErrorHandling('git branch --show-current');
+  if (currentBranch !== `${branch}\n`) throw new Error(`Not on the ${branch} branch`);
 
   console.info('Ensuring we are up to date with the remote...');
   execSyncWithErrorHandling('git fetch');
 
-  const gitDiff = execSyncWithErrorHandling('git diff origin/main');
+  const gitDiff = execSyncWithErrorHandling(`git diff origin/${branch}`);
   if (gitDiff !== '') throw new Error('Not up to date with the remote');
 
   const packageJson = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf8')) as any;
@@ -95,9 +92,3 @@ export const main = async () => {
   console.info(`Done!`);
 };
 
-main()
-  .then(() => process.exit(0))
-  .catch((error: unknown) => {
-    console.info(error);
-    process.exitCode = 1;
-  });
