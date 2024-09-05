@@ -73,7 +73,7 @@ export const tagAndRelease = async (repo: string, branch: string = 'main') => {
   const gitDiff = execSyncWithErrorHandling(`git diff origin/${branch}`);
   if (gitDiff !== '') throw new Error('Not up to date with the remote');
 
-  const packageJson = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf8')) as any;
+  const packageJson = JSON.parse(readFileSync(join(__dirname, '../../package.json'), 'utf8')) as any;
   const { version } = packageJson;
   console.info(`Version set to ${version}...`);
 
