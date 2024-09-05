@@ -25,8 +25,8 @@ Read the documentation and sources of each module how to use it in the project.
 - [http](./src/http/README.md)
 - [logger](./src/logger/README.md)
 - [processing](./src/processing/README.md)
+- [release-scripts](./src/release-scripts/README.md)
 - [run-in-loop](./src/run-in-loop/README.md)
-- [scripts](./src/scripts/README.md)
 - [utils](./src/utils/README.md)
 
 ## Using the package in universal context
