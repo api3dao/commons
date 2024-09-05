@@ -27,11 +27,11 @@ It is advised to create a script that imports and uses the `tagAndRelease` funct
 and then call that in CI.
 
 ```ts
-// src/scripts/tag-and-release.ts
-import { tagAndRelease } from '../src/release-scripts';
+// scripts/tag-and-release.ts
+import { tagAndRelease } from '@api3/commons';
 
 const main = async () => {
-  await tagAndRelease('commons');
+  await tagAndRelease('my-repo-name');
 };
 
 main()
@@ -44,7 +44,7 @@ main()
 // package.json
 {
   "scripts": {
-    "release:tag": "ts-node src/scripts/tag-and-release.ts",
+    "release:tag": "ts-node scripts/tag-and-release.ts",
   }
 }
 ```
