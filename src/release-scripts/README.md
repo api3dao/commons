@@ -7,8 +7,8 @@ The following scripts are exposed for use:
 This script creates a Git tag and Github release for a given version. It is expected to be run as part of CI and only
 once for the given version defined in `package.json`.
 
-Git tags and releases are created with the following naming scheme: `v1.2.3`. i.e. a `v` is prepended to the version defined in
-`package.json`.
+Git tags and releases are created with the following naming scheme: `v1.2.3`. i.e. a `v` is prepended to the version
+defined in `package.json`.
 
 ### Usage
 
@@ -23,8 +23,8 @@ await tagAndRelease('my-repo-name'); // defaults to using the 'main' branch
 await tagAndRelease('my-repo-name', 'release-branch');
 ```
 
-It is recommended to create a script that imports and uses the `tagAndRelease` function, setup a script in `package.json`
-and then call that script as part of the CI process.
+It is recommended to create a script that imports and uses the `tagAndRelease` function, setup a script in
+`package.json` and then call that script as part of the CI process.
 
 ```ts
 // scripts/tag-and-release.ts
