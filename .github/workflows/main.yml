@@ -10,6 +10,7 @@
 #      Read & write - access to actions and code
 # 2. GH_USER_NAME - The name (not username) associated with the Git user. e.g. John Smith
 # 3. GH_USER_EMAIL - The email associated with the Git user
+# 4. NPM_TOKEN - A token for publishing to npm
 ########################################################################################
 name: Continuous Build
 
@@ -71,6 +72,8 @@ jobs:
     strategy:
       matrix:
         node-version: [20]
+    permissions:
+      id-token: write
     steps:
       - name: Clone repo
         uses: actions/checkout@v4
@@ -90,6 +93,8 @@ jobs:
           git config --global user.email '${{ secrets.GH_USER_EMAIL }}'
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
+      - name: Build
+        run: pnpm run build
       - name: Get package.json version
         id: get-version
         run: echo "version=$(cat package.json | jq -r '.version' | sed 's/^/v/')" >> $GITHUB_OUTPUT
@@ -101,4 +106,9 @@ jobs:
         run: pnpm run release:tag
         env:
           GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
-
+      - name: Publish to npm
+        if: ${{ steps.validate-tag.outputs.new-tag }}
+        run: pnpm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
