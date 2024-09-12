@@ -16,7 +16,6 @@
 
 import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 
 import { go } from '@api3/promise-utils';
 import { Octokit } from '@octokit/rest';
@@ -58,7 +57,7 @@ const createGithubRelease = async (repo: string, tagName: `v${string}`) => {
   return goRes.data;
 };
 
-export const tagAndRelease = async (repo: string, branch: string = 'main') => {
+export const tagAndRelease = async (repo: string, packageJsonPath: string, branch: string = 'main') => {
   console.info('Ensuring working directory is clean...');
   const gitStatus = execSyncWithErrorHandling('git status --porcelain');
   if (gitStatus !== '') throw new Error('Working directory is not clean');
@@ -73,7 +72,7 @@ export const tagAndRelease = async (repo: string, branch: string = 'main') => {
   const gitDiff = execSyncWithErrorHandling(`git diff origin/${branch}`);
   if (gitDiff !== '') throw new Error('Not up to date with the remote');
 
-  const packageJson = JSON.parse(readFileSync(join(__dirname, '../../package.json'), 'utf8')) as any;
+  const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as any;
   const { version } = packageJson;
   console.info(`Version set to ${version}...`);
 
