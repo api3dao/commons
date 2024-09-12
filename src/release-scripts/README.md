@@ -12,26 +12,22 @@ defined in `package.json`.
 
 ### Usage
 
+It is recommended to 1) create a script that imports and uses the `tagAndRelease` function as demonstrated below, 2)
+define a script in `package.json`, and then 3) call that script as part of the CI process.
+
 ```ts
 // The following environment variable is expected. See the script itself for more details
 //
 //   GH_ACCESS_TOKEN - created through the Github UI with relevant permissions to the repo. See the tag-and-release source for more information
 
-import { tagAndRelease } from '@api3/commons';
-
-await tagAndRelease('my-repo-name'); // defaults to using the 'main' branch
-await tagAndRelease('my-repo-name', 'release-branch');
-```
-
-It is recommended to create a script that imports and uses the `tagAndRelease` function, setup a script in
-`package.json` and then call that script as part of the CI process.
-
-```ts
 // scripts/tag-and-release.ts
+import { join } from 'node:path';
+
 import { tagAndRelease } from '@api3/commons';
 
 const main = async () => {
-  await tagAndRelease('my-repo-name');
+  const packageJsonPath = join(__dirname, '../package.json'); // the script is one level deep in the repo
+  await tagAndRelease('my-repo-name', packageJsonPath, 'optional-branch-name-if-not-main');
 };
 
 main()
