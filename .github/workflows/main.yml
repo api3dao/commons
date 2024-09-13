@@ -108,7 +108,8 @@ jobs:
           GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: Publish to npm
         if: ${{ steps.validate-tag.outputs.new-tag }}
-        run: pnpm publish --access public
+        run: |
+          npm config set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
+          pnpm publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
