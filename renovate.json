@@ -3,26 +3,28 @@
   "extends": ["config:base"],
   "packageRules": [
     {
-      "matchPackageNames": ["node", "@octokit/rest"],
+      "matchPackageNames": ["node", "is-wsl", "@octokit/rest"],
       "enabled": false
     },
     {
       "matchDepTypes": ["devDependencies"],
       "matchUpdateTypes": ["patch", "minor"],
       "schedule": ["before 4am on Monday"],
-      "groupName": "non-major-dev-dependencies"
+      "groupName": "non-major-dev-dependencies",
+      "automerge": true
     },
     {
       "matchDepTypes": ["dependencies"],
       "matchUpdateTypes": ["patch", "minor"],
       "schedule": ["before 4am on Monday"],
-      "groupName": "non-major-dependencies"
+      "groupName": "non-major-dependencies",
+      "automerge": true
     }
   ],
   "rangeStrategy": "bump",
   "lockFileMaintenance": {
     "enabled": false
   },
-  "reviewers": ["Siegrift"],
+  "reviewers": ["team:commons-core"],
   "dependencyDashboard": false
 }
