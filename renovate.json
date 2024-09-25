@@ -3,7 +3,7 @@
   "extends": ["config:base"],
   "packageRules": [
     {
-      "matchPackageNames": ["node", "is-wsl", "@octokit/rest"],
+      "matchPackageNames": ["node", "@octokit/rest"],
       "enabled": false
     },
     {
@@ -25,6 +25,6 @@
   "lockFileMaintenance": {
     "enabled": false
   },
-  "reviewers": ["team:commons-core"],
+  "reviewers": ["Siegrift"],
   "dependencyDashboard": false
 }
