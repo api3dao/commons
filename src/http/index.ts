@@ -1,4 +1,4 @@
-import { go } from '@api3/promise-utils';
+import { go, type GoAsyncOptions } from '@api3/promise-utils';
 import axios, { type Method, type AxiosError, type AxiosResponse } from 'axios';
 
 const DEFAULT_TIMEOUT_MS = 10_000;
@@ -42,18 +42,23 @@ interface ExecuteRequestError {
 
 export type ExecuteRequestResult<T> = ExecuteRequestError | ExecuteRequestSuccess<T>;
 
-export async function executeRequest<T>(request: Request): Promise<ExecuteRequestResult<T>> {
+export async function executeRequest<T>(
+  request: Request,
+  options?: GoAsyncOptions<AxiosError>
+): Promise<ExecuteRequestResult<T>> {
   const { url, method, body, headers = {}, queryParams = {}, timeout = DEFAULT_TIMEOUT_MS } = request;
 
-  const goAxios = await go<Promise<AxiosResponse<T>>, AxiosError>(async () =>
-    axios({
-      url,
-      method,
-      headers,
-      data: body,
-      params: queryParams,
-      timeout,
-    })
+  const goAxios = await go<Promise<AxiosResponse<T>>, AxiosError>(
+    async () =>
+      axios({
+        url,
+        method,
+        headers,
+        data: body,
+        params: queryParams,
+        timeout,
+      }),
+    options
   );
   if (!goAxios.success) {
     return {
