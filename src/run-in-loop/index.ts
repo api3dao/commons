@@ -77,6 +77,7 @@ export const runInLoop = async (
     if (enabled) {
       const context = logLabel ? { executionId, label: logLabel } : { executionId };
       const shouldContinueRunning = await logger.runWithContext(context, async () => {
+        logger.info('Starting execution');
         const goRes = await go(fn, hardTimeoutMs ? { totalTimeoutMs: hardTimeoutMs } : {}); // NOTE: This is a safety net to prevent the loop from hanging
         if (!goRes.success) {
           logger.error(`Unexpected runInLoop error`, goRes.error);
