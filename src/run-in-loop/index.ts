@@ -55,13 +55,13 @@ export const runInLoop = async (
     frequencyMs = 0,
     minWaitTimeMs = 0,
     maxWaitTimeMs,
-    softTimeoutMs,
+    softTimeoutMs = frequencyMs,
     hardTimeoutMs,
     enabled = true,
     initialDelayMs,
   } = options;
 
-  if (softTimeoutMs && hardTimeoutMs && hardTimeoutMs < softTimeoutMs) {
+  if (hardTimeoutMs && hardTimeoutMs < softTimeoutMs) {
     throw new Error('hardTimeoutMs must not be smaller than softTimeoutMs');
   }
   if (minWaitTimeMs && maxWaitTimeMs && maxWaitTimeMs < minWaitTimeMs) {
