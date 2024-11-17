@@ -1,6 +1,6 @@
 # Processing
 
-> Implementation of [OIS processing](https://docs.api3.org/reference/ois/latest/processing.html).
+> Implementation of [OIS processing](https://airnode-docs.api3.org/reference/ois/latest/processing.html).
 
 The pre/post processing is only supported for Node.js environments and uses internal Node.js modules.
 
