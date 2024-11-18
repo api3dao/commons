@@ -9,8 +9,9 @@ export interface RunInLoopOptions {
   /** Part of every message logged by the logger. */
   logLabel?: Lowercase<string>;
   /**
-   * Minimum time to wait between executions. E.g. value 500 means that the next execution will be started only after
-   * 500ms from the start of the previous one (even if the previous one ended after 150ms). Default is 0.
+   * The ideal frequency of callback executions. E.g. value 500 means that the next callback execution will be started
+   * only after 500ms from the start of the previous one (even if the previous one ended after 150ms). Default is 0. The
+   * delay between callback executions can be modified by min/max wait time.
    */
   frequencyMs?: number;
   /**
@@ -55,13 +56,13 @@ export const runInLoop = async (
     frequencyMs = 0,
     minWaitTimeMs = 0,
     maxWaitTimeMs,
-    softTimeoutMs,
+    softTimeoutMs = frequencyMs,
     hardTimeoutMs,
     enabled = true,
     initialDelayMs,
   } = options;
 
-  if (softTimeoutMs && hardTimeoutMs && hardTimeoutMs < softTimeoutMs) {
+  if (hardTimeoutMs && hardTimeoutMs < softTimeoutMs) {
     throw new Error('hardTimeoutMs must not be smaller than softTimeoutMs');
   }
   if (minWaitTimeMs && maxWaitTimeMs && maxWaitTimeMs < minWaitTimeMs) {
@@ -77,6 +78,7 @@ export const runInLoop = async (
     if (enabled) {
       const context = logLabel ? { executionId, label: logLabel } : { executionId };
       const shouldContinueRunning = await logger.runWithContext(context, async () => {
+        logger.info('Starting execution');
         const goRes = await go(fn, hardTimeoutMs ? { totalTimeoutMs: hardTimeoutMs } : {}); // NOTE: This is a safety net to prevent the loop from hanging
         if (!goRes.success) {
           logger.error(`Unexpected runInLoop error`, goRes.error);
