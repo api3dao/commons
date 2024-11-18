@@ -52,15 +52,15 @@
   },
   "devDependencies": {
     "@api3/eslint-plugin-commons": "^3.0.0",
-    "@types/jest": "^29.5.13",
-    "@types/lodash": "^4.17.9",
-    "@types/node": "^22.8.2",
+    "@types/jest": "^29.5.14",
+    "@types/lodash": "^4.17.13",
+    "@types/node": "^22.9.0",
     "eslint": "^8.57.1",
     "husky": "^9.1.6",
     "jest": "^29.7.0",
     "prettier": "^3.3.3",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.3"
   }
 }
