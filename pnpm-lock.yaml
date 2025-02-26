@@ -21,8 +21,8 @@ importers:
         specifier: ^13.8.0
         version: 13.8.0
       axios:
-        specifier: ^1.7.9
-        version: 1.7.9
+        specifier: ^1.8.1
+        version: 1.8.1
       dotenv:
         specifier: ^16.4.7
         version: 16.4.7
@@ -39,8 +39,8 @@ importers:
         specifier: ^1.0.8
         version: 1.0.8
       zod:
-        specifier: ^3.24.1
-        version: 3.24.1
+        specifier: ^3.24.2
+        version: 3.24.2
     devDependencies:
       '@api3/eslint-plugin-commons':
         specifier: ^3.0.0
@@ -914,8 +914,8 @@ packages:
     resolution: {integrity: sha512-QbUdXJVTpvUTHU7871ppZkdOLBeGUKBQWHkHrvN2V9IQWGMt61zf3B45BtzjxEJzYuj0JBjBZP/hmYS/R9pmAw==}
     engines: {node: '>=4'}
 
-  axios@1.7.9:
-    resolution: {integrity: sha512-LhLcE7Hbiryz8oMDdDptSrWowmB4Bl6RCt6sIJKpRB4XtVf0iEgewX3au/pJqm+Py1kCASkb/FFKjxQaLtxJvw==}
+  axios@1.8.1:
+    resolution: {integrity: sha512-NN+fvwH/kV01dYUQ3PTOZns4LWtWhOFCAhQ/pHb88WQ1hNe5V/dvFwc4VJcDL11LT9xSX0QtsR8sWUuyOuOq7g==}
 
   axobject-query@3.1.1:
     resolution: {integrity: sha512-goKlv8DZrK9hUh975fnHzhNIO4jUnFCfv/dszV5VwUGDFjI6vQ2VwoyjYjYNEbBE8AH87TduWP5uyDR1D+Iteg==}
@@ -3089,8 +3089,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zod@3.24.1:
-    resolution: {integrity: sha512-muH7gBL9sI1nciMZV67X5fTKKBLtwpZ5VBp1vsOQzj1MhrBZ4wlVCm3gedKZWLp0Oyel8sIGfeiz54Su+OVT+A==}
+  zod@3.24.2:
+    resolution: {integrity: sha512-lY7CDW43ECgW9u1TcT3IoXHflywfVqDYze4waEz812jR/bZ8FHDsl7pFQoSZTz5N+2NqRXs8GBwnAwo3ZNxqhQ==}
 
 snapshots:
 
@@ -3136,7 +3136,7 @@ snapshots:
   '@api3/ois@2.3.2':
     dependencies:
       lodash: 4.17.21
-      zod: 3.24.1
+      zod: 3.24.2
 
   '@api3/promise-utils@0.4.0': {}
 
@@ -4368,7 +4368,7 @@ snapshots:
 
   axe-core@4.9.1: {}
 
-  axios@1.7.9:
+  axios@1.8.1:
     dependencies:
       follow-redirects: 1.15.6
       form-data: 4.0.0
@@ -7081,4 +7081,4 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod@3.24.1: {}
+  zod@3.24.2: {}
