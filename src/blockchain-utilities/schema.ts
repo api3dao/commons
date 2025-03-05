@@ -2,9 +2,11 @@ import { goSync } from '@api3/promise-utils';
 import { ethers } from 'ethers';
 import { z } from 'zod';
 
-export const hexSchema = z.string().regex(/^0x[\dA-Fa-f]+$/, 'Must be a valid hex string');
+export const hexSchema = z.string().refine((val): val is `0x${string}` => /^0x[\dA-Fa-f]+$/.test(val), {
+  message: 'Invalid hex string format',
+});
 
-export type Hex = `0x${string}`; // Not using z.infer<typeof hexSchema> because the inferred type is just `string`.
+export type Hex = z.infer<typeof hexSchema>;
 
 export const addressSchema = z.string().transform((value, ctx) => {
   const goParseAddress = goSync(() => ethers.utils.getAddress(value));
