@@ -43,7 +43,7 @@
     "@octokit/rest": "^20.1.1",
     "@octokit/types": "^13.10.0",
     "axios": "^1.8.4",
-    "dotenv": "^16.4.7",
+    "dotenv": "^16.5.0",
     "ethers": "^5.8.0",
     "lodash": "^4.17.21",
     "winston": "^3.17.0",
