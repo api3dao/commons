@@ -36,8 +36,8 @@ importers:
         specifier: ^1.0.8
         version: 1.0.8
       zod:
-        specifier: ^3.25.64
-        version: 3.25.64
+        specifier: ^4.0.5
+        version: 4.0.5
     devDependencies:
       '@api3/eslint-plugin-commons':
         specifier: ^3.0.0
@@ -3201,6 +3201,9 @@ packages:
 
   zod@3.25.64:
     resolution: {integrity: sha512-hbP9FpSZf7pkS7hRVUrOjhwKJNyampPgtXKc3AN6DsWtoHsg2Sb4SQaS4Tcay380zSwd2VPo9G9180emBACp5g==}
+
+  zod@4.0.5:
+    resolution: {integrity: sha512-/5UuuRPStvHXu7RS+gmvRf4NXrNxpSllGwDnCBcJZtQsKrviYXm54yDGV2KYNLT5kq0lHGcl7lqWJLgSaG+tgA==}
 
 snapshots:
 
@@ -7304,3 +7307,5 @@ snapshots:
   yocto-queue@0.1.0: {}
 
   zod@3.25.64: {}
+
+  zod@4.0.5: {}
