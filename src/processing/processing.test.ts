@@ -1,4 +1,5 @@
 /* eslint-disable jest/prefer-strict-equal */ // Because the errors are thrown from the "vm" module (different context), they are not strictly equal.
+import { go } from '@api3/promise-utils';
 import { ZodError } from 'zod';
 
 import { createEndpoint } from '../../test/fixtures/processing';
@@ -406,19 +407,16 @@ describe(postProcessResponseV2.name, () => {
         timeoutMs: 5000,
       } as ProcessingSpecificationV2;
 
-      await expect(async () =>
-        postProcessResponseV2({ price: 1000 }, postProcessingSpecificationV2, parameters)
-      ).rejects.toEqual(
-        new ZodError([
-          {
-            code: 'invalid_type',
-            expected: 'object',
-            received: 'number',
-            path: [],
-            message: 'Expected object, received number',
-          },
-        ])
-      );
+      const result = await go(() => postProcessResponseV2({ price: 1000 }, postProcessingSpecificationV2, parameters));
+      expect(result.error).toBeInstanceOf(ZodError);
+      expect((result.error as ZodError).issues).toStrictEqual([
+        {
+          code: 'invalid_type',
+          expected: 'object',
+          path: [],
+          message: 'Invalid input: expected object, received number',
+        },
+      ]);
     });
 
     it('demonstrates access to endpointParameters, but reserved parameters are inaccessible', async () => {

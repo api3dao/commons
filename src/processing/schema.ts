@@ -5,7 +5,7 @@ export type ProcessingSpecificationV2 = z.infer<typeof processingSpecificationSc
 
 export type ProcessingSpecifications = ProcessingSpecification[];
 
-export const endpointParametersSchema = z.record(z.any());
+export const endpointParametersSchema = z.record(z.string(), z.any());
 
 export type EndpointParameters = z.infer<typeof endpointParametersSchema>;
 

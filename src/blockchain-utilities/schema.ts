@@ -3,7 +3,7 @@ import { ethers } from 'ethers';
 import { z } from 'zod';
 
 export const hexSchema = z.string().refine((val): val is `0x${string}` => /^0x[\dA-Fa-f]+$/.test(val), {
-  message: 'Invalid hex string format',
+  error: 'Invalid hex string format',
 });
 
 export type Hex = z.infer<typeof hexSchema>;
@@ -11,7 +11,7 @@ export type Hex = z.infer<typeof hexSchema>;
 export const addressSchema = z.string().transform((value, ctx) => {
   const goParseAddress = goSync(() => ethers.utils.getAddress(value));
   if (!goParseAddress.success) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Invalid EVM address' });
+    ctx.issues.push({ code: 'custom', message: 'Invalid EVM address', input: value });
     return z.NEVER;
   }
 
