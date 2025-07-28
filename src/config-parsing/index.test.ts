@@ -140,7 +140,6 @@ describe(interpolateSecretsIntoConfig.name, () => {
 
     const result = goSync(() => interpolateSecretsIntoConfig(rawConfig, rawSecrets));
     expect(result.error).toBeInstanceOf(ZodError);
-
     expect((result.error as ZodError).issues).toStrictEqual([
       expect.objectContaining({
         origin: 'record',
