@@ -38,7 +38,7 @@
     "tsc": "tsc --project ."
   },
   "dependencies": {
-    "@api3/ois": "^2.3.2",
+    "@api3/ois": "^3.0.0",
     "@api3/promise-utils": "^0.4.0",
     "@octokit/rest": "^20.1.1",
     "axios": "^1.11.0",
@@ -47,7 +47,7 @@
     "lodash": "^4.17.21",
     "winston": "^3.17.0",
     "winston-console-format": "^1.0.8",
-    "zod": "^3.25.64"
+    "zod": "^4.0.10"
   },
   "devDependencies": {
     "@api3/eslint-plugin-commons": "^3.0.0",

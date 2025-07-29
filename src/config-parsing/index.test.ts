@@ -1,3 +1,4 @@
+import { goSync } from '@api3/promise-utils';
 import { ZodError } from 'zod';
 
 import { interpolateSecretsIntoConfig } from './index';
@@ -94,37 +95,39 @@ describe(interpolateSecretsIntoConfig.name, () => {
   });
 
   it('throws when secret name is invalid', () => {
-    expect(() => {
+    let result = goSync(() =>
       interpolateSecretsIntoConfig(rawConfig, {
         SECRET_A: 'secretValueA',
         '0_SECRET_STARTING_WITH_NUMBER': 'invalid',
-      });
-    }).toThrow(
-      new ZodError([
-        {
-          validation: 'regex',
-          code: 'invalid_string',
-          message: 'Secret name is not a valid. Secret name must match /^[A-Z][\\dA-Z_]*$/',
-          path: ['0_SECRET_STARTING_WITH_NUMBER'],
-        },
-      ])
+      })
     );
 
-    expect(() => {
+    expect(result.error).toBeInstanceOf(ZodError);
+    expect((result.error as ZodError).issues).toStrictEqual([
+      expect.objectContaining({
+        origin: 'record',
+        code: 'invalid_key',
+        path: ['0_SECRET_STARTING_WITH_NUMBER'],
+        message: 'Invalid key in record',
+      }),
+    ]);
+
+    result = goSync(() =>
       interpolateSecretsIntoConfig(rawConfig, {
         SECRET_A: 'secretValueA',
         'CANNOT-CONTAIN-HYPHEN': 'invalid',
-      });
-    }).toThrow(
-      new ZodError([
-        {
-          validation: 'regex',
-          code: 'invalid_string',
-          message: 'Secret name is not a valid. Secret name must match /^[A-Z][\\dA-Z_]*$/',
-          path: ['CANNOT-CONTAIN-HYPHEN'],
-        },
-      ])
+      })
     );
+
+    expect(result.error).toBeInstanceOf(ZodError);
+    expect((result.error as ZodError).issues).toStrictEqual([
+      expect.objectContaining({
+        origin: 'record',
+        code: 'invalid_key',
+        path: ['CANNOT-CONTAIN-HYPHEN'],
+        message: 'Invalid key in record',
+      }),
+    ]);
   });
 
   it('allows parsing secrets without validating secret names', () => {
@@ -135,22 +138,22 @@ describe(interpolateSecretsIntoConfig.name, () => {
       lowercasedSecret: 'valid',
     };
 
-    expect(() => interpolateSecretsIntoConfig(rawConfig, rawSecrets)).toThrow(
-      new ZodError([
-        {
-          validation: 'regex',
-          code: 'invalid_string',
-          message: 'Secret name is not a valid. Secret name must match /^[A-Z][\\dA-Z_]*$/',
-          path: ['CANNOT-CONTAIN-HYPHEN'],
-        },
-        {
-          validation: 'regex',
-          code: 'invalid_string',
-          message: 'Secret name is not a valid. Secret name must match /^[A-Z][\\dA-Z_]*$/',
-          path: ['lowercasedSecret'],
-        },
-      ])
-    );
+    const result = goSync(() => interpolateSecretsIntoConfig(rawConfig, rawSecrets));
+    expect(result.error).toBeInstanceOf(ZodError);
+    expect((result.error as ZodError).issues).toStrictEqual([
+      expect.objectContaining({
+        origin: 'record',
+        code: 'invalid_key',
+        path: ['CANNOT-CONTAIN-HYPHEN'],
+        message: 'Invalid key in record',
+      }),
+      expect.objectContaining({
+        origin: 'record',
+        code: 'invalid_key',
+        path: ['lowercasedSecret'],
+        message: 'Invalid key in record',
+      }),
+    ]);
 
     expect(interpolateSecretsIntoConfig(rawConfig, rawSecrets, { validateSecretName: false })).toStrictEqual({
       property: 'value',
