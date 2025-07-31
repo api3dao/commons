@@ -31,12 +31,15 @@ describe('keccak256HashSchema', () => {
 describe('hexSchema', () => {
   it('validates a valid hex string', () => {
     expect(() => hexSchema.parse('0x3528e42b017a5fbf9d2993a2df04efc3ed474357575065a111b054ddf9de2acc')).not.toThrow();
+    expect(() => hexSchema.parse('0x3528e42b')).not.toThrow();
   });
 
   it('throws for an invalid hex string', () => {
     expect(() => hexSchema.parse('3528e42b017a5fbf9d2993a2df04efc3ed474357575065a111b054ddf9de2acc')).toThrow(
       expect.objectContaining({ name: 'ZodError' })
     );
+    expect(() => hexSchema.parse('x3528e42b')).toThrow(expect.objectContaining({ name: 'ZodError' }));
+    expect(() => hexSchema.parse('')).toThrow(expect.objectContaining({ name: 'ZodError' }));
   });
 });
 
