@@ -4,8 +4,8 @@ The following scripts are exposed for use:
 
 ## tagAndRelease
 
-This script creates a Git tag and Github release for a given version. It is expected to be run as part of CI and only
-once for the given version defined in `package.json`.
+This script creates a Git tag and Github release when the `version` field of `package.json` is changed. It is expected
+to be run as part of a [CI workflow](../../.github/workflows/main.yml) that also publishes to npm.
 
 Git tags and releases are created with the following naming scheme: `v1.2.3`. i.e. a `v` is prepended to the version
 defined in `package.json`.
