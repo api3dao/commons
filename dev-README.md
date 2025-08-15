@@ -15,7 +15,18 @@ Inspect the `package.json` for more scripts.
 
 ## Release
 
-To release a new version see the [release-scripts README](./src/release-scripts/README.md).
+To release a new version follow these steps:
+
+1. `git checkout main && git pull` - Always publish from up to date `main` branch. Also, ensure that the working
+   directory is clean (has no uncommitted changes).
+2. `pnpm version [major|minor|patch]` - Choose the right version bump. This will bump the version, create a git tag and
+   commit it.
+3. `pnpm publish --access public` - Build the package and publish the new version to NPM.
+4. `git push --follow-tags` - Push the tagged commit upstream. If you don't have access to push directly to main branch,
+   create a separate branch and open a PR. This PR must be merged using the "Rebase and merge" strategy to preserve the
+   git tag.
+5. Create a new [release on GitHub](https://github.com/api3dao/commons/releases). Use the "Generate release notes"
+   feature to generate the release notes from the PR titles.
 
 ## Adding new common utility
 
