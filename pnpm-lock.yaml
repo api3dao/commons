@@ -18,8 +18,8 @@ importers:
         specifier: ^20.1.1
         version: 20.1.1
       axios:
-        specifier: ^1.12.2
-        version: 1.12.2
+        specifier: ^1.13.2
+        version: 1.13.2
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3
@@ -30,14 +30,14 @@ importers:
         specifier: ^4.17.21
         version: 4.17.21
       winston:
-        specifier: ^3.18.3
-        version: 3.18.3
+        specifier: ^3.19.0
+        version: 3.19.0
       winston-console-format:
         specifier: ^1.0.8
         version: 1.0.8
       zod:
-        specifier: ^4.1.11
-        version: 4.1.11
+        specifier: ^4.2.1
+        version: 4.2.1
     devDependencies:
       '@api3/eslint-plugin-commons':
         specifier: ^3.0.0
@@ -1049,8 +1049,8 @@ packages:
     resolution: {integrity: sha512-QbUdXJVTpvUTHU7871ppZkdOLBeGUKBQWHkHrvN2V9IQWGMt61zf3B45BtzjxEJzYuj0JBjBZP/hmYS/R9pmAw==}
     engines: {node: '>=4'}
 
-  axios@1.12.2:
-    resolution: {integrity: sha512-vMJzPewAlRyOgxV2dU0Cuz2O8zzzx9VYtbJOaBgXFeLc4IV/Eg50n4LowmehOOR61S8ZMpc2K5Sa7g6A4jfkUw==}
+  axios@1.13.2:
+    resolution: {integrity: sha512-VPk9ebNqPcy5lRGuSlKx752IlDatOjT9paPlm8A7yOuW2Fbvp4X3JznJtT4f0GzGLLiWE9W8onz51SqLYwzGaA==}
 
   axobject-query@3.1.1:
     resolution: {integrity: sha512-goKlv8DZrK9hUh975fnHzhNIO4jUnFCfv/dszV5VwUGDFjI6vQ2VwoyjYjYNEbBE8AH87TduWP5uyDR1D+Iteg==}
@@ -3212,8 +3212,8 @@ packages:
     resolution: {integrity: sha512-8drMJ4rkgaPo1Me4zD/3WLfI/zPdA9o2IipKODunnGDcuqbHwjsbB79ylv04LCGGzU0xQ6vTznOMpQGaLhhm6A==}
     engines: {node: '>= 12.0.0'}
 
-  winston@3.18.3:
-    resolution: {integrity: sha512-NoBZauFNNWENgsnC9YpgyYwOVrl2m58PpQ8lNHjV3kosGs7KJ7Npk9pCUE+WJlawVSe8mykWDKWFSVfs3QO9ww==}
+  winston@3.19.0:
+    resolution: {integrity: sha512-LZNJgPzfKR+/J3cHkxcpHKpKKvGfDZVPS4hfJCc4cCG0CgYzvlD6yE/S3CIL/Yt91ak327YCpiF/0MyeZHEHKA==}
     engines: {node: '>= 12.0.0'}
 
   word-wrap@1.2.5:
@@ -3273,8 +3273,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zod@4.1.11:
-    resolution: {integrity: sha512-WPsqwxITS2tzx1bzhIKsEs19ABD5vmCVa4xBo2tq/SrV4RNZtfws1EnCWQXM6yh8bD08a1idvkB5MZSBiZsjwg==}
+  zod@4.2.1:
+    resolution: {integrity: sha512-0wZ1IRqGGhMP76gLqz8EyfBXKk0J2qo2+H3fi4mcUP/KtTocoX08nmIAHl1Z2kJIZbZee8KOpBCSNPRgauucjw==}
 
 snapshots:
 
@@ -3318,7 +3318,7 @@ snapshots:
   '@api3/ois@3.0.0':
     dependencies:
       lodash: 4.17.21
-      zod: 4.1.11
+      zod: 4.2.1
 
   '@api3/promise-utils@0.4.0': {}
 
@@ -4669,7 +4669,7 @@ snapshots:
 
   axe-core@4.9.1: {}
 
-  axios@1.12.2:
+  axios@1.13.2:
     dependencies:
       follow-redirects: 1.15.11
       form-data: 4.0.4
@@ -7375,7 +7375,7 @@ snapshots:
       readable-stream: 3.6.2
       triple-beam: 1.4.1
 
-  winston@3.18.3:
+  winston@3.19.0:
     dependencies:
       '@colors/colors': 1.6.0
       '@dabh/diagnostics': 2.0.8
@@ -7434,4 +7434,4 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod@4.1.11: {}
+  zod@4.2.1: {}
