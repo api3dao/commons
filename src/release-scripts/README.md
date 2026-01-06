@@ -12,14 +12,13 @@ defined in `package.json`.
 
 ### Usage
 
-It is recommended to 1) create a script that imports and uses the `tagAndRelease` function as demonstrated below, 2)
-define a script in `package.json`, and then 3) call that script as part of the CI process.
+It is recommended to:
+
+1. Create a script that imports and uses the `tagAndRelease` function as demonstrated below.
+2. Define a `package.json` script that triggers the release.
+3. Call that script as part of the CI process.
 
 ```ts
-// The following environment variable is expected. See the script itself for more details
-//
-//   GH_ACCESS_TOKEN - created through the Github UI with relevant permissions to the repo. See the tag-and-release source for more information
-
 // scripts/tag-and-release.ts
 import { join } from 'node:path';
 
@@ -48,34 +47,63 @@ main()
 It's also recommended to setup a step in CI that checks if the Git tag already exists before executing.
 
 ```yml
-# NOTE: irrelevant names and steps have been omitted such cloning, installing dependencies etc.
+########################################################################################
+# The following secrets are required:
+#
+# 1. GH_ACCESS_TOKEN - A "fine-grained personal access token" generated through the
+#    Github UI. It seems like these tokens are scoped to a user, rather than an
+#    organisation.
+#
+#    The following minimum permissions are required:
+#      Read - access to metadata
+#      Read & write - access to actions and code
+# 2. GH_USER_NAME - The name (not username) associated with the Git user. e.g. John Smith
+# 3. GH_USER_EMAIL - The email associated with the Git user
+########################################################################################
 tag-and-release:
-  # Only tag and release on pushes to main (or the release branch)
+  name: Tag and release
+  runs-on: ubuntu-latest
+  needs: required-checks-passed
+  # Only tag and release on pushes to main
   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  permissions:
+    id-token: write # Required for https://docs.npmjs.com/trusted-publishers
+    contents: write # Required for pushing tags and making the GitHub releases
   steps:
     - name: Clone repo
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
     - name: Install pnpm
+      uses: pnpm/action-setup@v3
     - name: Setup Node
-    - name: Install Dependencies
-    # Configure the Git user
+      uses: actions/setup-node@v6
+      with:
+        node-version: 24
+        registry-url: 'https://registry.npmjs.org'
+        cache: 'pnpm'
     - name: Configure Git credentials
       run: |
         git config --global user.name '${{ secrets.GH_USER_NAME }}'
         git config --global user.email '${{ secrets.GH_USER_EMAIL }}'
-    # Get the version as defined in package.json
+    - name: Install Dependencies
+      run: pnpm install --frozen-lockfile
+    - name: Build
+      run: pnpm run build
     - name: Get package.json version
       id: get-version
       run: echo "version=$(cat package.json | jq -r '.version' | sed 's/^/v/')" >> $GITHUB_OUTPUT
-    # Check if a Git tag already exists with the pattern: `v{version}`
     - name: Validate tag
       id: validate-tag
       run:
         test "$(git tag -l '${{ steps.get-version.outputs.version }}' | awk '{print $NF}')" = "${{
         steps.get-version.outputs.version }}" || echo "new-tag=true" >> $GITHUB_OUTPUT
-    # Run the tag-and-release script only if the tag does *not* already exist
     - name: Tag and release on Github
       if: ${{ steps.validate-tag.outputs.new-tag }}
       run: pnpm run release:tag
       env:
         GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+    - name: Publish to npm
+      if: ${{ steps.validate-tag.outputs.new-tag }}
+      run: pnpm publish --access public
 ```
