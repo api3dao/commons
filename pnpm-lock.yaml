@@ -36,8 +36,8 @@ importers:
         specifier: ^1.0.8
         version: 1.0.8
       zod:
-        specifier: ^4.3.4
-        version: 4.3.4
+        specifier: ^4.3.5
+        version: 4.3.5
     devDependencies:
       '@api3/eslint-plugin-commons':
         specifier: ^3.0.0
@@ -3254,8 +3254,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zod@4.3.4:
-    resolution: {integrity: sha512-Zw/uYiiyF6pUT1qmKbZziChgNPRu+ZRneAsMUDU6IwmXdWt5JwcUfy2bvLOCUtz5UniaN/Zx5aFttZYbYc7O/A==}
+  zod@4.3.5:
+    resolution: {integrity: sha512-k7Nwx6vuWx1IJ9Bjuf4Zt1PEllcwe7cls3VNzm4CQ1/hgtFUK2bRNG3rvnpPUhFjmqJKAKtjV576KnUkHocg/g==}
 
 snapshots:
 
@@ -3299,7 +3299,7 @@ snapshots:
   '@api3/ois@3.0.0':
     dependencies:
       lodash: 4.17.21
-      zod: 4.3.4
+      zod: 4.3.5
 
   '@api3/promise-utils@0.4.0': {}
 
@@ -7393,4 +7393,4 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod@4.3.4: {}
+  zod@4.3.5: {}
