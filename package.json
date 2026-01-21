@@ -44,10 +44,10 @@
     "axios": "^1.13.2",
     "dotenv": "^17.2.3",
     "ethers": "^5.8.0",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "winston": "^3.19.0",
     "winston-console-format": "^1.0.8",
-    "zod": "^4.3.4"
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@api3/eslint-plugin-commons": "^3.0.0",
