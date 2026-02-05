@@ -4,9 +4,10 @@
   "keywords": [],
   "license": "MIT",
   "engines": {
+    "pnpm": "^10.26.2",
     "node": ">=18.14.0"
   },
-  "packageManager": "pnpm@9.15.9",
+  "packageManager": "pnpm@10.26.2",
   "sideEffects": false,
   "repository": {
     "type": "git",
@@ -54,6 +55,7 @@
     "@types/jest": "^30.0.0",
     "@types/lodash": "^4.17.21",
     "@types/node": "^24.10.1",
+    "eslint": "^8.57.1",
     "husky": "^9.1.7",
     "jest": "^30.2.0",
     "prettier": "^3.7.4",
