@@ -41,13 +41,13 @@
     "@api3/ois": "^3.0.0",
     "@api3/promise-utils": "^0.4.0",
     "@octokit/rest": "^20.1.1",
-    "axios": "^1.13.2",
-    "dotenv": "^17.2.3",
+    "axios": "^1.13.5",
+    "dotenv": "^17.2.4",
     "ethers": "^5.8.0",
     "lodash": "^4.17.23",
     "winston": "^3.19.0",
     "winston-console-format": "^1.0.8",
-    "zod": "^4.3.5"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@api3/eslint-plugin-commons": "^3.0.0",
