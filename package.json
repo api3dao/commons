@@ -4,7 +4,6 @@
   "keywords": [],
   "license": "MIT",
   "engines": {
-    "pnpm": "^10.26.2",
     "node": ">=18.14.0"
   },
   "packageManager": "pnpm@10.26.2",
