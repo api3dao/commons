@@ -69,12 +69,8 @@ export interface RunInLoopOptions {
   executionIdOptions?: RunInLoopExecutionIdOptions;
 }
 
-const getExecutionId = (iteration: number, options: RunInLoopExecutionIdOptions) => {
-  if (options.type === 'random') {
-    return generateRandomBytes32();
-  }
-  return options.prefix ? `${options.prefix}-${iteration}`.trim() : iteration.toString();
-};
+const getExecutionId = (iteration: number, options: RunInLoopExecutionIdOptions) =>
+  options.type === 'random' ? generateRandomBytes32() : `${options.prefix ?? ''}${iteration}`;
 
 export const runInLoop = async (
   fn: () => Promise<{ shouldContinueRunning: boolean } | void>,

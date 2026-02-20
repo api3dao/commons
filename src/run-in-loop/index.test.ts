@@ -70,7 +70,7 @@ describe(runInLoop.name, () => {
 
     await runInLoop(fnSpy, {
       logger: mockedLogger,
-      executionIdOptions: { type: 'incremental', prefix: 'worker' },
+      executionIdOptions: { type: 'incremental', prefix: 'worker-' },
     });
 
     expect(getRunContexts(mockedLogger)).toStrictEqual([
