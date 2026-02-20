@@ -3,6 +3,24 @@ import { go } from '@api3/promise-utils';
 import { type Logger } from '../logger';
 import { generateRandomBytes32, sleep } from '../utils';
 
+export type RunInLoopExecutionIdOptions =
+  | {
+      /**
+       * Generate a random 32-byte execution ID for each iteration.
+       */
+      type: 'random';
+    }
+  | {
+      /**
+       * Generate execution IDs as incrementing numbers starting from 0.
+       */
+      type: 'incremental';
+      /**
+       * Optional prefix prepended to the incrementing number (e.g. "my-prefix-0").
+       */
+      prefix?: string;
+    };
+
 export interface RunInLoopOptions {
   /** An API3 logger instance required to execute the callback with context. */
   logger: Logger;
@@ -44,7 +62,15 @@ export interface RunInLoopOptions {
    * callback is executed immediately.
    */
   initialDelayMs?: number;
+
+  /**
+   * Configures how execution IDs are generated. Defaults to random IDs.
+   */
+  executionIdOptions?: RunInLoopExecutionIdOptions;
 }
+
+const getExecutionId = (iteration: number, options: RunInLoopExecutionIdOptions) =>
+  options.type === 'random' ? generateRandomBytes32() : `${options.prefix ?? ''}${iteration}`;
 
 export const runInLoop = async (
   fn: () => Promise<{ shouldContinueRunning: boolean } | void>,
@@ -60,6 +86,7 @@ export const runInLoop = async (
     hardTimeoutMs,
     enabled = true,
     initialDelayMs,
+    executionIdOptions = { type: 'random' },
   } = options;
 
   if (hardTimeoutMs && hardTimeoutMs < softTimeoutMs) {
@@ -71,9 +98,10 @@ export const runInLoop = async (
 
   if (initialDelayMs) await sleep(initialDelayMs);
 
+  let iteration = 0;
   while (true) {
     const executionStart = performance.now();
-    const executionId = generateRandomBytes32();
+    const executionId = getExecutionId(iteration++, executionIdOptions);
 
     if (enabled) {
       const context = logLabel ? { executionId, label: logLabel } : { executionId };
