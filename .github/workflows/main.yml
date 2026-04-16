@@ -33,7 +33,7 @@ jobs:
     name: Build, lint and test - Node ${{ matrix.node-version }}
     strategy:
       matrix:
-        node-version: [22, 24]
+        node-version: [24]
     steps:
       - name: Clone repo
         uses: actions/checkout@v6
