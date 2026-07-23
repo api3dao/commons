@@ -49,10 +49,9 @@ const createGithubRelease = async (repo: string, tagName: `v${string}`) => {
   console.info(`Creating Github release...`);
   const goRes = await go(createRelease, { totalTimeoutMs: 15_000 });
   if (!goRes.success) {
-    // We don't want to fail CI if the release fails to create. This can be done manually through Github's UI
     console.info(`Unable to create Github release`);
     console.info(goRes.error.message);
-    return null;
+    throw goRes.error;
   }
   return goRes.data;
 };
