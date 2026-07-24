@@ -1,3 +1,8 @@
+/* eslint-disable functional/no-try-statements */
+
+import isError from 'lodash/isError';
+import noop from 'lodash/noop';
+
 // NOTE: We use discriminated unions over "success" property
 export type GoResultSuccess<T> = { data: T; success: true; error: undefined };
 export type GoResultError<E extends Error = Error> = { data: undefined; error: E; success: false };
@@ -22,6 +27,7 @@ export interface GoAsyncOptions<E extends Error = Error> {
   onAttemptError?: (goRes: GoResultError<E>) => void; // Callback invoked after each failed attempt is completed. This callback does not fire for the last attempt or when a "totalTimeoutMs" is exceeded (these should be handled explicitly with the result of "go" call).
 }
 
+// eslint-disable-next-line functional/no-classes
 export class GoWrappedError extends Error {
   constructor(public reason: unknown) {
     super(`${reason}`);
@@ -55,7 +61,7 @@ export const fail = <E extends Error>(err: Error): GoResultError<E> => {
 };
 
 const createGoError = <E extends Error>(err: unknown): GoResultError<E> => {
-  if (err instanceof Error) return fail(err);
+  if (isError(err)) return fail(err);
   return fail(new GoWrappedError(err));
 };
 
@@ -96,7 +102,7 @@ const cancellableSleep = (ms: number) => {
 const cancellableTimeout = (ms: number): CancellableTimeout => {
   let rejectFn: any;
   let timeoutId: any;
-  const promise = new Promise((_, reject) => {
+  const promise = new Promise((_resolve, reject) => {
     rejectFn = reject;
     timeoutId = setTimeout(() => reject('Operation timed out'), ms);
   });
@@ -146,7 +152,7 @@ export const go = async <T, E extends Error>(
 
   let fullTimeoutExceeded = false;
   let totalTimeoutCancellable: CancellableTimeout | null = null;
-  let fullTimeoutPromise = new Promise((_resolve) => {}); // Never resolves
+  let fullTimeoutPromise = new Promise(noop); // Never resolves
   if (totalTimeoutMs !== undefined) {
     // Start a "full" timeout that will stop all retries after it is exceeded
     totalTimeoutCancellable = cancellableSleep(totalTimeoutMs);
@@ -165,10 +171,11 @@ export const go = async <T, E extends Error>(
       // if array of timeouts is provided, use the timeout at the current index,
       // or the last one if the index is out of bounds
       // if a single timeout is provided, use it for all attempts
-      let currentAttemptTimeoutMs: number | undefined;
-      currentAttemptTimeoutMs = Array.isArray(attemptTimeoutMs)
-        ? attemptTimeoutMs[i] || attemptTimeoutMs.at(-1)
+      const currentAttemptTimeoutMs = Array.isArray(attemptTimeoutMs)
+        ? // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+          attemptTimeoutMs[i] || attemptTimeoutMs.at(-1)
         : attemptTimeoutMs;
+
       // Return early in case the global timeout has been exceeded during after attempt wait time.
       //
       // This is guaranteed to be false for the first attempt.
