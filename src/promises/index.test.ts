@@ -261,7 +261,7 @@ describe('custom error type', () => {
       assertType<Error>(err);
       // Check that "err" is not assignable to CustomError
       assertType.isFalse(false as Equal<CustomError, typeof err>);
-      expect(err instanceof CustomError).toBe(true);
+      expect(err).toBeInstanceOf(CustomError);
     });
 
     it('can specify custom error type', () => {
@@ -272,7 +272,7 @@ describe('custom error type', () => {
       const err = goRes.error;
 
       assertType<CustomError>(err);
-      expect(err instanceof CustomError).toBe(true);
+      expect(err).toBeInstanceOf(CustomError);
     });
 
     it('will wraps non error throw in Error class', () => {
@@ -283,7 +283,7 @@ describe('custom error type', () => {
       const err = goRes.error;
 
       assertType<Error>(err);
-      expect(err instanceof Error).toBe(true);
+      expect(err).toBeInstanceOf(Error);
     });
   });
 
@@ -298,7 +298,7 @@ describe('custom error type', () => {
       assertType<Error>(err);
       // Check that "err" is not assignable to CustomError
       assertType.isFalse(false as Equal<CustomError, typeof err>);
-      expect(err instanceof CustomError).toBe(true);
+      expect(err).toBeInstanceOf(CustomError);
     });
 
     it('can specify custom error type', async () => {
@@ -309,7 +309,7 @@ describe('custom error type', () => {
       const err = goRes.error;
 
       assertType<CustomError>(err);
-      expect(err instanceof CustomError).toBe(true);
+      expect(err).toBeInstanceOf(CustomError);
     });
 
     it('will wraps non error throw in Error class', async () => {
@@ -320,7 +320,7 @@ describe('custom error type', () => {
       const err = goRes.error;
 
       assertType<Error>(err);
-      expect(err instanceof Error).toBe(true);
+      expect(err).toBeInstanceOf(Error);
     });
   });
 });
@@ -531,7 +531,7 @@ describe('delay', () => {
         { delay: { type: 'random', minDelayMs: 0, maxDelayMs: 100 }, retries: 2 }
       );
 
-      expect(ticks.length).toBe(3);
+      expect(ticks).toHaveLength(3);
       expectToBeAround(ticks[0]!, 0);
       expectToBeAround(ticks[1]!, 50);
       expectToBeAround(ticks[2]!, 150);
@@ -551,7 +551,7 @@ describe('delay', () => {
         { delay: { type: 'static', delayMs: 50 }, retries: 2 }
       );
 
-      expect(ticks.length).toBe(3);
+      expect(ticks).toHaveLength(3);
       expectToBeAround(ticks[0]!, 0);
       expectToBeAround(ticks[1]!, 50);
       expectToBeAround(ticks[2]!, 100);
@@ -572,7 +572,7 @@ describe('totalTimeoutMs', () => {
       { delay: { type: 'static', delayMs: 50 }, retries: 150, totalTimeoutMs: 150 }
     );
 
-    expect(ticks.length).toBe(3);
+    expect(ticks).toHaveLength(3);
     expectToBeAround(ticks[0]!, 0);
     expectToBeAround(ticks[1]!, 50);
     expectToBeAround(ticks[2]!, 100);
@@ -590,7 +590,7 @@ describe('totalTimeoutMs', () => {
       { delay: { type: 'static', delayMs: 50 }, retries: 10, totalTimeoutMs: 0 }
     );
 
-    expect(ticks.length).toBe(1);
+    expect(ticks).toHaveLength(1);
     expectToBeAround(ticks[0]!, 0);
   });
 
@@ -623,7 +623,7 @@ describe('onAttemptError', () => {
       { retries: 3, onAttemptError }
     );
 
-    expect(onAttemptError).toBeCalledTimes(3);
+    expect(onAttemptError).toHaveBeenCalledTimes(3);
     expect(onAttemptError).toHaveBeenNthCalledWith(1, fail(new Error('fail1')));
     expect(onAttemptError).toHaveBeenNthCalledWith(2, fail(new Error('fail2')));
     expect(onAttemptError).toHaveBeenNthCalledWith(3, fail(new Error('fail3')));
