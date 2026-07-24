@@ -24,7 +24,7 @@ export interface GoAsyncOptions<E extends Error = Error> {
 
 export class GoWrappedError extends Error {
   constructor(public reason: unknown) {
-    super('' + reason);
+    super(`${reason}`);
   }
 }
 
@@ -62,8 +62,8 @@ const createGoError = <E extends Error>(err: unknown): GoResultError<E> => {
 export const goSync = <T, E extends Error>(fn: () => T): GoResult<T, E> => {
   try {
     return success(fn());
-  } catch (err) {
-    return createGoError(err) as GoResultError<E>;
+  } catch (error) {
+    return createGoError(error) as GoResultError<E>;
   }
 };
 
@@ -120,18 +120,19 @@ const attempt = async <T, E extends Error>(
 
   // We need try/catch because `fn` might throw sync errors as well
   try {
-    if (attemptTimeoutMs === undefined) return success(await fn());
-    else {
+    if (attemptTimeoutMs === undefined) {
+      return success(await fn());
+    } else {
       timeout = cancellableTimeout(attemptTimeoutMs);
       const result = await Promise.race([fn(), timeout.promise]);
       timeout.cancel();
       return success(result);
     }
-  } catch (err) {
+  } catch (error) {
     if (timeout?.cancel) {
       timeout.cancel();
     }
-    return createGoError(err) as GoResultError<E>;
+    return createGoError(error) as GoResultError<E>;
   }
 };
 
@@ -165,11 +166,9 @@ export const go = async <T, E extends Error>(
       // or the last one if the index is out of bounds
       // if a single timeout is provided, use it for all attempts
       let currentAttemptTimeoutMs: number | undefined;
-      if (Array.isArray(attemptTimeoutMs)) {
-        currentAttemptTimeoutMs = attemptTimeoutMs[i] || attemptTimeoutMs.at(-1);
-      } else {
-        currentAttemptTimeoutMs = attemptTimeoutMs;
-      }
+      currentAttemptTimeoutMs = Array.isArray(attemptTimeoutMs)
+        ? attemptTimeoutMs[i] || attemptTimeoutMs.at(-1)
+        : attemptTimeoutMs;
       // Return early in case the global timeout has been exceeded during after attempt wait time.
       //
       // This is guaranteed to be false for the first attempt.

@@ -347,7 +347,7 @@ describe('the "this" limitation', () => {
   // The error message for when reading a property of undefined has changed between major node versions
   const expectReadPropertyOfUndefined = (res: unknown, prop: string) => {
     // process.version returns the version as the string: 'v[major].[minor].[patch]'
-    const majorVersion = process.version.split('.')[0]!.substring(1);
+    const majorVersion = process.version.split('.')[0]!.slice(1);
     if (Number(majorVersion) >= 16) {
       expect(res).toEqual(fail(new TypeError(`Cannot read properties of undefined (reading '${prop}')`)));
     } else {
@@ -379,7 +379,7 @@ describe('assertGoSuccess', () => {
     assertGoSuccess(res);
 
     // The "data" property should now be inferred since the success was asserted
-    const data = res.data;
+    const { data } = res;
     expect(data).toBe(data);
   });
 
@@ -412,7 +412,7 @@ describe('assertGoError', () => {
   });
 });
 
-it('has access to native error', async () => {
+test('has access to native error', async () => {
   const throwingFn = async () => {
     throw { message: 'an error', data: 'some data' };
   };
@@ -436,7 +436,7 @@ describe('documentation snippets are valid', () => {
   it('success usage', async () => {
     const goFetchData = await go(() => fetchData('users'));
     if (goFetchData.success) {
-      const data = goFetchData.data;
+      const { data } = goFetchData;
 
       assertType<string>(data);
       expect(data).toBe('some data');
@@ -446,7 +446,7 @@ describe('documentation snippets are valid', () => {
   it('error usage', async () => {
     const goFetchData = await go(() => fetchData('throw'));
     if (!goFetchData.success) {
-      const error = goFetchData.error;
+      const { error } = goFetchData;
 
       expect(error).toEqual(new Error('unexpected error'));
     }
@@ -457,7 +457,7 @@ describe('documentation snippets are valid', () => {
     const parseData = (rawData: typeof someData) => ({ ...rawData, parsed: true });
     const goParseData = goSync(() => parseData(someData));
     if (goParseData.success) {
-      const data = goParseData.data;
+      const { data } = goParseData;
 
       expect(data.parsed).toBe(true);
     }
@@ -496,16 +496,20 @@ describe('documentation snippets are valid', () => {
     try {
       const data = await someAsyncCall();
       assertType<never>(data); // The function above should throw
-    } catch (e) {
-      return logError((e as MyError).reason);
+    } catch (error) {
+      logError((error as MyError).reason);
+      return;
     }
 
     // Compare it to simpler version using go
     type MyData = Promise<never>;
     const goRes = await go<MyData, MyError>(someAsyncCall);
-    if (!goRes.success) return logError(goRes.error.reason);
+    if (!goRes.success) {
+      logError(goRes.error.reason);
+      return;
+    }
     // At this point TypeScript infers that the error was handled and goRes must be a success response
-    const data = goRes.data;
+    const { data } = goRes;
     assertType<MyData>(data);
   });
 });
@@ -619,7 +623,7 @@ describe('onAttemptError', () => {
     const goRes = await go(
       async () => {
         counter++;
-        throw new Error('fail' + counter);
+        throw new Error(`fail${counter}`);
       },
       { retries: 3, onAttemptError }
     );
@@ -648,7 +652,7 @@ describe('onAttemptError', () => {
   it('does not call the callback after successful attempt', async () => {
     const onAttemptError = jest.fn();
 
-    await go(async () => Promise.resolve(123), { onAttemptError });
+    await go(async () => 123, { onAttemptError });
 
     expect(onAttemptError).toHaveBeenCalledTimes(0);
   });
@@ -738,7 +742,7 @@ describe('onAttemptError', () => {
     const goRes = await go(
       async () => {
         counter++;
-        const m = 'fail' + counter;
+        const m = `fail${counter}`;
         log.push(`go callback: ${m}`);
         throw new Error(m);
       },
