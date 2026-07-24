@@ -1,6 +1,5 @@
-import { go } from '@api3/promise-utils';
-
 import { type Logger } from '../logger';
+import { go } from '../promises';
 import { generateRandomBytes32, sleep } from '../utils';
 
 export type RunInLoopExecutionIdOptions =

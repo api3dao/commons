@@ -1,5 +1,6 @@
 import { type Endpoint, RESERVED_PARAMETERS } from '@api3/ois';
-import { type GoAsyncOptions, go } from '@api3/promise-utils';
+
+import { type GoAsyncOptions, go } from '../promises';
 
 import {
   type EndpointParameters,

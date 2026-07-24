@@ -1,5 +1,6 @@
-import { go, type GoAsyncOptions } from '@api3/promise-utils';
 import axios, { type Method, type AxiosError, type AxiosResponse } from 'axios';
+
+import { go, type GoAsyncOptions } from '../promises';
 
 const DEFAULT_TIMEOUT_MS = 10_000;
 

@@ -1,5 +1,6 @@
-import { goSync } from '@api3/promise-utils';
 import { ZodError } from 'zod';
+
+import { goSync } from '../promises';
 
 import { interpolateSecretsIntoConfig } from './index';
 
