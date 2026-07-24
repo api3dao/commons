@@ -1,5 +1,6 @@
+import { assertType, type IsEqual } from 'type-plus';
+
 import { go, goSync, success, fail, assertGoSuccess, assertGoError, GoWrappedError } from './index';
-import { assertType, Equal } from 'type-plus';
 
 const expectToBeAround = (actual: number, expected: number, range = 10) => {
   expect(actual).toBeGreaterThanOrEqual(expected - range);
@@ -260,7 +261,7 @@ describe('custom error type', () => {
 
       assertType<Error>(err);
       // Check that "err" is not assignable to CustomError
-      assertType.isFalse(false as Equal<CustomError, typeof err>);
+      assertType.isFalse(false as IsEqual<CustomError, typeof err>);
       expect(err).toBeInstanceOf(CustomError);
     });
 
@@ -297,7 +298,7 @@ describe('custom error type', () => {
 
       assertType<Error>(err);
       // Check that "err" is not assignable to CustomError
-      assertType.isFalse(false as Equal<CustomError, typeof err>);
+      assertType.isFalse(false as IsEqual<CustomError, typeof err>);
       expect(err).toBeInstanceOf(CustomError);
     });
 
