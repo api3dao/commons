@@ -442,32 +442,29 @@ describe('documentation snippets are valid', () => {
 
   it('success usage', async () => {
     const goFetchData = await go(() => fetchData('users'));
-    if (goFetchData.success) {
-      const { data } = goFetchData;
+    assertGoSuccess(goFetchData);
+    const { data } = goFetchData;
 
-      assertType<string>(data);
-      expect(data).toBe('some data');
-    }
+    assertType<string>(data);
+    expect(data).toBe('some data');
   });
 
   it('error usage', async () => {
     const goFetchData = await go(() => fetchData('throw'));
-    if (!goFetchData.success) {
-      const { error } = goFetchData;
+    assertGoError(goFetchData);
+    const { error } = goFetchData;
 
-      expect(error).toStrictEqual(new GoWrappedError('unexpected error'));
-    }
+    expect(error).toStrictEqual(new GoWrappedError('unexpected error'));
   });
 
   it('sync usage', () => {
     const someData = { key: 123 };
     const parseData = (rawData: typeof someData) => ({ ...rawData, parsed: true });
     const goParseData = goSync(() => parseData(someData));
-    if (goParseData.success) {
-      const { data } = goParseData;
+    assertGoSuccess(goParseData);
+    const { data } = goParseData;
 
-      expect(data.parsed).toBe(true);
-    }
+    expect(data.parsed).toBe(true);
   });
 
   it('shows limitation', () => {
@@ -513,6 +510,7 @@ describe('documentation snippets are valid', () => {
     // Compare it to simpler version using go
     type MyData = Promise<never>;
     const goRes = await go<MyData, MyError>(someAsyncCall);
+    // eslint-disable-next-line jest/no-conditional-in-test
     if (!goRes.success) {
       logError(goRes.error.reason);
       return;
@@ -718,6 +716,7 @@ describe('onAttemptError', () => {
     });
   });
 
+  // eslint-disable-next-line jest/prefer-ending-with-an-expect -- assertions run inside the onAttemptError callback
   it('is automatically typed', async () => {
     class CustomError extends Error {
       custom: string;
@@ -792,6 +791,7 @@ describe('onAttemptError', () => {
     assertType<string>(goRes.data);
   });
 
+  // eslint-disable-next-line jest/prefer-ending-with-an-expect
   it('allows you to access both error and success properties', async () => {
     const { success, error, data } = goSync(() => 123);
     // @ts-expect-error should not work
@@ -799,6 +799,7 @@ describe('onAttemptError', () => {
     assertType<number | undefined>(data);
     assertType<Error | undefined>(error);
 
+    // eslint-disable-next-line jest/no-conditional-in-test -- verifies discriminated-union narrowing in both directions
     if (success) {
       assertType<number>(data);
       assertType<undefined>(error);
