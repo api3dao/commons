@@ -15,8 +15,8 @@ const rejectAfter = <T>(ms: number, value?: T): Promise<never> =>
 describe('basic goSync usage', () => {
   it('resolves successful synchronous functions', () => {
     const res = goSync(() => 2 + 2);
-    expect(res).toEqual(success(4));
-    expect(res).toEqual({ success: true, data: 4 });
+    expect(res).toStrictEqual(success(4));
+    expect(res).toStrictEqual({ success: true, data: 4, error: undefined });
   });
 
   it('resolves unsuccessful synchronous functions', () => {
@@ -24,8 +24,8 @@ describe('basic goSync usage', () => {
     const res = goSync(() => {
       throw err;
     });
-    expect(res).toEqual(fail(err));
-    expect(res).toEqual({ success: false, error: err });
+    expect(res).toStrictEqual(fail(err));
+    expect(res).toStrictEqual({ success: false, data: undefined, error: err });
   });
 });
 
@@ -33,14 +33,14 @@ describe('basic go usage', () => {
   it('resolves successful asynchronous functions', async () => {
     const successFn = new Promise((res) => res(2));
     const res = await go(() => successFn);
-    expect(res).toEqual(success(2));
+    expect(res).toStrictEqual(success(2));
   });
 
   it('resolves unsuccessful asynchronous functions', async () => {
     const err = new Error('Computer says no');
     const errorFn = new Promise((_res, rej) => rej(err));
     const res = await go(() => errorFn);
-    expect(res).toEqual(fail(err));
+    expect(res).toStrictEqual(fail(err));
   });
 
   it('resolves asynchronous functions which throws', async () => {
@@ -49,13 +49,13 @@ describe('basic go usage', () => {
       throw err;
     });
     const res = await go(() => errorFn);
-    expect(res).toEqual(fail(err));
+    expect(res).toStrictEqual(fail(err));
   });
 
   it('resolves on sync errors as well', async () => {
     const obj = {} as any;
     const res = await go(() => obj.nonExistingFunction());
-    expect(res).toEqual(fail(new TypeError('obj.nonExistingFunction is not a function')));
+    expect(res).toStrictEqual(fail(new TypeError('obj.nonExistingFunction is not a function')));
   });
 
   // NOTE: This is not an issue of promise utils library since the error is thrown before the value is passed as an
@@ -70,7 +70,7 @@ describe('basic go usage', () => {
     const res = await go(() => {
       throw err;
     });
-    expect(res).toEqual(fail(err));
+    expect(res).toStrictEqual(fail(err));
   });
 });
 
@@ -88,7 +88,7 @@ describe('basic retry usage', () => {
 
     const res = await go(operations.successFn, { retries: 2 });
     expect(operations.successFn).toHaveBeenCalledTimes(3);
-    expect(res).toEqual(success(2));
+    expect(res).toStrictEqual(success(2));
   });
 
   it('retries and resolves unsuccessful asynchronous functions with the error from last retry', async () => {
@@ -100,7 +100,7 @@ describe('basic retry usage', () => {
 
     const res = await go(operations.errorFn, { retries: 2 });
     expect(operations.errorFn).toHaveBeenCalledTimes(attempts);
-    expect(res).toEqual(fail(new Error('Computer says no')));
+    expect(res).toStrictEqual(fail(new Error('Computer says no')));
   });
 
   it('resolves unsuccessful asynchronous functions with no retries', async () => {
@@ -108,7 +108,7 @@ describe('basic retry usage', () => {
 
     const res = await go(operations.errorFn, { retries: 0 });
     expect(operations.errorFn).toHaveBeenCalledTimes(1);
-    expect(res).toEqual(fail(new Error('Computer says no')));
+    expect(res).toStrictEqual(fail(new Error('Computer says no')));
   });
 });
 
@@ -120,33 +120,33 @@ describe('basic timeout usage', () => {
 
   it('resolves successful asynchronous functions within the timout limit', async () => {
     const res = await go(operations.successFn, { attemptTimeoutMs: 20 });
-    expect(res).toEqual(success(2));
+    expect(res).toStrictEqual(success(2));
   });
 
   it('resolves unsuccessful asynchronous functions within the timout limit', async () => {
     const res = await go(operations.errorFn, { attemptTimeoutMs: 20 });
-    expect(res).toEqual(fail(new Error('Computer says no')));
+    expect(res).toStrictEqual(fail(new Error('Computer says no')));
   });
 
   it('resolves timed out asynchronous functions', async () => {
     const res = await go(operations.successFn, { attemptTimeoutMs: 5 });
-    expect(res).toEqual(fail(new Error('Operation timed out')));
+    expect(res).toStrictEqual(fail(new GoWrappedError('Operation timed out')));
   });
 
   it('shows difference between promise callback and promise value', async () => {
     // Promise value tries to resolve THE SAME promise every attempt
     const sleepPromise = resolveAfter(50);
     const goVal = await go(() => sleepPromise, { attemptTimeoutMs: 30, retries: 1 });
-    expect(goVal).toEqual(success(undefined));
+    expect(goVal).toStrictEqual(success(undefined));
 
     // Promise callback tries to resolve NEW promise every attempt
     const goFn = await go(() => resolveAfter(50), { attemptTimeoutMs: 30, retries: 1 });
-    expect(goFn).toEqual(fail(new Error('Operation timed out')));
+    expect(goFn).toStrictEqual(fail(new GoWrappedError('Operation timed out')));
   });
 
   it('shows that timeout 0 means 0 ms (not infinity)', async () => {
     const res = await go(operations.successFn, { attemptTimeoutMs: 0 });
-    expect(res).toEqual(fail(new Error('Operation timed out')));
+    expect(res).toStrictEqual(fail(new GoWrappedError('Operation timed out')));
   });
 });
 
@@ -158,12 +158,12 @@ describe('basic retry and timeout usage', () => {
 
   it('resolves successful asynchronous functions', async () => {
     const res = await go(operations.successFn, { attemptTimeoutMs: 120, retries: 3 });
-    expect(res).toEqual(success(2));
+    expect(res).toStrictEqual(success(2));
   });
 
   it('resolves unsuccessful asynchronous functions', async () => {
     const res = await go(operations.errorFn, { attemptTimeoutMs: 120, retries: 3 });
-    expect(res).toEqual(fail(new Error('Computer says no')));
+    expect(res).toStrictEqual(fail(new Error('Computer says no')));
   });
 
   it('retries and resolves successful asynchronous functions', async () => {
@@ -174,7 +174,7 @@ describe('basic retry and timeout usage', () => {
 
     const res = await go(operations.successFn, { attemptTimeoutMs: 120, retries: 3 });
     expect(operations.successFn).toHaveBeenCalledTimes(3);
-    expect(res).toEqual(success(2));
+    expect(res).toStrictEqual(success(2));
   });
 
   it('retries and resolves successful asynchronous functions with varying timeouts', async () => {
@@ -184,7 +184,7 @@ describe('basic retry and timeout usage', () => {
     const end = performance.now();
     expectToBeAround(end - start, 50 + 70 + 90 + 100);
     expect(operations.successFn).toHaveBeenCalledTimes(4);
-    expect(res).toEqual(success(2));
+    expect(res).toStrictEqual(success(2));
   });
 
   it('retries and resolves unsuccessful asynchronous functions', async () => {
@@ -195,7 +195,7 @@ describe('basic retry and timeout usage', () => {
 
     const res = await go(operations.errorFn, { attemptTimeoutMs: 120, retries: 2 });
     expect(operations.errorFn).toHaveBeenCalledTimes(3);
-    expect(res).toEqual(fail(new Error('Computer says no')));
+    expect(res).toStrictEqual(fail(new Error('Computer says no')));
   });
 
   it('retries and resolves unsuccessful timed out functions', async () => {
@@ -204,7 +204,7 @@ describe('basic retry and timeout usage', () => {
 
     const res = await go(operations.successFn, { attemptTimeoutMs: 50, retries: 2 });
     expect(operations.successFn).toHaveBeenCalledTimes(attempts);
-    expect(res).toEqual(fail(new Error('Operation timed out')));
+    expect(res).toStrictEqual(fail(new GoWrappedError('Operation timed out')));
   });
 
   it('retries with multiple timeout durations and resolves unsuccessful timed out functions', async () => {
@@ -216,7 +216,7 @@ describe('basic retry and timeout usage', () => {
     const end = performance.now();
     expectToBeAround(end - start, 50 + 70 + 90);
     expect(operations.successFn).toHaveBeenCalledTimes(attempts);
-    expect(res).toEqual(fail(new Error('Operation timed out')));
+    expect(res).toStrictEqual(fail(new GoWrappedError('Operation timed out')));
   });
 
   it('retries and timeouts within the timeout limit of each attempt', async () => {
@@ -226,7 +226,7 @@ describe('basic retry and timeout usage', () => {
     const end = performance.now();
     expectToBeAround(end - start, 50 + 60 + 70 + 80 + 90 + 95);
     expect(operations.successFn).toHaveBeenCalledTimes(6);
-    expect(res).toEqual(fail(new Error('Operation timed out')));
+    expect(res).toStrictEqual(fail(new GoWrappedError('Operation timed out')));
   });
 
   it('retries with multiple timeout durations and uses the last value if array length is smaller than total attempts', async () => {
@@ -237,7 +237,7 @@ describe('basic retry and timeout usage', () => {
     const end = performance.now();
     expectToBeAround(end - start, 50 + 70 + 70 + 70 + 70 + 70);
     expect(operations.successFn).toHaveBeenCalledTimes(attempts);
-    expect(res).toEqual(fail(new Error('Operation timed out')));
+    expect(res).toStrictEqual(fail(new GoWrappedError('Operation timed out')));
   });
 });
 
@@ -349,9 +349,9 @@ describe('the "this" limitation', () => {
     // process.version returns the version as the string: 'v[major].[minor].[patch]'
     const majorVersion = process.version.split('.')[0]!.slice(1);
     if (Number(majorVersion) >= 16) {
-      expect(res).toEqual(fail(new TypeError(`Cannot read properties of undefined (reading '${prop}')`)));
+      expect(res).toStrictEqual(fail(new TypeError(`Cannot read properties of undefined (reading '${prop}')`)));
     } else {
-      expect(res).toEqual(fail(new TypeError(`Cannot read property '${prop}' of undefined`)));
+      expect(res).toStrictEqual(fail(new TypeError(`Cannot read property '${prop}' of undefined`)));
     }
   };
 
@@ -421,9 +421,9 @@ test('has access to native error', async () => {
 
   assertGoError(goRes);
   // The error message is the  not very useful stringified data
-  expect(goRes.error).toEqual(new Error('[object Object]'));
+  expect(goRes.error).toStrictEqual(new GoWrappedError({ message: 'an error', data: 'some data' }));
   expect(goRes.error instanceof GoWrappedError).toBeTruthy();
-  expect(goRes.error.reason).toEqual({ message: 'an error', data: 'some data' });
+  expect(goRes.error.reason).toStrictEqual({ message: 'an error', data: 'some data' });
 });
 
 // NOTE: Keep in sync with README
@@ -448,7 +448,7 @@ describe('documentation snippets are valid', () => {
     if (!goFetchData.success) {
       const { error } = goFetchData;
 
-      expect(error).toEqual(new Error('unexpected error'));
+      expect(error).toStrictEqual(new GoWrappedError('unexpected error'));
     }
   });
 
@@ -490,7 +490,7 @@ describe('documentation snippets are valid', () => {
       }
     }
     const someAsyncCall = () => Promise.reject(new MyError('custom error'));
-    const logError = (mess: string) => expect(mess).toEqual(expect.any(String));
+    const logError = (mess: string) => expect(mess).toStrictEqual(expect.any(String));
 
     // Verbose try catch
     try {
@@ -517,7 +517,7 @@ describe('documentation snippets are valid', () => {
 describe('delay', () => {
   it('only delays on retries', async () => {
     const goRes = await go(async () => 123, { delay: { type: 'static', delayMs: 2000 } });
-    expect(goRes).toEqual(success(123));
+    expect(goRes).toStrictEqual(success(123));
   }, 20); // Make the test timeout smaller then the delay
 
   describe('random', () => {
@@ -611,7 +611,7 @@ describe('totalTimeoutMs', () => {
 
     const delta = Date.now() - now;
     expectToBeAround(delta, 20);
-    expect(goRes).toEqual(fail(new Error('Full timeout exceeded')));
+    expect(goRes).toStrictEqual(fail(new Error('Full timeout exceeded')));
   });
 });
 
@@ -632,7 +632,7 @@ describe('onAttemptError', () => {
     expect(onAttemptError).toHaveBeenNthCalledWith(1, fail(new Error('fail1')));
     expect(onAttemptError).toHaveBeenNthCalledWith(2, fail(new Error('fail2')));
     expect(onAttemptError).toHaveBeenNthCalledWith(3, fail(new Error('fail3')));
-    expect(goRes).toEqual(fail(new Error('fail4')));
+    expect(goRes).toStrictEqual(fail(new Error('fail4')));
   });
 
   it('does not trigger the callback after total timeout has been exceeded', async () => {
@@ -646,7 +646,7 @@ describe('onAttemptError', () => {
     );
 
     expect(onAttemptError).toHaveBeenCalledTimes(0);
-    expect(goRes).toEqual(fail(new Error('Full timeout exceeded')));
+    expect(goRes).toStrictEqual(fail(new Error('Full timeout exceeded')));
   });
 
   it('does not call the callback after successful attempt', async () => {
@@ -671,7 +671,7 @@ describe('onAttemptError', () => {
       await resolveAfter(30);
 
       expect(onAttemptError).toHaveBeenCalledTimes(0);
-      expect(goRes).toEqual(fail(new Error('Operation timed out')));
+      expect(goRes).toStrictEqual(fail(new GoWrappedError('Operation timed out')));
     });
 
     it('and total timeout', async () => {
@@ -687,7 +687,7 @@ describe('onAttemptError', () => {
       await resolveAfter(30);
 
       expect(onAttemptError).toHaveBeenCalledTimes(0);
-      expect(goRes).toEqual(fail(new Error('Full timeout exceeded')));
+      expect(goRes).toStrictEqual(fail(new Error('Full timeout exceeded')));
     });
 
     it('both attemp timeout and total timeout', async () => {
@@ -703,9 +703,9 @@ describe('onAttemptError', () => {
       await resolveAfter(50);
 
       expect(onAttemptError).toHaveBeenCalledTimes(2);
-      expect(onAttemptError).toHaveBeenNthCalledWith(1, fail(new Error('Operation timed out')));
-      expect(onAttemptError).toHaveBeenNthCalledWith(2, fail(new Error('Operation timed out')));
-      expect(goRes).toEqual(fail(new Error('Full timeout exceeded')));
+      expect(onAttemptError).toHaveBeenNthCalledWith(1, fail(new GoWrappedError('Operation timed out')));
+      expect(onAttemptError).toHaveBeenNthCalledWith(2, fail(new GoWrappedError('Operation timed out')));
+      expect(goRes).toStrictEqual(fail(new Error('Full timeout exceeded')));
     });
   });
 
@@ -726,7 +726,7 @@ describe('onAttemptError', () => {
       {
         retries: 3,
         onAttemptError: (goRes) => {
-          expect(goRes).toEqual(success(123));
+          expect(goRes).toStrictEqual(success(123));
 
           assertGoError(goRes);
           assertType<CustomError>(goRes.error);
@@ -758,10 +758,14 @@ describe('onAttemptError', () => {
       }
     );
 
-    expect(goRes).toEqual(fail(new Error('fail2')));
-    expect(log).toEqual(['go callback: fail1', 'onAttemptError: {"success":false,"error":{}}', 'go callback: fail2']);
+    expect(goRes).toStrictEqual(fail(new Error('fail2')));
+    expect(log).toStrictEqual([
+      'go callback: fail1',
+      'onAttemptError: {"success":false,"error":{}}',
+      'go callback: fail2',
+    ]);
     await resolveAfter(50); // We need to wait for unfinished onAttemptError callbacks
-    expect(log).toEqual([
+    expect(log).toStrictEqual([
       'go callback: fail1',
       'onAttemptError: {"success":false,"error":{}}',
       'go callback: fail2',
