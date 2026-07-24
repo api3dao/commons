@@ -25,6 +25,7 @@ Read the documentation and sources of each module how to use it in the project.
 - [http](./src/http/README.md)
 - [logger](./src/logger/README.md)
 - [processing](./src/processing/README.md)
+- [promises](./src/promises/README.md)
 - [release-scripts](./src/release-scripts/README.md)
 - [run-in-loop](./src/run-in-loop/README.md)
 - [utils](./src/utils/README.md)
@@ -52,7 +53,6 @@ manually, by adding the following to your `tsconfig.json`:
 - [contracts](https://github.com/api3dao/contracts)
 - [eslint-plugin-commons](https://github.com/api3dao/eslint-plugin-commons)
 - [ois](https://github.com/api3dao/ois)
-- [promise-utils](https://github.com/api3dao/promise-utils)
 
 ## For developers
 
