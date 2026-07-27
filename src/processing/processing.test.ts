@@ -1,8 +1,8 @@
 /* eslint-disable jest/prefer-strict-equal */ // Because the errors are thrown from the "vm" module (different context), they are not strictly equal.
-import { go } from '@api3/promise-utils';
 import { ZodError } from 'zod';
 
 import { createEndpoint } from '../../test/fixtures/processing';
+import { go } from '../promise-utils';
 
 import {
   addReservedParameters,
@@ -59,7 +59,7 @@ describe(preProcessEndpointParametersV1.name, () => {
 
     const throwingFunc = async () => preProcessEndpointParametersV1(preProcessingSpecifications, parameters);
 
-    await expect(throwingFunc).rejects.toThrow('SyntaxError: Unexpected identifier');
+    await expect(throwingFunc).rejects.toThrow('Unexpected identifier');
   });
 
   it('demonstrates access to endpointParameters, but reserved parameters are inaccessible', async () => {
@@ -193,7 +193,7 @@ describe(postProcessResponseV1.name, () => {
 
     const throwingFunc = async () => postProcessResponseV1({ price: 1000 }, postProcessingSpecifications, parameters);
 
-    await expect(throwingFunc).rejects.toThrow('SyntaxError: Unexpected identifier');
+    await expect(throwingFunc).rejects.toThrow('Unexpected identifier');
   });
 });
 
@@ -299,7 +299,7 @@ describe(preProcessEndpointParametersV2.name, () => {
 
       const throwingFunc = async () => preProcessEndpointParametersV2(preProcessingSpecificationV2, parameters);
 
-      await expect(throwingFunc).rejects.toThrow('SyntaxError: Unexpected identifier');
+      await expect(throwingFunc).rejects.toThrow('Unexpected identifier');
     });
 
     it('reserved parameters are inaccessible', async () => {
@@ -452,7 +452,7 @@ describe(postProcessResponseV2.name, () => {
       const throwingFunc = async () =>
         postProcessResponseV2({ price: 1000 }, postProcessingSpecificationV2, parameters);
 
-      await expect(throwingFunc).rejects.toThrow('SyntaxError: Unexpected identifier');
+      await expect(throwingFunc).rejects.toThrow('Unexpected identifier');
     });
   });
 

@@ -35,7 +35,7 @@ import vm from 'node:vm';
 import worker_threads from 'node:worker_threads';
 import zlib from 'node:zlib';
 
-import { type GoWrappedError, go } from '@api3/promise-utils';
+import { type GoWrappedError, go } from '../promise-utils';
 
 import { createTimers } from './vm-timers';
 

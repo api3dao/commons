@@ -3,6 +3,25 @@
   "rules": {
     "lodash/import-scope": ["error", "method"]
   },
+  "overrides": [
+    {
+      "files": ["**/*.test.ts"],
+      "rules": {
+        "jest/prefer-ending-with-an-expect": [
+          "error",
+          {
+            "assertFunctionNames": ["expect*", "assertGoSuccess", "assertGoError", "assertType"]
+          }
+        ],
+        "jest/expect-expect": [
+          "warn",
+          {
+            "assertFunctionNames": ["expect*", "assertGoSuccess", "assertGoError", "assertType"]
+          }
+        ]
+      }
+    }
+  ],
   "parserOptions": {
     "project": ["./tsconfig.json"]
   }

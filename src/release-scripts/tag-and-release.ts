@@ -17,8 +17,9 @@
 import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
-import { go } from '@api3/promise-utils';
 import { Octokit } from '@octokit/rest';
+
+import { go } from '../promise-utils';
 
 const execSyncWithErrorHandling = (command: string) => {
   // eslint-disable-next-line functional/no-try-statements
