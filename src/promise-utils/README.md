@@ -1,4 +1,4 @@
-# Promises
+# Promise utils
 
 > A simple module for a functional and typesafe error handling
 
@@ -61,7 +61,7 @@ The return value from the promise utils functions works very well with TypeScrip
 
 ## API
 
-The full `promises` API consists of the following functions:
+The full `promise-utils` API consists of the following functions:
 
 - `go(asyncFn, options)` - Executes the `asyncFn` and returns a response of type `GoResult`
 - `goSync(fn)` - Executes the `fn` and returns a response of type `GoResult`

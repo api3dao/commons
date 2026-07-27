@@ -2,7 +2,7 @@
 import { ZodError } from 'zod';
 
 import { createEndpoint } from '../../test/fixtures/processing';
-import { go } from '../promises';
+import { go } from '../promise-utils';
 
 import {
   addReservedParameters,

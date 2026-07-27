@@ -1,5 +1,5 @@
 import { type Logger } from '../logger';
-import { go } from '../promises';
+import { go } from '../promise-utils';
 import { generateRandomBytes32, sleep } from '../utils';
 
 export type RunInLoopExecutionIdOptions =

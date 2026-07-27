@@ -1,6 +1,6 @@
 import axios, { type Method, type AxiosError, type AxiosResponse } from 'axios';
 
-import { go, type GoAsyncOptions } from '../promises';
+import { go, type GoAsyncOptions } from '../promise-utils';
 
 const DEFAULT_TIMEOUT_MS = 10_000;
 

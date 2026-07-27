@@ -1,6 +1,6 @@
 import { ZodError } from 'zod';
 
-import { goSync } from '../promises';
+import { goSync } from '../promise-utils';
 
 import { interpolateSecretsIntoConfig } from './index';
 
