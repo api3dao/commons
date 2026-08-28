@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 
-import type { Address, Hex, Mnemonic } from './schema';
+import type { Address, Hex, Mnemonic } from './schema.js';
 
 export const PROTOCOL_IDS = {
   RRP: '1',

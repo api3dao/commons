@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 
-import { tagAndRelease } from '../src/release-scripts';
+import { tagAndRelease } from '../src/release-scripts/index.js';
 
 const main = async () => {
   await tagAndRelease('commons', join(__dirname, '../package.json'));

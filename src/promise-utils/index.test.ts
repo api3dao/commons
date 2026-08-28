@@ -3,7 +3,7 @@
 /* eslint-disable functional/no-classes */
 import { assertType, type IsEqual } from 'type-plus';
 
-import { go, goSync, success, fail, assertGoSuccess, assertGoError, GoWrappedError } from './index';
+import { go, goSync, success, fail, assertGoSuccess, assertGoError, GoWrappedError } from './index.js';
 
 const expectToBeAround = (actual: number, expected: number, range = 10) => {
   expect(actual).toBeGreaterThanOrEqual(expected - range);

@@ -1,6 +1,6 @@
-import { type Logger } from '../logger';
-import { go } from '../promise-utils';
-import { generateRandomBytes32, sleep } from '../utils';
+import { type Logger } from '../logger/index.js';
+import { go } from '../promise-utils/index.js';
+import { generateRandomBytes32, sleep } from '../utils/index.js';
 
 export type RunInLoopExecutionIdOptions =
   | {

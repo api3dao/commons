@@ -35,9 +35,9 @@ import vm from 'node:vm';
 import worker_threads from 'node:worker_threads';
 import zlib from 'node:zlib';
 
-import { type GoWrappedError, go } from '../promise-utils';
+import { type GoWrappedError, go } from '../promise-utils/index.js';
 
-import { createTimers } from './vm-timers';
+import { createTimers } from './vm-timers.js';
 
 const builtInNodeModules = {
   assert,

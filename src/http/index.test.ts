@@ -1,6 +1,6 @@
 import { AxiosError, type AxiosResponse } from 'axios';
 
-import { executeRequest, extractAxiosErrorData } from '.';
+import { executeRequest, extractAxiosErrorData } from './index.js';
 
 describe(extractAxiosErrorData.name, () => {
   it('should return an error response object', () => {

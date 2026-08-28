@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import { z } from 'zod';
 
-import { goSync } from '../promise-utils';
+import { goSync } from '../promise-utils/index.js';
 
 export const hexSchema = z
   .string()

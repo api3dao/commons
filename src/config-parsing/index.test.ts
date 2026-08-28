@@ -1,8 +1,8 @@
 import { ZodError } from 'zod';
 
-import { goSync } from '../promise-utils';
+import { goSync } from '../promise-utils/index.js';
 
-import { interpolateSecretsIntoConfig } from './index';
+import { interpolateSecretsIntoConfig } from './index.js';
 
 const rawConfig = {
   property: 'value',

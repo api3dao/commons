@@ -6,6 +6,8 @@ module.exports = {
   collectCoverage: true,
   coverageDirectory: 'coverage',
   coverageProvider: 'v8',
+  // Maps the ".js" extension of relative imports back to the TypeScript sources.
+  moduleNameMapper: { '^(\\.{1,2}/.*)\\.js$': '$1' },
   modulePathIgnorePatterns: ['<rootDir>/.build', '<rootDir>/dist/', '<rootDir>/build/'],
   preset: 'ts-jest',
   restoreMocks: true,

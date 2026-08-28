@@ -16,16 +16,24 @@
     "dist",
     "src"
   ],
-  "browser": "./dist/universal-index.js",
-  "main": "./dist/node-index.js",
+  "browser": "./dist/esm/universal-index.js",
+  "main": "./dist/cjs/node-index.js",
   "exports": {
     ".": {
-      "browser": "./dist/universal-index.js",
-      "default": "./dist/node-index.js"
+      "browser": {
+        "import": "./dist/esm/universal-index.js",
+        "require": "./dist/cjs/universal-index.js",
+        "default": "./dist/esm/universal-index.js"
+      },
+      "import": "./dist/esm/node-index.js",
+      "require": "./dist/cjs/node-index.js",
+      "default": "./dist/cjs/node-index.js"
     }
   },
   "scripts": {
-    "build": "tsc --project tsconfig.build.json",
+    "build": "pnpm run build:cjs && pnpm run build:esm",
+    "build:cjs": "tsc --project tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > dist/cjs/package.json",
+    "build:esm": "tsc --project tsconfig.esm.json && echo '{ \"type\": \"module\" }' > dist/esm/package.json",
     "clean": "rm -rf coverage dist",
     "eslint:check": "eslint --report-unused-disable-directives --cache --ext js,ts,tsx,jsx . --max-warnings 0",
     "eslint:fix": "pnpm run eslint:check --fix",
@@ -35,7 +43,8 @@
     "prettier:fix": "prettier --write \"./**/*.{js,ts,md,json}\"",
     "release:tag": "ts-node scripts/tag-and-release.ts",
     "test": "jest",
-    "tsc": "tsc --project ."
+    "tsc": "tsc --project .",
+    "verify:dist": "ts-node scripts/verify-dist.ts"
   },
   "dependencies": {
     "@api3/ois": "^3.0.0",

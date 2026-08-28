@@ -42,10 +42,16 @@ manually, by adding the following to your `tsconfig.json`:
 ```json
 "compilerOptions": {
   "paths": {
-    "@api3/commons": ["./node_modules/@api3/commons/dist/universal-index.d.ts"]
+    "@api3/commons": ["./node_modules/@api3/commons/dist/esm/universal-index.d.ts"]
   }
 }
 ```
+
+## ESM and CommonJS
+
+The package ships both module systems. `dist/esm` holds the ES modules and `dist/cjs` holds the CommonJS modules. Both
+come with type declarations. The bundler or Node.js picks the right one through the `exports` field, so `import` and
+`require` both work without any configuration on your side.
 
 ## Related repositories
 

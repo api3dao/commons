@@ -1,6 +1,6 @@
-import noop from 'lodash/noop';
+import noop from 'lodash/noop.js';
 
-import { type LogConfig, createBaseLogger, wrapper } from '.';
+import { type LogConfig, createBaseLogger, wrapper } from './index.js';
 
 const createTestLogger = (
   logConfig: LogConfig = { enabled: true, minLevel: 'debug', format: 'json', colorize: false }

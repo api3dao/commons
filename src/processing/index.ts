@@ -1,3 +1,3 @@
-export * from './processing';
-export * from './schema';
-export * from './unsafe-evaluate';
+export * from './processing.js';
+export * from './schema.js';
+export * from './unsafe-evaluate.js';

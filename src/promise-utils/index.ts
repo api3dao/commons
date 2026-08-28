@@ -1,7 +1,7 @@
 /* eslint-disable functional/no-try-statements */
 
-import isError from 'lodash/isError';
-import noop from 'lodash/noop';
+import isError from 'lodash/isError.js';
+import noop from 'lodash/noop.js';
 
 // NOTE: We use discriminated unions over "success" property
 export type GoResultSuccess<T> = { data: T; success: true; error: undefined };
