@@ -2,7 +2,7 @@ import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { createSha256Hash, serializePlainObject, sortObjectKeysRecursively } from '.';
+import { createSha256Hash, serializePlainObject, sortObjectKeysRecursively } from './index.js';
 
 describe(sortObjectKeysRecursively.name, () => {
   it('should sort the keys alphabetically', () => {

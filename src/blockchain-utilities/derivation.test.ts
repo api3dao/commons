@@ -14,8 +14,8 @@ import {
   PROTOCOL_IDS,
   toBytes32String,
   verifyAirnodeXpub,
-} from './derivation';
-import type { Address } from './schema';
+} from './derivation.js';
+import type { Address } from './schema.js';
 
 describe(deriveWalletPathFromSponsorAddress.name, () => {
   it('converts address to derivation path', () => {

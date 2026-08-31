@@ -19,7 +19,7 @@ import { readFileSync } from 'node:fs';
 
 import { Octokit } from '@octokit/rest';
 
-import { go } from '../promise-utils';
+import { go } from '../promise-utils/index.js';
 
 const execSyncWithErrorHandling = (command: string) => {
   // eslint-disable-next-line functional/no-try-statements

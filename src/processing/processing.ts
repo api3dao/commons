@@ -1,6 +1,6 @@
 import { type Endpoint, RESERVED_PARAMETERS } from '@api3/ois';
 
-import { type GoAsyncOptions, go } from '../promise-utils';
+import { type GoAsyncOptions, go } from '../promise-utils/index.js';
 
 import {
   type EndpointParameters,
@@ -11,8 +11,8 @@ import {
   type PostProcessingV2Response,
   type ProcessingSpecificationV2,
   type ProcessingSpecifications,
-} from './schema';
-import { unsafeEvaluate, unsafeEvaluateAsync, unsafeEvaluateV2 } from './unsafe-evaluate';
+} from './schema.js';
+import { unsafeEvaluate, unsafeEvaluateAsync, unsafeEvaluateV2 } from './unsafe-evaluate.js';
 
 export const DEFAULT_PROCESSING_TIMEOUT_MS = 10_000;
 

@@ -1,2 +1,2 @@
-export * from './derivation';
-export * from './schema';
+export * from './derivation.js';
+export * from './schema.js';

@@ -1,7 +1,7 @@
-import { type Logger } from '../logger';
-import * as utils from '../utils';
+import { type Logger } from '../logger/index.js';
+import * as utils from '../utils/index.js';
 
-import { runInLoop } from './index';
+import { runInLoop } from './index.js';
 
 const createMockLogger = (): Logger => ({
   runWithContext: jest.fn((_: Record<string, any>, fn: () => any) => fn()) as Logger['runWithContext'],

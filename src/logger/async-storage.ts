@@ -1,6 +1,6 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 
-import type { LogContext } from '.';
+import type { LogContext } from './index.js';
 
 let asyncLocalStorage: AsyncLocalStorage<LogContext>;
 

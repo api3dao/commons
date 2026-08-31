@@ -1,8 +1,8 @@
-import isError from 'lodash/isError';
+import isError from 'lodash/isError.js';
 import winston from 'winston';
 import { consoleFormat } from 'winston-console-format';
 
-import { getAsyncLocalStorage } from './async-storage';
+import { getAsyncLocalStorage } from './async-storage.js';
 
 export const logFormatOptions = ['json', 'pretty'] as const;
 

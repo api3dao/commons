@@ -1,4 +1,11 @@
-import { addressSchema, hexSchema, keccak256HashSchema, chainIdSchema, ethUnitsSchema, mnemonicSchema } from './schema';
+import {
+  addressSchema,
+  hexSchema,
+  keccak256HashSchema,
+  chainIdSchema,
+  ethUnitsSchema,
+  mnemonicSchema,
+} from './schema.js';
 
 describe('addressSchema', () => {
   it('validates a valid address and returns its checksum', () => {

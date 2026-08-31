@@ -2,10 +2,18 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const getExports = (filename: string) => {
-  return readFileSync(join(__dirname, '../src', filename), 'utf8')
-    .split('\n')
-    .filter((line) => line.startsWith('export * from'))
-    .map((line) => line.split("'./")[1]!.split("';")[0]!);
+  return (
+    readFileSync(join(__dirname, '../src', filename), 'utf8')
+      .split('\n')
+      .filter((line) => line.startsWith('export * from'))
+      // Turns "export * from './logger/index.js';" into "logger".
+      .map((line) =>
+        line
+          .split("'./")[1]!
+          .split("';")[0]!
+          .replace(/(?:\/index)?\.js$/, '')
+      )
+  );
 };
 
 test('all modules are exported', () => {

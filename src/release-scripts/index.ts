@@ -1,1 +1,1 @@
-export * from './tag-and-release';
+export * from './tag-and-release.js';

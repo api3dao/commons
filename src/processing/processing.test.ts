@@ -1,8 +1,8 @@
 /* eslint-disable jest/prefer-strict-equal */ // Because the errors are thrown from the "vm" module (different context), they are not strictly equal.
 import { ZodError } from 'zod';
 
-import { createEndpoint } from '../../test/fixtures/processing';
-import { go } from '../promise-utils';
+import { createEndpoint } from '../../test/fixtures/processing.js';
+import { go } from '../promise-utils/index.js';
 
 import {
   addReservedParameters,
@@ -13,8 +13,8 @@ import {
   preProcessEndpointParametersV1,
   preProcessEndpointParametersV2,
   removeReservedParameters,
-} from './processing';
-import type { ProcessingSpecificationV2, ProcessingSpecifications } from './schema';
+} from './processing.js';
+import type { ProcessingSpecificationV2, ProcessingSpecifications } from './schema.js';
 
 describe(preProcessEndpointParametersV1.name, () => {
   it('valid processing code', async () => {
