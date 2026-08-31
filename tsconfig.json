@@ -22,5 +22,9 @@
     "noPropertyAccessFromIndexSignature": false
   },
   "exclude": ["dist/**/*", "coverage/**/*", "node_modules/**/*"],
-  "include": ["**/*"]
+  "include": ["**/*"],
+  // Maps the ".js" extension of relative imports back to the TypeScript sources.
+  "ts-node": {
+    "experimentalResolver": true
+  }
 }
