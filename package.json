@@ -49,7 +49,7 @@
   "dependencies": {
     "@api3/ois": "^3.0.0",
     "@octokit/rest": "^20.1.1",
-    "axios": "^1.18.1",
+    "axios": "^1.19.0",
     "dotenv": "^17.4.2",
     "ethers": "^5.8.0",
     "lodash": "^4.18.1",
