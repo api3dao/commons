@@ -20,15 +20,15 @@ export type Secrets = Record<string, string>;
 
 // Regular expression that does not match anything, ensuring no escaping or interpolation happens
 // https://github.com/lodash/lodash/blob/4.17.15/lodash.js#L199
-// eslint-disable-next-line prefer-named-capture-group
+
 const NO_MATCH_REGEXP = /($^)/;
 // Regular expression matching ES template literal delimiter (${}) with escaping
 // https://github.com/lodash/lodash/blob/4.17.15/lodash.js#L175
-// eslint-disable-next-line prefer-named-capture-group
+
 const ES_MATCH_REGEXP = /(?<!\\)\${([^\\}]*(?:\\.[^\\}]*)*)}/g;
 // Regular expression matching the escaped ES template literal delimiter (${}). We need to use "\\\\" (four backslashes)
 // because "\\" becomes "\\\\" when converted to string
-// eslint-disable-next-line prefer-named-capture-group
+
 const ESCAPED_ES_MATCH_REGEXP = /\\\\(\${([^\\}]*(?:\\.[^\\}]*)*)})/g;
 
 export interface InterpolationOptions {

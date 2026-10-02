@@ -532,8 +532,8 @@ describe('delay', () => {
       const now = Date.now();
       const ticks: number[] = [];
 
-      jest.spyOn(global.Math, 'random').mockReturnValueOnce(0.5);
-      jest.spyOn(global.Math, 'random').mockReturnValueOnce(1);
+      jest.spyOn(globalThis.Math, 'random').mockReturnValueOnce(0.5);
+      jest.spyOn(globalThis.Math, 'random').mockReturnValueOnce(1);
 
       await go(
         async () => {
