@@ -23,13 +23,13 @@ describe(deriveWalletPathFromSponsorAddress.name, () => {
     const res = deriveWalletPathFromSponsorAddress(sponsorAddress, PROTOCOL_IDS.AIRSEEKER);
     expect(res).toBe('5/973563544/2109481170/2137349576/871269377/610184194/17');
 
-    const randomAddress = ethers.utils.getAddress(ethers.utils.hexlify(ethers.utils.randomBytes(20))) as Address;
+    const randomAddress = ethers.getAddress(ethers.hexlify(ethers.randomBytes(20))) as Address;
     const randomPath = deriveWalletPathFromSponsorAddress(randomAddress, PROTOCOL_IDS.AIRSEEKER);
     expect(res).not.toStrictEqual(randomPath);
   });
 
   it('converts zero address to derivation path', () => {
-    const sponsorAddress = ethers.constants.AddressZero;
+    const sponsorAddress = ethers.ZeroAddress as Address;
     const res = deriveWalletPathFromSponsorAddress(sponsorAddress, PROTOCOL_IDS.AIRSEEKER);
     expect(res).toBe('5/0/0/0/0/0/0');
   });
@@ -58,7 +58,7 @@ describe(deriveWalletPathFromSponsorAddress.name, () => {
 
 describe(deriveSponsorWallet.name, () => {
   it('derives a sponsor wallet', () => {
-    const dapiName = ethers.utils.formatBytes32String('BTC/ETH');
+    const dapiName = ethers.encodeBytes32String('BTC/ETH');
     const sponsorWallet = deriveSponsorWallet(
       'test test test test test test test test test test test junk',
       dapiName,
@@ -77,14 +77,14 @@ describe(deriveSponsorWallet.name, () => {
   });
 
   it('derives the same sponsor wallet as Airnode', () => {
-    function deriveSponsorWalletAirnode(masterHDNode: ethers.utils.HDNode, sponsorAddress: Address): ethers.Wallet {
+    function deriveSponsorWalletAirnode(masterHDNode: ethers.HDNodeWallet, sponsorAddress: Address): ethers.Wallet {
       const sponsorWalletHdNode = masterHDNode.derivePath(
         `m/44'/60'/0'/${deriveWalletPathFromSponsorAddress(sponsorAddress, '1')}`
       );
       return new ethers.Wallet(sponsorWalletHdNode.privateKey);
     }
     const mnemonic = 'achieve climb couple wait accident symbol spy blouse reduce foil echo label';
-    const hdNode = ethers.utils.HDNode.fromMnemonic(mnemonic);
+    const hdNode = ethers.HDNodeWallet.fromPhrase(mnemonic, undefined, 'm');
 
     // https://github.com/api3dao/airnode/blob/a4c17c28c8b31c9fb13d2828764b89f1063b702f/packages/airnode-node/src/evm/wallet.test.ts#L25
     const expectedSponsorWallet = deriveSponsorWalletAirnode(hdNode, '0x06f509f73eefba36352bc8228f9112c3786100da');

@@ -11,7 +11,7 @@ export const hexSchema = z
 export type Hex = z.infer<typeof hexSchema>;
 
 export const addressSchema = z.string().transform((value, ctx) => {
-  const goParseAddress = goSync(() => ethers.utils.getAddress(value));
+  const goParseAddress = goSync(() => ethers.getAddress(value));
   if (!goParseAddress.success) {
     ctx.issues.push({ code: 'custom', message: 'Invalid EVM address', input: value });
     return z.NEVER;
@@ -50,6 +50,6 @@ export type EthUnits = z.infer<typeof ethUnitsSchema>;
 
 export const mnemonicSchema = z
   .string()
-  .refine((mnemonic) => ethers.utils.isValidMnemonic(mnemonic), 'Invalid mnemonic');
+  .refine((mnemonic) => ethers.Mnemonic.isValidMnemonic(mnemonic), 'Invalid mnemonic');
 
 export type Mnemonic = z.infer<typeof mnemonicSchema>;
