@@ -280,6 +280,17 @@ describe('custom error type', () => {
       expect(err).toBeInstanceOf(CustomError);
     });
 
+    it('defaults the error type when only the data type is specified', () => {
+      const goRes = goSync<number>(() => {
+        throw new CustomError('custom');
+      });
+      assertGoError(goRes);
+      const err = goRes.error;
+
+      assertType<IsEqual<Error, typeof err>>(true);
+      expect(err).toBeInstanceOf(CustomError);
+    });
+
     it('will wraps non error throw in Error class', () => {
       const goRes = goSync(() => {
         throw 'string-error';
@@ -316,6 +327,53 @@ describe('custom error type', () => {
 
       assertType<CustomError>(err);
       expect(err).toBeInstanceOf(CustomError);
+    });
+
+    it('defaults the error type when only the data type is specified', async () => {
+      const goRes = await go<number>(async () => {
+        throw new CustomError('custom');
+      });
+      assertGoError(goRes);
+      const err = goRes.error;
+
+      assertType<IsEqual<Error, typeof err>>(true);
+      expect(err).toBeInstanceOf(CustomError);
+    });
+
+    it('can specify the resolved data type of an async function', async () => {
+      const goRes = await go<number, CustomError>(async () => 123);
+      assertGoSuccess(goRes);
+      const { data } = goRes;
+
+      assertType<IsEqual<number, typeof data>>(true);
+      expect(data).toBe(123);
+    });
+
+    it('unwraps the data type when the promise type is specified', async () => {
+      const goRes = await go<Promise<number>, CustomError>(async () => 123);
+      assertGoSuccess(goRes);
+      const { data } = goRes;
+
+      assertType<IsEqual<number, typeof data>>(true);
+      expect(data).toBe(123);
+    });
+
+    it('rejects a function resolving to a different type than the specified data type', async () => {
+      // @ts-expect-error The function resolves to a string, but the data type is specified as a number
+      const goRes = await go<number>(async () => 'string');
+
+      expect(goRes.success).toBe(true);
+    });
+
+    it('infers the union of resolved types of an async function returning different promise types', async () => {
+      const resolveNumberOrString = (): Promise<number> | Promise<string> => resolveAfter(0, 123);
+
+      const goRes = await go(async () => resolveNumberOrString());
+      assertGoSuccess(goRes);
+      const { data } = goRes;
+
+      assertType<IsEqual<number | string, typeof data>>(true);
+      expect(data).toBe(123);
     });
 
     it('will wraps non error throw in Error class', async () => {
@@ -424,7 +482,7 @@ test('has access to native error', async () => {
     throw { message: 'an error', data: 'some data' };
   };
 
-  const goRes = await go<Promise<never>, GoWrappedError>(throwingFn);
+  const goRes = await go<never, GoWrappedError>(throwingFn);
 
   assertGoError(goRes);
   // The error message is the  not very useful stringified data
@@ -508,7 +566,7 @@ describe('documentation snippets are valid', () => {
     }
 
     // Compare it to simpler version using go
-    type MyData = Promise<never>;
+    type MyData = never;
     const goRes = await go<MyData, MyError>(someAsyncCall);
     // eslint-disable-next-line jest/no-conditional-in-test
     if (!goRes.success) {
@@ -727,7 +785,7 @@ describe('onAttemptError', () => {
       }
     }
 
-    await go<Promise<never>, CustomError>(
+    await go<never, CustomError>(
       async () => {
         throw new CustomError('fail');
       },
