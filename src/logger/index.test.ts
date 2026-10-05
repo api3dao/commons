@@ -2,7 +2,7 @@ import { makeError } from 'ethers';
 import noop from 'lodash/noop.js';
 import { z } from 'zod';
 
-import { createBaseLogger, wrapper, type LogConfig } from './index.js';
+import { createBaseLogger, validateLogConfig, wrapper, type LogConfig } from './index.js';
 
 // Winston stores the serialized log entry under this symbol, which the "triple-beam" package exports as MESSAGE.
 const serializedLogEntryKey = Symbol.for('message');
@@ -237,4 +237,59 @@ test('serializes bigints in JSON logs', () => {
 
   const [serializedLogEntry] = getSerializedLogEntries();
   expect(JSON.parse(serializedLogEntry!).ctx).toStrictEqual({ amount: '1000000000000000000' });
+});
+
+test('truncates hex data longer than maxHexDataLength in JSON logs', () => {
+  const { logger, getSerializedLogEntries } = createTestLoggerWithCapturedLogEntries({ maxHexDataLength: 100 });
+  const hexDataWithMaxLength = `0x${'ab'.repeat(49)}`;
+  const longHexData = `0x${'cd'.repeat(49)}e`;
+
+  logger.info('Sending transaction', { hexDataWithMaxLength, longHexData });
+
+  const [serializedLogEntry] = getSerializedLogEntries();
+  expect(JSON.parse(serializedLogEntry!).ctx).toStrictEqual({
+    hexDataWithMaxLength,
+    longHexData: '0xcdcdcdcdcd...<101 chars>',
+  });
+});
+
+test('truncates all long hex data in a string value', () => {
+  const { logger, getSerializedLogEntries } = createTestLoggerWithCapturedLogEntries({ maxHexDataLength: 20 });
+  const calldata = `0x${'ab'.repeat(60)}`;
+  const returndata = `0x${'cd'.repeat(55)}`;
+
+  logger.error('Transaction failed', new Error(`calldata: ${calldata}, returndata: ${returndata}`));
+
+  const [serializedLogEntry] = getSerializedLogEntries();
+  expect(JSON.parse(serializedLogEntry!).error.message).toBe(
+    'calldata: 0xababababab...<122 chars>, returndata: 0xcdcdcdcdcd...<112 chars>'
+  );
+});
+
+test('does not truncate hex data when maxHexDataLength is not set', () => {
+  const { logger, getSerializedLogEntries } = createTestLoggerWithCapturedLogEntries();
+  const calldata = `0x${'ab'.repeat(1000)}`;
+
+  logger.info('Sending transaction', { calldata });
+
+  const [serializedLogEntry] = getSerializedLogEntries();
+  expect(JSON.parse(serializedLogEntry!).ctx).toStrictEqual({ calldata });
+});
+
+test('validates maxHexDataLength', () => {
+  const logConfig: LogConfig = { enabled: true, minLevel: 'debug', format: 'json', colorize: false };
+
+  expect(validateLogConfig({ ...logConfig, maxHexDataLength: 100 })).toStrictEqual({
+    ...logConfig,
+    maxHexDataLength: 100,
+  });
+  expect(() => validateLogConfig({ ...logConfig, maxHexDataLength: 0 })).toThrow(
+    'Invalid logger configuration: maxHexDataLength must be a positive integer'
+  );
+  expect(() => validateLogConfig({ ...logConfig, maxHexDataLength: 1.5 })).toThrow(
+    'Invalid logger configuration: maxHexDataLength must be a positive integer'
+  );
+  expect(() => validateLogConfig({ ...logConfig, maxHexDataLength: '100' })).toThrow(
+    'Invalid logger configuration: maxHexDataLength must be a positive integer'
+  );
 });

@@ -67,3 +67,10 @@ const logger = createLogger({
   ],
 });
 ```
+
+### `maxHexDataLength`
+
+Optional positive integer that limits the length of hex data (such as transaction calldata) in the logs. Every `0x`
+prefixed hex string that has more than `maxHexDataLength` characters (including the `0x` prefix) is truncated to its
+first 12 characters followed by its original length, for example `0xababababab...<1024 chars>`. Only the `json` format
+truncates hex data.

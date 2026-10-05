@@ -22,23 +22,37 @@ export interface LogConfig {
   colorize: boolean;
   enabled: boolean;
   format: LogFormat;
+  maxHexDataLength?: number | undefined;
   minLevel: LogLevel;
   redactionRules?: RedactionRule[] | undefined;
 }
 
+const truncatedHexDataPrefixLength = 12;
+
+const truncateHexData = (value: string, longHexDataPattern: RegExp) =>
+  value.replaceAll(
+    longHexDataPattern,
+    (hexData) => `${hexData.slice(0, truncatedHexDataPrefixLength)}...<${hexData.length} chars>`
+  );
+
 const createJsonReplacer = (config: LogConfig) => {
-  const { redactionRules = [] } = config;
+  const { maxHexDataLength, redactionRules = [] } = config;
+  // The "0x" prefix counts towards the length, so the pattern needs one hex digit less than the maximum length.
+  const longHexDataPattern =
+    maxHexDataLength === undefined ? undefined : new RegExp(String.raw`0x[\dA-Fa-f]{${maxHexDataLength - 1},}`, 'g');
 
   return (_key: string, value: unknown) => {
     // A custom replacer overrides the default one of the JSON format, which is what serializes bigints.
     if (typeof value === 'bigint') return value.toString();
     if (!isString(value)) return value;
 
-    return redactionRules.reduce(
+    const redactedValue = redactionRules.reduce(
       // eslint-disable-next-line unicorn/no-unsafe-string-replacement -- Rules may use patterns like "$<prefix>".
-      (redactedValue, { pattern, replacement }) => redactedValue.replace(pattern, replacement),
+      (partiallyRedactedValue, { pattern, replacement }) => partiallyRedactedValue.replace(pattern, replacement),
       value
     );
+
+    return longHexDataPattern ? truncateHexData(redactedValue, longHexDataPattern) : redactedValue;
   };
 };
 
@@ -178,7 +192,7 @@ export const validateLogConfig = (config: unknown): LogConfig => {
     throw new Error('Invalid logger configuration');
   }
 
-  const { colorize, enabled, format, minLevel } = config as Partial<LogConfig>;
+  const { colorize, enabled, format, maxHexDataLength, minLevel } = config as Partial<LogConfig>;
 
   if (typeof colorize !== 'boolean') {
     throw new TypeError('Invalid logger configuration: colorize must be a boolean');
@@ -188,6 +202,9 @@ export const validateLogConfig = (config: unknown): LogConfig => {
   }
   if (!logFormatOptions.includes(format as any)) {
     throw new TypeError('Invalid logger configuration: format must be one of "json" or "pretty"');
+  }
+  if (maxHexDataLength !== undefined && (!Number.isSafeInteger(maxHexDataLength) || maxHexDataLength <= 0)) {
+    throw new TypeError('Invalid logger configuration: maxHexDataLength must be a positive integer');
   }
   if (!logLevelOptions.includes(minLevel as any)) {
     throw new TypeError('Invalid logger configuration: minLevel must be one of "debug", "info", "warn" or "error"');
