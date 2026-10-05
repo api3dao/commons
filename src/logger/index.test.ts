@@ -4,6 +4,9 @@ import { z } from 'zod';
 
 import { createBaseLogger, wrapper, type LogConfig } from './index.js';
 
+// Winston stores the serialized log entry under this symbol, which the "triple-beam" package exports as MESSAGE.
+const serializedLogEntryKey = Symbol.for('message');
+
 const createTestLogger = () => {
   const baseLogger = createBaseLogger({ enabled: true, minLevel: 'debug', format: 'json', colorize: false });
   const logger = wrapper(baseLogger);
@@ -28,8 +31,14 @@ const createTestLoggerWithCapturedLogEntries = (logConfigOverrides: Partial<LogC
     .spyOn(baseLogger.transports[0]!, 'log')
     .mockImplementation((_logEntry: any, next: () => void) => next());
   const getLogEntries = () => transportLogSpy.mock.calls.map(([logEntry]) => logEntry);
+  const getSerializedLogEntries = (): string[] => getLogEntries().map((logEntry) => logEntry[serializedLogEntryKey]);
 
-  return { logger: wrapper(baseLogger), getLogEntries };
+  return { logger: wrapper(baseLogger), getLogEntries, getSerializedLogEntries };
+};
+
+const infuraRedactionRule = {
+  pattern: /(?<prefix>https:\/\/[\w-]+\.infura\.io\/v3\/)[\w-]+/g,
+  replacement: '$<prefix>********',
 };
 
 test('works with sync functions', () => {
@@ -187,4 +196,45 @@ test('logs an error when passed as context to non error level', () => {
   expect(baseLogger.debug).toHaveBeenCalledWith('debug message', { ctx: { error: 'some-error', name: 'Error' } });
   expect(baseLogger.info).toHaveBeenCalledWith('info message', { ctx: { error: 'some-error', name: 'Error' } });
   expect(baseLogger.warn).toHaveBeenCalledWith('warn message', { ctx: { error: 'some-error', name: 'Error' } });
+});
+
+test('redacts sensitive data in JSON logs', () => {
+  const { logger, getSerializedLogEntries } = createTestLoggerWithCapturedLogEntries({
+    redactionRules: [infuraRedactionRule],
+  });
+
+  logger.info('Connecting to https://mainnet.infura.io/v3/secret-key', {
+    urls: ['https://mainnet.infura.io/v3/secret-key', 'https://base-mainnet.infura.io/v3/secret-key'],
+  });
+
+  const [serializedLogEntry] = getSerializedLogEntries();
+  expect(serializedLogEntry).not.toContain('secret-key');
+  expect(JSON.parse(serializedLogEntry!)).toMatchObject({
+    message: 'Connecting to https://mainnet.infura.io/v3/********',
+    ctx: { urls: ['https://mainnet.infura.io/v3/********', 'https://base-mainnet.infura.io/v3/********'] },
+  });
+});
+
+test('redacts sensitive data in the fields of a logged error', () => {
+  const { logger, getSerializedLogEntries } = createTestLoggerWithCapturedLogEntries({
+    redactionRules: [infuraRedactionRule],
+  });
+  const error = makeError('server error', 'SERVER_ERROR', { request: 'https://mainnet.infura.io/v3/secret-key' });
+
+  logger.error('Request failed', error);
+
+  const [serializedLogEntry] = getSerializedLogEntries();
+  expect(serializedLogEntry).not.toContain('secret-key');
+  expect(JSON.parse(serializedLogEntry!).error.request).toBe('https://mainnet.infura.io/v3/********');
+});
+
+test('serializes bigints in JSON logs', () => {
+  const { logger, getSerializedLogEntries } = createTestLoggerWithCapturedLogEntries({
+    redactionRules: [infuraRedactionRule],
+  });
+
+  logger.info('Transferring tokens', { amount: 10n ** 18n });
+
+  const [serializedLogEntry] = getSerializedLogEntries();
+  expect(JSON.parse(serializedLogEntry!).ctx).toStrictEqual({ amount: '1000000000000000000' });
 });

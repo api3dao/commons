@@ -48,3 +48,22 @@ Defines the minimum level of logs. Logs with smaller level (severity) will be si
 - `info` - Enables logs with level `info`, `warn` and `error`.
 - `warn` - Enables logs with level `warn` and `error`.
 - `error` - Enables logs with level `error`.
+
+### `redactionRules`
+
+Optional list of rules that redact sensitive data (for example API keys in RPC URLs) from the logs. Each rule has a
+`pattern` regular expression and a `replacement` string, which the logger passes to `String.prototype.replace` for every
+string value in the log entry. Use the `g` flag to replace all occurrences in a value. Only the `json` format applies
+the rules.
+
+```ts
+const logger = createLogger({
+  colorize: false,
+  enabled: true,
+  format: 'json',
+  minLevel: 'info',
+  redactionRules: [
+    { pattern: /(?<prefix>https:\/\/[\w-]+\.infura\.io\/v3\/)[\w-]+/g, replacement: '$<prefix>********' },
+  ],
+});
+```

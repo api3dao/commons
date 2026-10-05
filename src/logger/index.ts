@@ -1,4 +1,5 @@
 import isError from 'lodash/isError.js';
+import isString from 'lodash/isString.js';
 import winston from 'winston';
 import { consoleFormat } from 'winston-console-format';
 
@@ -12,12 +13,34 @@ export const logLevelOptions = ['debug', 'info', 'warn', 'error'] as const;
 
 export type LogLevel = (typeof logLevelOptions)[number];
 
+export interface RedactionRule {
+  pattern: RegExp;
+  replacement: string;
+}
+
 export interface LogConfig {
   colorize: boolean;
   enabled: boolean;
   format: LogFormat;
   minLevel: LogLevel;
+  redactionRules?: RedactionRule[] | undefined;
 }
+
+const createJsonReplacer = (config: LogConfig) => {
+  const { redactionRules = [] } = config;
+
+  return (_key: string, value: unknown) => {
+    // A custom replacer overrides the default one of the JSON format, which is what serializes bigints.
+    if (typeof value === 'bigint') return value.toString();
+    if (!isString(value)) return value;
+
+    return redactionRules.reduce(
+      // eslint-disable-next-line unicorn/no-unsafe-string-replacement -- Rules may use patterns like "$<prefix>".
+      (redactedValue, { pattern, replacement }) => redactedValue.replace(pattern, replacement),
+      value
+    );
+  };
+};
 
 const createConsoleTransport = (config: LogConfig) => {
   const { colorize, enabled, format } = config;
@@ -28,7 +51,7 @@ const createConsoleTransport = (config: LogConfig) => {
 
   switch (format) {
     case 'json': {
-      return new winston.transports.Console({ format: winston.format.json() });
+      return new winston.transports.Console({ format: winston.format.json({ replacer: createJsonReplacer(config) }) });
     }
     case 'pretty': {
       const formats = [
