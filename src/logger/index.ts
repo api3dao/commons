@@ -95,6 +95,15 @@ const parseLocalContext = (localContext: LogContext | undefined) => {
   return localContext;
 };
 
+const parseError = (error: Error) => ({
+  // A JS error has no own enumerable `message`, `name` or `stack`, so the spread keeps only the additional fields (of an
+  // ethers.js error, for example) and we add the rest explicitly.
+  ...error,
+  message: error.message,
+  name: error.name,
+  stack: error.stack,
+});
+
 const createFullContext = (localContext: LogContext | undefined) => {
   const globalContext = getAsyncLocalStorage().getStore();
   if (!globalContext && !localContext) return;
@@ -121,7 +130,9 @@ export const wrapper = (logger: winston.Logger): Logger => {
     // We need to handle both overloads of the `error` function
     error: (message, errorOrLocalContext: Error | LogContext, localContext?: LogContext) => {
       if (errorOrLocalContext instanceof Error) {
-        logger.error(message, errorOrLocalContext, createFullContext(localContext));
+        // Winston merges additional arguments into the log entry, where fields of the error (like the `message` of a Zod
+        // error) would override the log message, so we log the error as a separate field instead.
+        logger.error(message, { ...createFullContext(localContext), error: parseError(errorOrLocalContext) });
       } else {
         logger.error(message, createFullContext(errorOrLocalContext));
       }

@@ -8,6 +8,13 @@ Backend-only logger for Node.js packages based on Winston logger.
 
 Import `createLogger` function to create a logger instance.
 
+## Logging errors
+
+Pass the error as the second argument of `logger.error`, for example
+`logger.error('Failed to fetch data', error, { chainId })`. The error is logged in a separate `error` field with its
+`message`, `name`, `stack` and any additional fields that the error carries. This way, the error cannot override the
+fields of the log entry, such as the log message.
+
 ## Configuration
 
 Logger configuration allows specifying log format, styling and level.

@@ -1,6 +1,8 @@
+import { makeError } from 'ethers';
 import noop from 'lodash/noop.js';
+import { z } from 'zod';
 
-import { createBaseLogger, wrapper } from './index.js';
+import { createBaseLogger, wrapper, type LogConfig } from './index.js';
 
 const createTestLogger = () => {
   const baseLogger = createBaseLogger({ enabled: true, minLevel: 'debug', format: 'json', colorize: false });
@@ -12,6 +14,22 @@ const createTestLogger = () => {
   jest.spyOn(baseLogger, 'child').mockImplementation(noop as any);
 
   return { baseLogger, logger };
+};
+
+const createTestLoggerWithCapturedLogEntries = (logConfigOverrides: Partial<LogConfig> = {}) => {
+  const baseLogger = createBaseLogger({
+    enabled: true,
+    minLevel: 'debug',
+    format: 'json',
+    colorize: false,
+    ...logConfigOverrides,
+  });
+  const transportLogSpy = jest
+    .spyOn(baseLogger.transports[0]!, 'log')
+    .mockImplementation((_logEntry: any, next: () => void) => next());
+  const getLogEntries = () => transportLogSpy.mock.calls.map(([logEntry]) => logEntry);
+
+  return { logger: wrapper(baseLogger), getLogEntries };
 };
 
 test('works with sync functions', () => {
@@ -115,11 +133,46 @@ test('can log using all variants of logger.error', () => {
 
   expect(baseLogger.error).toHaveBeenNthCalledWith(1, 'only message', undefined);
   expect(baseLogger.error).toHaveBeenNthCalledWith(2, 'message and context', { ctx: { requestId: 'parent' } });
-  expect(baseLogger.error).toHaveBeenNthCalledWith(3, 'message and error', new Error('some-error'), undefined);
-  expect(baseLogger.error).toHaveBeenNthCalledWith(4, 'message, error and context', new Error('some-error'), {
-    ctx: {
-      requestId: 'parent',
-    },
+  expect(baseLogger.error).toHaveBeenNthCalledWith(3, 'message and error', {
+    error: { message: 'some-error', name: 'Error', stack: expect.any(String) },
+  });
+  expect(baseLogger.error).toHaveBeenNthCalledWith(4, 'message, error and context', {
+    ctx: { requestId: 'parent' },
+    error: { message: 'some-error', name: 'Error', stack: expect.any(String) },
+  });
+});
+
+test('keeps the log message when logging an error with an own message field', () => {
+  const { logger, getLogEntries } = createTestLoggerWithCapturedLogEntries();
+  const { error } = z.object({ amount: z.string() }).safeParse({ amount: 123 });
+
+  logger.error('Parsing failed', error!, { requestId: 'parent' });
+
+  expect(getLogEntries()).toStrictEqual([
+    expect.objectContaining({
+      message: 'Parsing failed',
+      ctx: { requestId: 'parent' },
+      error: { message: error!.message, name: 'ZodError', stack: error!.stack },
+    }),
+  ]);
+});
+
+test('logs the additional fields of an error inside the error field', () => {
+  const { logger, getLogEntries } = createTestLoggerWithCapturedLogEntries();
+  const error = makeError('invalid argument', 'INVALID_ARGUMENT', { argument: 'amount', value: 123 });
+
+  logger.error('Validation failed', error);
+
+  const [logEntry] = getLogEntries();
+  expect(logEntry.message).toBe('Validation failed');
+  expect(logEntry.code).toBeUndefined();
+  expect(logEntry.error).toMatchObject({
+    argument: 'amount',
+    code: 'INVALID_ARGUMENT',
+    message: error.message,
+    name: 'TypeError',
+    stack: error.stack,
+    value: 123,
   });
 });
 
