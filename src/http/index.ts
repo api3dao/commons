@@ -1,4 +1,4 @@
-import axios, { type Method, type AxiosError, type AxiosResponse } from 'axios';
+import axios, { type AxiosError, type AxiosResponse, type Method } from 'axios';
 
 import { go, type GoAsyncOptions } from '../promise-utils/index.js';
 

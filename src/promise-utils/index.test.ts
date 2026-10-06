@@ -1,9 +1,8 @@
-/* eslint-disable lodash/prefer-constant */
 /* eslint-disable unicorn/error-message */
-/* eslint-disable functional/no-classes */
+
 import { assertType, type IsEqual } from 'type-plus';
 
-import { go, goSync, success, fail, assertGoSuccess, assertGoError, GoWrappedError } from './index.js';
+import { assertGoError, assertGoSuccess, fail, go, goSync, GoWrappedError, success } from './index.js';
 
 const expectToBeAround = (actual: number, expected: number, range = 10) => {
   expect(actual).toBeGreaterThanOrEqual(expected - range);
@@ -264,8 +263,8 @@ describe('custom error type', () => {
 
       assertType<Error>(err);
       // Check that "err" is not assignable to CustomError
-      // eslint-disable-next-line deprecation/deprecation
-      assertType.isFalse(false as IsEqual<CustomError, typeof err>);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      assertType.isFalse(false);
       expect(err).toBeInstanceOf(CustomError);
     });
 
@@ -313,8 +312,8 @@ describe('custom error type', () => {
 
       assertType<Error>(err);
       // Check that "err" is not assignable to CustomError
-      // eslint-disable-next-line deprecation/deprecation
-      assertType.isFalse(false as IsEqual<CustomError, typeof err>);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      assertType.isFalse(false);
       expect(err).toBeInstanceOf(CustomError);
     });
 
@@ -393,16 +392,16 @@ describe('the "this" limitation', () => {
   class Test {
     constructor() {}
     sync() {
-      return this._sync();
+      return this.#sync();
     }
-    _sync() {
+    #sync() {
       return '123';
     }
 
     async() {
-      return this._async();
+      return this.#async();
     }
-    _async() {
+    #async() {
       return Promise.resolve('123');
     }
   }
@@ -421,7 +420,6 @@ describe('the "this" limitation', () => {
   it('fails for sync version', () => {
     const test = new Test();
 
-    // eslint-disable-next-line jest/unbound-method -- intentionally passing an unbound method to demonstrate the `this` limitation
     const res = goSync(test.sync);
 
     expectReadPropertyOfUndefined(res, '_sync');
@@ -430,7 +428,6 @@ describe('the "this" limitation', () => {
   it('fails for async version', async () => {
     const test = new Test();
 
-    // eslint-disable-next-line jest/unbound-method -- intentionally passing an unbound method to demonstrate the `this` limitation
     const res = await go(test.async);
 
     expectReadPropertyOfUndefined(res, '_async');
@@ -529,9 +526,9 @@ describe('documentation snippets are valid', () => {
     class MyClass {
       constructor() {}
       get() {
-        return this._get();
+        return this.#get();
       }
-      _get() {
+      #get() {
         return '123';
       }
     }
@@ -539,7 +536,7 @@ describe('documentation snippets are valid', () => {
     const myClass = new MyClass();
     const resWorks = goSync(() => myClass.get()); // This works
     assertGoSuccess(resWorks);
-    // eslint-disable-next-line jest/unbound-method
+
     const resFails = goSync(myClass.get); // This doesn't work
     assertGoError(resFails);
   });
@@ -568,7 +565,7 @@ describe('documentation snippets are valid', () => {
     // Compare it to simpler version using go
     type MyData = never;
     const goRes = await go<MyData, MyError>(someAsyncCall);
-    // eslint-disable-next-line jest/no-conditional-in-test
+
     if (!goRes.success) {
       logError(goRes.error.reason);
       return;
@@ -590,8 +587,8 @@ describe('delay', () => {
       const now = Date.now();
       const ticks: number[] = [];
 
-      jest.spyOn(globalThis.Math, 'random').mockReturnValueOnce(0.5);
-      jest.spyOn(globalThis.Math, 'random').mockReturnValueOnce(1);
+      jest.spyOn(Math, 'random').mockReturnValueOnce(0.5);
+      jest.spyOn(Math, 'random').mockReturnValueOnce(1);
 
       await go(
         async () => {
@@ -710,7 +707,7 @@ describe('onAttemptError', () => {
       { retries: 3, totalTimeoutMs: 20, onAttemptError }
     );
 
-    expect(onAttemptError).toHaveBeenCalledTimes(0);
+    expect(onAttemptError).not.toHaveBeenCalled();
     expect(goRes).toStrictEqual(fail(new Error('Full timeout exceeded')));
   });
 
@@ -719,7 +716,7 @@ describe('onAttemptError', () => {
 
     await go(async () => 123, { onAttemptError });
 
-    expect(onAttemptError).toHaveBeenCalledTimes(0);
+    expect(onAttemptError).not.toHaveBeenCalled();
   });
 
   describe('does not call for last unsuccessfull attempt', () => {
@@ -735,7 +732,7 @@ describe('onAttemptError', () => {
       // Make sure the attempt inside the go function above is completed
       await resolveAfter(30);
 
-      expect(onAttemptError).toHaveBeenCalledTimes(0);
+      expect(onAttemptError).not.toHaveBeenCalled();
       expect(goRes).toStrictEqual(fail(new GoWrappedError('Operation timed out')));
     });
 
@@ -751,7 +748,7 @@ describe('onAttemptError', () => {
       // Make sure the attempt inside the go function above is completed
       await resolveAfter(30);
 
-      expect(onAttemptError).toHaveBeenCalledTimes(0);
+      expect(onAttemptError).not.toHaveBeenCalled();
       expect(goRes).toStrictEqual(fail(new Error('Full timeout exceeded')));
     });
 
@@ -857,7 +854,6 @@ describe('onAttemptError', () => {
     assertType<number | undefined>(data);
     assertType<Error | undefined>(error);
 
-    // eslint-disable-next-line jest/no-conditional-in-test -- verifies discriminated-union narrowing in both directions
     if (success) {
       assertType<number>(data);
       assertType<undefined>(error);

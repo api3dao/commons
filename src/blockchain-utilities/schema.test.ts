@@ -1,9 +1,9 @@
 import {
   addressSchema,
-  hexSchema,
-  keccak256HashSchema,
   chainIdSchema,
   ethUnitsSchema,
+  hexSchema,
+  keccak256HashSchema,
   mnemonicSchema,
 } from './schema.js';
 

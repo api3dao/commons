@@ -27,7 +27,6 @@ export interface GoAsyncOptions<E extends Error = Error> {
   onAttemptError?: (goRes: GoResultError<E>) => void; // Callback invoked after each failed attempt is completed. This callback does not fire for the last attempt or when a "totalTimeoutMs" is exceeded (these should be handled explicitly with the result of "go" call).
 }
 
-// eslint-disable-next-line functional/no-classes
 export class GoWrappedError extends Error {
   constructor(public reason: unknown) {
     super(`${reason}`);
@@ -69,7 +68,7 @@ export const goSync = <T, E extends Error = Error>(fn: () => T): GoResult<T, E> 
   try {
     return success(fn());
   } catch (error) {
-    return createGoError(error) as GoResultError<E>;
+    return createGoError<E>(error);
   }
 };
 
@@ -138,7 +137,7 @@ const attempt = async <T, E extends Error>(
     if (timeout?.cancel) {
       timeout.cancel();
     }
-    return createGoError(error) as GoResultError<E>;
+    return createGoError<E>(error);
   }
 };
 

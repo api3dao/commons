@@ -25,11 +25,11 @@ const NO_MATCH_REGEXP = /($^)/;
 // Regular expression matching ES template literal delimiter (${}) with escaping
 // https://github.com/lodash/lodash/blob/4.17.15/lodash.js#L175
 
-const ES_MATCH_REGEXP = /(?<!\\)\${([^\\}]*(?:\\.[^\\}]*)*)}/g;
+const ES_MATCH_REGEXP = /(?<!\\)\$\{([^\\}]*(?:\\.[^\\}]*)*)\}/g;
 // Regular expression matching the escaped ES template literal delimiter (${}). We need to use "\\\\" (four backslashes)
 // because "\\" becomes "\\\\" when converted to string
 
-const ESCAPED_ES_MATCH_REGEXP = /\\\\(\${([^\\}]*(?:\\.[^\\}]*)*)})/g;
+const ESCAPED_ES_MATCH_REGEXP = /\\\\(\$\{([^\\}]*(?:\\.[^\\}]*)*)\})/g;
 
 export interface InterpolationOptions {
   allowBlankSecretValue?: boolean;

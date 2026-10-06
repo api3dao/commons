@@ -35,7 +35,7 @@ import vm from 'node:vm';
 import worker_threads from 'node:worker_threads';
 import zlib from 'node:zlib';
 
-import { type GoWrappedError, go } from '../promise-utils/index.js';
+import { go, type GoWrappedError } from '../promise-utils/index.js';
 
 import { createTimers } from './vm-timers.js';
 
@@ -144,9 +144,8 @@ export const unsafeEvaluateV2 = async (code: string, payload: unknown, timeout: 
 
   if (goEvaluate.success) {
     return goEvaluate.data;
-  } else {
-    throw (goEvaluate.error.reason as Error) ?? goEvaluate.error;
   }
+  throw (goEvaluate.error.reason as Error) ?? goEvaluate.error;
 };
 
 /**

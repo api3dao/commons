@@ -1,16 +1,16 @@
-import { type Endpoint, RESERVED_PARAMETERS } from '@api3/ois';
+import { RESERVED_PARAMETERS, type Endpoint } from '@api3/ois';
 
-import { type GoAsyncOptions, go } from '../promise-utils/index.js';
+import { go, type GoAsyncOptions } from '../promise-utils/index.js';
 
 import {
-  type EndpointParameters,
-  postProcessingV2ResponseSchema,
   endpointParametersSchema,
+  postProcessingV2ResponseSchema,
   preProcessingV2ResponseSchema,
-  type PreProcessingV2Response,
+  type EndpointParameters,
   type PostProcessingV2Response,
-  type ProcessingSpecificationV2,
+  type PreProcessingV2Response,
   type ProcessingSpecifications,
+  type ProcessingSpecificationV2,
 } from './schema.js';
 import { unsafeEvaluate, unsafeEvaluateAsync, unsafeEvaluateV2 } from './unsafe-evaluate.js';
 

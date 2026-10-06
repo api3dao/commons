@@ -1,23 +1,8 @@
 {
   "name": "@api3/commons",
   "version": "2.0.0",
-  "keywords": [],
   "license": "MIT",
-  "engines": {
-    "node": ">=18.20.8"
-  },
-  "packageManager": "pnpm@10.34.4",
-  "sideEffects": false,
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/api3dao/commons"
-  },
-  "files": [
-    "dist",
-    "src"
-  ],
-  "browser": "./dist/esm/universal-index.js",
-  "main": "./dist/cjs/node-index.js",
+  "repository": "github:api3dao/commons",
   "exports": {
     ".": {
       "browser": {
@@ -30,6 +15,13 @@
       "default": "./dist/cjs/node-index.js"
     }
   },
+  "main": "./dist/cjs/node-index.js",
+  "browser": "./dist/esm/universal-index.js",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18.20.8"
+  },
+  "packageManager": "pnpm@10.34.4",
   "scripts": {
     "build": "pnpm run build:cjs && pnpm run build:esm",
     "build:cjs": "tsc --project tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > dist/cjs/package.json",
@@ -46,6 +38,11 @@
     "tsc": "tsc --project .",
     "verify:dist": "ts-node scripts/verify-dist.ts"
   },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "keywords": [],
   "dependencies": {
     "@api3/ois": "^3.0.0",
     "@octokit/rest": "^20.1.1",
