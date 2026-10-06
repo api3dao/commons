@@ -1,9 +1,8 @@
-/* eslint-disable lodash/prefer-constant */
 /* eslint-disable unicorn/error-message */
-/* eslint-disable functional/no-classes */
+
 import { assertType, type IsEqual } from 'type-plus';
 
-import { go, goSync, success, fail, assertGoSuccess, assertGoError, GoWrappedError } from './index.js';
+import { assertGoError, assertGoSuccess, fail, go, goSync, GoWrappedError, success } from './index.js';
 
 const expectToBeAround = (actual: number, expected: number, range = 10) => {
   expect(actual).toBeGreaterThanOrEqual(expected - range);
@@ -12,8 +11,8 @@ const expectToBeAround = (actual: number, expected: number, range = 10) => {
 
 const resolveAfter = <T>(ms: number, value?: T): Promise<T> =>
   new Promise((resolve) => setTimeout(() => resolve(value as T), ms));
-const rejectAfter = <T>(ms: number, value?: T): Promise<never> =>
-  new Promise((_resolve, reject) => setTimeout(() => reject(value), ms));
+const rejectAfter = (ms: number, error: Error): Promise<never> =>
+  new Promise((_resolve, reject) => setTimeout(() => reject(error), ms));
 
 describe('basic goSync usage', () => {
   it('resolves successful synchronous functions', () => {
@@ -263,9 +262,8 @@ describe('custom error type', () => {
       const err = goRes.error;
 
       assertType<Error>(err);
-      // Check that "err" is not assignable to CustomError
-      // eslint-disable-next-line deprecation/deprecation
-      assertType.isFalse(false as IsEqual<CustomError, typeof err>);
+      // Check that "err" is not typed as CustomError
+      assertType<IsEqual<CustomError, typeof err>>(false);
       expect(err).toBeInstanceOf(CustomError);
     });
 
@@ -293,6 +291,7 @@ describe('custom error type', () => {
 
     it('will wraps non error throw in Error class', () => {
       const goRes = goSync(() => {
+        // eslint-disable-next-line @typescript-eslint/only-throw-error -- Tests that non-error throws are wrapped.
         throw 'string-error';
       });
       assertGoError(goRes);
@@ -312,9 +311,8 @@ describe('custom error type', () => {
       const err = goRes.error;
 
       assertType<Error>(err);
-      // Check that "err" is not assignable to CustomError
-      // eslint-disable-next-line deprecation/deprecation
-      assertType.isFalse(false as IsEqual<CustomError, typeof err>);
+      // Check that "err" is not typed as CustomError
+      assertType<IsEqual<CustomError, typeof err>>(false);
       expect(err).toBeInstanceOf(CustomError);
     });
 
@@ -378,6 +376,7 @@ describe('custom error type', () => {
 
     it('will wraps non error throw in Error class', async () => {
       const goRes = await go(() => {
+        // eslint-disable-next-line @typescript-eslint/only-throw-error -- Tests that non-error throws are wrapped.
         throw 'string-error';
       });
       assertGoError(goRes);
@@ -393,16 +392,16 @@ describe('the "this" limitation', () => {
   class Test {
     constructor() {}
     sync() {
-      return this._sync();
+      return this.getSyncValue();
     }
-    _sync() {
+    getSyncValue() {
       return '123';
     }
 
     async() {
-      return this._async();
+      return this.getAsyncValue();
     }
-    _async() {
+    getAsyncValue() {
       return Promise.resolve('123');
     }
   }
@@ -421,19 +420,17 @@ describe('the "this" limitation', () => {
   it('fails for sync version', () => {
     const test = new Test();
 
-    // eslint-disable-next-line jest/unbound-method -- intentionally passing an unbound method to demonstrate the `this` limitation
     const res = goSync(test.sync);
 
-    expectReadPropertyOfUndefined(res, '_sync');
+    expectReadPropertyOfUndefined(res, 'getSyncValue');
   });
 
   it('fails for async version', async () => {
     const test = new Test();
 
-    // eslint-disable-next-line jest/unbound-method -- intentionally passing an unbound method to demonstrate the `this` limitation
     const res = await go(test.async);
 
-    expectReadPropertyOfUndefined(res, '_async');
+    expectReadPropertyOfUndefined(res, 'getAsyncValue');
   });
 });
 
@@ -479,6 +476,7 @@ describe('assertGoError', () => {
 
 test('has access to native error', async () => {
   const throwingFn = async () => {
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- Tests that the thrown value is kept as "reason".
     throw { message: 'an error', data: 'some data' };
   };
 
@@ -494,6 +492,7 @@ test('has access to native error', async () => {
 // NOTE: Keep in sync with README
 describe('documentation snippets are valid', () => {
   const fetchData = (_path: string) => {
+    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- Tests that non-error rejections are wrapped.
     if (_path.startsWith('throw')) return Promise.reject('unexpected error');
     return Promise.resolve('some data');
   };
@@ -529,9 +528,9 @@ describe('documentation snippets are valid', () => {
     class MyClass {
       constructor() {}
       get() {
-        return this._get();
+        return this.getValue();
       }
-      _get() {
+      getValue() {
         return '123';
       }
     }
@@ -539,7 +538,7 @@ describe('documentation snippets are valid', () => {
     const myClass = new MyClass();
     const resWorks = goSync(() => myClass.get()); // This works
     assertGoSuccess(resWorks);
-    // eslint-disable-next-line jest/unbound-method
+
     const resFails = goSync(myClass.get); // This doesn't work
     assertGoError(resFails);
   });
@@ -568,7 +567,7 @@ describe('documentation snippets are valid', () => {
     // Compare it to simpler version using go
     type MyData = never;
     const goRes = await go<MyData, MyError>(someAsyncCall);
-    // eslint-disable-next-line jest/no-conditional-in-test
+
     if (!goRes.success) {
       logError(goRes.error.reason);
       return;
@@ -590,8 +589,8 @@ describe('delay', () => {
       const now = Date.now();
       const ticks: number[] = [];
 
-      jest.spyOn(globalThis.Math, 'random').mockReturnValueOnce(0.5);
-      jest.spyOn(globalThis.Math, 'random').mockReturnValueOnce(1);
+      jest.spyOn(Math, 'random').mockReturnValueOnce(0.5);
+      jest.spyOn(Math, 'random').mockReturnValueOnce(1);
 
       await go(
         async () => {
@@ -710,7 +709,7 @@ describe('onAttemptError', () => {
       { retries: 3, totalTimeoutMs: 20, onAttemptError }
     );
 
-    expect(onAttemptError).toHaveBeenCalledTimes(0);
+    expect(onAttemptError).not.toHaveBeenCalled();
     expect(goRes).toStrictEqual(fail(new Error('Full timeout exceeded')));
   });
 
@@ -719,7 +718,7 @@ describe('onAttemptError', () => {
 
     await go(async () => 123, { onAttemptError });
 
-    expect(onAttemptError).toHaveBeenCalledTimes(0);
+    expect(onAttemptError).not.toHaveBeenCalled();
   });
 
   describe('does not call for last unsuccessfull attempt', () => {
@@ -735,7 +734,7 @@ describe('onAttemptError', () => {
       // Make sure the attempt inside the go function above is completed
       await resolveAfter(30);
 
-      expect(onAttemptError).toHaveBeenCalledTimes(0);
+      expect(onAttemptError).not.toHaveBeenCalled();
       expect(goRes).toStrictEqual(fail(new GoWrappedError('Operation timed out')));
     });
 
@@ -751,7 +750,7 @@ describe('onAttemptError', () => {
       // Make sure the attempt inside the go function above is completed
       await resolveAfter(30);
 
-      expect(onAttemptError).toHaveBeenCalledTimes(0);
+      expect(onAttemptError).not.toHaveBeenCalled();
       expect(goRes).toStrictEqual(fail(new Error('Full timeout exceeded')));
     });
 
@@ -851,14 +850,13 @@ describe('onAttemptError', () => {
 
   // eslint-disable-next-line jest/prefer-ending-with-an-expect
   it('allows you to access both error and success properties', async () => {
-    const { success, error, data } = goSync(() => 123);
+    const { success: goSyncSuccess, error, data } = goSync(() => 123);
     // @ts-expect-error should not work
     const _x: number = data;
     assertType<number | undefined>(data);
     assertType<Error | undefined>(error);
 
-    // eslint-disable-next-line jest/no-conditional-in-test -- verifies discriminated-union narrowing in both directions
-    if (success) {
+    if (goSyncSuccess) {
       assertType<number>(data);
       assertType<undefined>(error);
     } else {
@@ -870,7 +868,7 @@ describe('onAttemptError', () => {
   it('does not delay after last attempt', async () => {
     const start = performance.now();
 
-    await go(() => Promise.reject('error'), { delay: { type: 'static', delayMs: 100 }, retries: 2 });
+    await go(() => Promise.reject(new Error('error')), { delay: { type: 'static', delayMs: 100 }, retries: 2 });
 
     expect(performance.now() - start).toBeLessThan(2 * 100 + 50);
   });

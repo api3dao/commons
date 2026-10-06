@@ -167,9 +167,9 @@ There is a limitation when using class functions due to how javascript
 class MyClass {
   constructor() {}
   get() {
-    return this._get();
+    return this.getValue();
   }
-  _get() {
+  getValue() {
     return '123';
   }
 }
@@ -181,4 +181,4 @@ const resFails = goSync(myClass.get); // This doesn't work
 ```
 
 The problem is that the `this` keyword is determined by how a function is called and in the second example, the `this`
-inside the `get` function is `undefined` which makes the `this._get()` throw an error.
+inside the `get` function is `undefined` which makes the `this.getValue()` throw an error.

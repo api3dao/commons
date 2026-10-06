@@ -1,23 +1,9 @@
 {
   "name": "@api3/commons",
   "version": "2.0.0",
-  "keywords": [],
+  "description": "Common utilities, modules and configurations used in API3 projects.",
   "license": "MIT",
-  "engines": {
-    "node": ">=18.20.8"
-  },
-  "packageManager": "pnpm@10.34.4",
-  "sideEffects": false,
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/api3dao/commons"
-  },
-  "files": [
-    "dist",
-    "src"
-  ],
-  "browser": "./dist/esm/universal-index.js",
-  "main": "./dist/cjs/node-index.js",
+  "repository": "github:api3dao/commons",
   "exports": {
     ".": {
       "browser": {
@@ -30,12 +16,19 @@
       "default": "./dist/cjs/node-index.js"
     }
   },
+  "main": "./dist/cjs/node-index.js",
+  "browser": "./dist/esm/universal-index.js",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20.18.1"
+  },
+  "packageManager": "pnpm@10.34.4",
   "scripts": {
     "build": "pnpm run build:cjs && pnpm run build:esm",
     "build:cjs": "tsc --project tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > dist/cjs/package.json",
     "build:esm": "tsc --project tsconfig.esm.json && echo '{ \"type\": \"module\" }' > dist/esm/package.json",
     "clean": "rm -rf coverage dist",
-    "eslint:check": "eslint --report-unused-disable-directives --cache --ext js,ts,tsx,jsx . --max-warnings 0",
+    "eslint:check": "eslint --report-unused-disable-directives --cache . --max-warnings 0",
     "eslint:fix": "pnpm run eslint:check --fix",
     "prepare": "husky",
     "prepublishOnly": "pnpm i && pnpm run clean && pnpm run build",
@@ -46,6 +39,15 @@
     "tsc": "tsc --project .",
     "verify:dist": "ts-node scripts/verify-dist.ts"
   },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "keywords": [
+    "api3",
+    "commons",
+    "utilities"
+  ],
   "dependencies": {
     "@api3/ois": "^3.0.0",
     "@octokit/rest": "^20.1.1",
@@ -58,11 +60,11 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@api3/eslint-plugin-commons": "^3.1.1",
+    "@api3/eslint-plugin-commons": "^4.0.0",
     "@types/jest": "^30.0.0",
     "@types/lodash": "^4.17.25",
     "@types/node": "^24.13.2",
-    "eslint": "^8.57.1",
+    "eslint": "^10.11.0",
     "husky": "^9.1.7",
     "jest": "^30.5.1",
     "prettier": "^3.9.8",

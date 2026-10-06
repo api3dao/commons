@@ -72,7 +72,7 @@ const getExecutionId = (iteration: number, options: RunInLoopExecutionIdOptions)
   options.type === 'random' ? generateRandomBytes32() : `${options.prefix ?? ''}${iteration}`;
 
 export const runInLoop = async (
-  fn: () => Promise<{ shouldContinueRunning: boolean } | void>,
+  fn: () => Promise<void | { shouldContinueRunning: boolean }>,
   options: RunInLoopOptions
 ) => {
   const {
@@ -112,7 +112,7 @@ export const runInLoop = async (
         }
 
         const executionTimeMs = performance.now() - executionStart;
-        if (executionTimeMs >= softTimeoutMs!) {
+        if (executionTimeMs >= softTimeoutMs) {
           logger.warn(`Execution took longer than the interval`, { executionTimeMs });
         } else {
           logger.info(`Execution finished`, { executionTimeMs });

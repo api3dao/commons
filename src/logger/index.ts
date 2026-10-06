@@ -38,11 +38,11 @@ const createConsoleTransport = (config: LogConfig) => {
           showMeta: true,
           metaStrip: [],
           inspectOptions: {
-            depth: Number.POSITIVE_INFINITY,
+            depth: Infinity,
             colors: colorize,
-            maxArrayLength: Number.POSITIVE_INFINITY,
+            maxArrayLength: Infinity,
             breakLength: 120,
-            compact: Number.POSITIVE_INFINITY,
+            compact: Infinity,
           },
         }),
       ].filter(Boolean) as winston.Logform.Format[];
@@ -120,7 +120,6 @@ export const wrapper = (logger: winston.Logger): Logger => {
     },
     // We need to handle both overloads of the `error` function
     error: (message, errorOrLocalContext: Error | LogContext, localContext?: LogContext) => {
-      // eslint-disable-next-line lodash/prefer-lodash-typecheck
       if (errorOrLocalContext instanceof Error) {
         logger.error(message, errorOrLocalContext, createFullContext(localContext));
       } else {
@@ -141,17 +140,15 @@ export const wrapper = (logger: winston.Logger): Logger => {
 };
 
 export const validateLogConfig = (config: unknown): LogConfig => {
-  // eslint-disable-next-line lodash/prefer-lodash-typecheck
   if (typeof config !== 'object' || config === null) {
     throw new Error('Invalid logger configuration');
   }
 
   const { colorize, enabled, format, minLevel } = config as Partial<LogConfig>;
-  // eslint-disable-next-line lodash/prefer-lodash-typecheck
+
   if (typeof colorize !== 'boolean') {
     throw new TypeError('Invalid logger configuration: colorize must be a boolean');
   }
-  // eslint-disable-next-line lodash/prefer-lodash-typecheck
   if (typeof enabled !== 'boolean') {
     throw new TypeError('Invalid logger configuration: enabled must be a boolean');
   }

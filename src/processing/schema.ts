@@ -1,4 +1,4 @@
-import type { processingSpecificationSchemaV2, ProcessingSpecification } from '@api3/ois';
+import type { ProcessingSpecification, processingSpecificationSchemaV2 } from '@api3/ois';
 import { z } from 'zod';
 
 export type ProcessingSpecificationV2 = z.infer<typeof processingSpecificationSchemaV2>;
