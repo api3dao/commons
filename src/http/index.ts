@@ -49,7 +49,7 @@ export async function executeRequest<T>(
 ): Promise<ExecuteRequestResult<T>> {
   const { url, method, body, headers = {}, queryParams = {}, timeout = DEFAULT_TIMEOUT_MS } = request;
 
-  const goAxios = await go<Promise<AxiosResponse<T>>, AxiosError>(
+  const goAxios = await go<AxiosResponse<T>, AxiosError>(
     async () =>
       axios({
         url,

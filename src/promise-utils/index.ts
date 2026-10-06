@@ -65,7 +65,7 @@ const createGoError = <E extends Error>(err: unknown): GoResultError<E> => {
   return fail(new GoWrappedError(err));
 };
 
-export const goSync = <T, E extends Error>(fn: () => T): GoResult<T, E> => {
+export const goSync = <T, E extends Error = Error>(fn: () => T): GoResult<T, E> => {
   try {
     return success(fn());
   } catch (error) {
@@ -119,7 +119,7 @@ const cancellableTimeout = (ms: number): CancellableTimeout => {
 };
 
 const attempt = async <T, E extends Error>(
-  fn: () => T,
+  fn: () => T | PromiseLike<T>,
   attemptTimeoutMs?: number
 ): Promise<GoResult<Awaited<T>, E>> => {
   let timeout: CancellableTimeout | null = null;
@@ -142,8 +142,8 @@ const attempt = async <T, E extends Error>(
   }
 };
 
-export const go = async <T, E extends Error>(
-  fn: () => T,
+export const go = async <T, E extends Error = Error>(
+  fn: () => T | PromiseLike<T>,
   options?: GoAsyncOptions<E>
 ): Promise<GoResult<Awaited<T>, E>> => {
   if (!options) return attempt(fn);
