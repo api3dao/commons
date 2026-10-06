@@ -16,6 +16,8 @@ import { unsafeEvaluate, unsafeEvaluateAsync, unsafeEvaluateV2 } from './unsafe-
 
 export const DEFAULT_PROCESSING_TIMEOUT_MS = 10_000;
 
+const DEFAULT_PROCESSING_OPTIONS: GoAsyncOptions = { retries: 0, totalTimeoutMs: DEFAULT_PROCESSING_TIMEOUT_MS };
+
 const reservedParameters = RESERVED_PARAMETERS as string[]; // To avoid strict TS checks.
 
 /**
@@ -66,7 +68,7 @@ export const addReservedParameters = (
 export const preProcessEndpointParametersV1 = async (
   preProcessingSpecifications: ProcessingSpecifications | undefined,
   endpointParameters: EndpointParameters,
-  processingOptions: GoAsyncOptions = { retries: 0, totalTimeoutMs: DEFAULT_PROCESSING_TIMEOUT_MS }
+  processingOptions: GoAsyncOptions = DEFAULT_PROCESSING_OPTIONS
 ): Promise<EndpointParameters> => {
   if (!preProcessingSpecifications || preProcessingSpecifications.length === 0) {
     return endpointParameters;
@@ -129,7 +131,7 @@ export const postProcessResponseV1 = async (
   response: unknown,
   postProcessingSpecifications: ProcessingSpecifications | undefined,
   endpointParameters: EndpointParameters,
-  processingOptions: GoAsyncOptions = { retries: 0, totalTimeoutMs: DEFAULT_PROCESSING_TIMEOUT_MS }
+  processingOptions: GoAsyncOptions = DEFAULT_PROCESSING_OPTIONS
 ) => {
   if (!postProcessingSpecifications || postProcessingSpecifications?.length === 0) {
     return response;
@@ -183,7 +185,7 @@ export const postProcessResponseV1 = async (
 export const preProcessEndpointParametersV2 = async (
   preProcessingSpecificationV2: ProcessingSpecificationV2 | undefined,
   endpointParameters: EndpointParameters,
-  processingOptions: GoAsyncOptions = { retries: 0, totalTimeoutMs: DEFAULT_PROCESSING_TIMEOUT_MS }
+  processingOptions: GoAsyncOptions = DEFAULT_PROCESSING_OPTIONS
 ): Promise<PreProcessingV2Response> => {
   if (!preProcessingSpecificationV2) return { endpointParameters };
 
@@ -223,7 +225,7 @@ export const postProcessResponseV2 = async (
   response: unknown,
   postProcessingSpecificationV2: ProcessingSpecificationV2 | undefined,
   endpointParameters: EndpointParameters,
-  processingOptions: GoAsyncOptions = { retries: 0, totalTimeoutMs: DEFAULT_PROCESSING_TIMEOUT_MS }
+  processingOptions: GoAsyncOptions = DEFAULT_PROCESSING_OPTIONS
 ): Promise<PostProcessingV2Response> => {
   if (!postProcessingSpecificationV2) return { response };
 
@@ -259,11 +261,11 @@ export const postProcessResponseV2 = async (
 export const preProcessEndpointParameters = async (
   endpoint: Endpoint,
   endpointParameters: EndpointParameters,
-  processingOptions: GoAsyncOptions = { retries: 0, totalTimeoutMs: DEFAULT_PROCESSING_TIMEOUT_MS }
+  processingOptions: GoAsyncOptions = DEFAULT_PROCESSING_OPTIONS
 ): Promise<PreProcessingV2Response> => {
   const { preProcessingSpecificationV2, preProcessingSpecifications } = endpoint;
   if (preProcessingSpecificationV2) {
-    return preProcessEndpointParametersV2(preProcessingSpecificationV2, endpointParameters);
+    return preProcessEndpointParametersV2(preProcessingSpecificationV2, endpointParameters, processingOptions);
   }
 
   const preProcessV1Response = await preProcessEndpointParametersV1(
@@ -293,11 +295,11 @@ export const postProcessResponse = async (
   response: unknown,
   endpoint: Endpoint,
   endpointParameters: EndpointParameters,
-  processingOptions: GoAsyncOptions = { retries: 0, totalTimeoutMs: DEFAULT_PROCESSING_TIMEOUT_MS }
+  processingOptions: GoAsyncOptions = DEFAULT_PROCESSING_OPTIONS
 ): Promise<PostProcessingV2Response> => {
   const { postProcessingSpecificationV2, postProcessingSpecifications } = endpoint;
   if (postProcessingSpecificationV2) {
-    return postProcessResponseV2(response, postProcessingSpecificationV2, endpointParameters);
+    return postProcessResponseV2(response, postProcessingSpecificationV2, endpointParameters, processingOptions);
   }
 
   const postProcessV1Response = await postProcessResponseV1(

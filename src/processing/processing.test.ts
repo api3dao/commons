@@ -515,6 +515,26 @@ describe(preProcessEndpointParameters.name, () => {
     });
   });
 
+  it('applies processing options to v2 processing', async () => {
+    const endpoint = createEndpoint({
+      preProcessingSpecificationV2: {
+        environment: 'Node',
+        value: `
+            async (payload) => {
+              await new Promise((resolve) => setTimeout(resolve, 100));
+              return { endpointParameters: payload.endpointParameters };
+            }
+          `,
+        timeoutMs: 5000,
+      },
+    });
+    const parameters = { _type: 'int256', _path: 'price' };
+
+    const throwingFunc = async () => preProcessEndpointParameters(endpoint, parameters, { totalTimeoutMs: 10 });
+
+    await expect(throwingFunc).rejects.toThrow('Full timeout exceeded');
+  });
+
   it('converts v1 pre-processing to v2', async () => {
     const endpoint = createEndpoint({
       preProcessingSpecifications: [
@@ -564,6 +584,26 @@ describe(postProcessResponse.name, () => {
     const result = await postProcessResponse({ price: 1000 }, endpoint, parameters);
 
     expect(result).toEqual({ response: 4000 });
+  });
+
+  it('applies processing options to v2 processing', async () => {
+    const parameters = { _type: 'int256', _path: 'price' };
+    const endpoint = createEndpoint({
+      postProcessingSpecificationV2: {
+        environment: 'Node',
+        value: `
+        async (payload) => {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          return { response: payload.response };
+        }
+        `,
+        timeoutMs: 5000,
+      },
+    });
+
+    const throwingFunc = async () => postProcessResponse({ price: 1000 }, endpoint, parameters, { totalTimeoutMs: 10 });
+
+    await expect(throwingFunc).rejects.toThrow('Full timeout exceeded');
   });
 
   it('converts v1 post-processing to v2', async () => {
