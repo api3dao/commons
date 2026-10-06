@@ -29,7 +29,7 @@ export interface GoAsyncOptions<E extends Error = Error> {
 
 export class GoWrappedError extends Error {
   constructor(public reason: unknown) {
-    super(`${reason}`);
+    super(String(reason));
   }
 }
 
@@ -103,7 +103,7 @@ const cancellableTimeout = (ms: number): CancellableTimeout => {
   let timeoutId: any;
   const promise = new Promise((_resolve, reject) => {
     rejectFn = reject;
-    timeoutId = setTimeout(() => reject('Operation timed out'), ms);
+    timeoutId = setTimeout(() => reject(new GoWrappedError('Operation timed out')), ms);
   });
 
   const cancel = () => {
@@ -127,12 +127,12 @@ const attempt = async <T, E extends Error>(
   try {
     if (attemptTimeoutMs === undefined) {
       return success(await fn());
-    } else {
-      timeout = cancellableTimeout(attemptTimeoutMs);
-      const result = await Promise.race([fn(), timeout.promise]);
-      timeout.cancel();
-      return success(result);
     }
+
+    timeout = cancellableTimeout(attemptTimeoutMs);
+    const result = await Promise.race([fn(), timeout.promise]);
+    timeout.cancel();
+    return success(result);
   } catch (error) {
     if (timeout?.cancel) {
       timeout.cancel();
@@ -167,6 +167,11 @@ export const go = async <T, E extends Error = Error>(
     const attempts = retries ? retries + 1 : 1;
     let lastFailedAttemptResult: GoResultError<E> | null = null;
     for (let i = 0; i < attempts; i++) {
+      // Return early in case the global timeout has been exceeded during after attempt wait time.
+      //
+      // This is guaranteed to be false for the first attempt.
+      if (fullTimeoutExceeded) break;
+
       // if array of timeouts is provided, use the timeout at the current index,
       // or the last one if the index is out of bounds
       // if a single timeout is provided, use it for all attempts
@@ -175,15 +180,11 @@ export const go = async <T, E extends Error = Error>(
           attemptTimeoutMs[i] || attemptTimeoutMs.at(-1)
         : attemptTimeoutMs;
 
-      // Return early in case the global timeout has been exceeded during after attempt wait time.
-      //
-      // This is guaranteed to be false for the first attempt.
-      if (fullTimeoutExceeded) break;
       const goRes = await attempt<T, E>(fn, currentAttemptTimeoutMs);
       // Return early if the timeout is exceeded not to cause any side effects (such as calling "onAttemptError" function)
       if (fullTimeoutExceeded) break;
 
-      if (i !== attempts - 1 && !goRes.success && onAttemptError) goSync(() => onAttemptError(goRes));
+      if (onAttemptError && i !== attempts - 1 && !goRes.success) goSync(() => onAttemptError(goRes));
       if (goRes.success) return goRes;
 
       lastFailedAttemptResult = goRes;

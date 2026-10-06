@@ -11,8 +11,8 @@ const expectToBeAround = (actual: number, expected: number, range = 10) => {
 
 const resolveAfter = <T>(ms: number, value?: T): Promise<T> =>
   new Promise((resolve) => setTimeout(() => resolve(value as T), ms));
-const rejectAfter = <T>(ms: number, value?: T): Promise<never> =>
-  new Promise((_resolve, reject) => setTimeout(() => reject(value), ms));
+const rejectAfter = (ms: number, error: Error): Promise<never> =>
+  new Promise((_resolve, reject) => setTimeout(() => reject(error), ms));
 
 describe('basic goSync usage', () => {
   it('resolves successful synchronous functions', () => {
@@ -262,9 +262,8 @@ describe('custom error type', () => {
       const err = goRes.error;
 
       assertType<Error>(err);
-      // Check that "err" is not assignable to CustomError
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      assertType.isFalse(false);
+      // Check that "err" is not typed as CustomError
+      assertType<IsEqual<CustomError, typeof err>>(false);
       expect(err).toBeInstanceOf(CustomError);
     });
 
@@ -292,6 +291,7 @@ describe('custom error type', () => {
 
     it('will wraps non error throw in Error class', () => {
       const goRes = goSync(() => {
+        // eslint-disable-next-line @typescript-eslint/only-throw-error -- Tests that non-error throws are wrapped.
         throw 'string-error';
       });
       assertGoError(goRes);
@@ -311,9 +311,8 @@ describe('custom error type', () => {
       const err = goRes.error;
 
       assertType<Error>(err);
-      // Check that "err" is not assignable to CustomError
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      assertType.isFalse(false);
+      // Check that "err" is not typed as CustomError
+      assertType<IsEqual<CustomError, typeof err>>(false);
       expect(err).toBeInstanceOf(CustomError);
     });
 
@@ -377,6 +376,7 @@ describe('custom error type', () => {
 
     it('will wraps non error throw in Error class', async () => {
       const goRes = await go(() => {
+        // eslint-disable-next-line @typescript-eslint/only-throw-error -- Tests that non-error throws are wrapped.
         throw 'string-error';
       });
       assertGoError(goRes);
@@ -392,16 +392,16 @@ describe('the "this" limitation', () => {
   class Test {
     constructor() {}
     sync() {
-      return this.#sync();
+      return this.getSyncValue();
     }
-    #sync() {
+    getSyncValue() {
       return '123';
     }
 
     async() {
-      return this.#async();
+      return this.getAsyncValue();
     }
-    #async() {
+    getAsyncValue() {
       return Promise.resolve('123');
     }
   }
@@ -422,7 +422,7 @@ describe('the "this" limitation', () => {
 
     const res = goSync(test.sync);
 
-    expectReadPropertyOfUndefined(res, '_sync');
+    expectReadPropertyOfUndefined(res, 'getSyncValue');
   });
 
   it('fails for async version', async () => {
@@ -430,7 +430,7 @@ describe('the "this" limitation', () => {
 
     const res = await go(test.async);
 
-    expectReadPropertyOfUndefined(res, '_async');
+    expectReadPropertyOfUndefined(res, 'getAsyncValue');
   });
 });
 
@@ -476,6 +476,7 @@ describe('assertGoError', () => {
 
 test('has access to native error', async () => {
   const throwingFn = async () => {
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- Tests that the thrown value is kept as "reason".
     throw { message: 'an error', data: 'some data' };
   };
 
@@ -491,6 +492,7 @@ test('has access to native error', async () => {
 // NOTE: Keep in sync with README
 describe('documentation snippets are valid', () => {
   const fetchData = (_path: string) => {
+    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- Tests that non-error rejections are wrapped.
     if (_path.startsWith('throw')) return Promise.reject('unexpected error');
     return Promise.resolve('some data');
   };
@@ -526,9 +528,9 @@ describe('documentation snippets are valid', () => {
     class MyClass {
       constructor() {}
       get() {
-        return this.#get();
+        return this.getValue();
       }
-      #get() {
+      getValue() {
         return '123';
       }
     }
@@ -848,13 +850,13 @@ describe('onAttemptError', () => {
 
   // eslint-disable-next-line jest/prefer-ending-with-an-expect
   it('allows you to access both error and success properties', async () => {
-    const { success, error, data } = goSync(() => 123);
+    const { success: goSyncSuccess, error, data } = goSync(() => 123);
     // @ts-expect-error should not work
     const _x: number = data;
     assertType<number | undefined>(data);
     assertType<Error | undefined>(error);
 
-    if (success) {
+    if (goSyncSuccess) {
       assertType<number>(data);
       assertType<undefined>(error);
     } else {
@@ -866,7 +868,7 @@ describe('onAttemptError', () => {
   it('does not delay after last attempt', async () => {
     const start = performance.now();
 
-    await go(() => Promise.reject('error'), { delay: { type: 'static', delayMs: 100 }, retries: 2 });
+    await go(() => Promise.reject(new Error('error')), { delay: { type: 'static', delayMs: 100 }, retries: 2 });
 
     expect(performance.now() - start).toBeLessThan(2 * 100 + 50);
   });

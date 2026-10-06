@@ -114,7 +114,7 @@ export const unsafeEvaluate = (code: string, globalVariables: Record<string, unk
 };
 
 export const unsafeEvaluateV2 = async (code: string, payload: unknown, timeout: number) => {
-  const timers = createTimers();
+  const vmTimers = createTimers();
 
   const goEvaluate = await go<any, GoWrappedError>(
     async () =>
@@ -126,10 +126,10 @@ export const unsafeEvaluateV2 = async (code: string, payload: unknown, timeout: 
         `,
         {
           ...builtInNodeModules,
-          setTimeout: timers.customSetTimeout,
-          setInterval: timers.customSetInterval,
-          clearTimeout: timers.customClearTimeout,
-          clearInterval: timers.customClearInterval,
+          setTimeout: vmTimers.customSetTimeout,
+          setInterval: vmTimers.customSetInterval,
+          clearTimeout: vmTimers.customClearTimeout,
+          clearInterval: vmTimers.customClearInterval,
           payload,
         },
         { displayErrors: true, timeout }
@@ -140,7 +140,7 @@ export const unsafeEvaluateV2 = async (code: string, payload: unknown, timeout: 
   );
 
   // We need to manually clear all timers and reject the processing manually.
-  timers.clearAll();
+  vmTimers.clearAll();
 
   if (goEvaluate.success) {
     return goEvaluate.data;
@@ -186,15 +186,16 @@ export const unsafeEvaluateAsync = async (code: string, globalVariables: Record<
   }, timeout);
 
   return new Promise((resolve, reject) => {
-    const timers = createTimers();
+    const vmTimers = createTimers();
     const vmResolve = (value: unknown) => {
-      timers.clearAll();
+      vmTimers.clearAll();
       clearTimeout(timeoutTimer);
       resolve(value);
     };
     vmReject = (reason: unknown) => {
-      timers.clearAll();
+      vmTimers.clearAll();
       clearTimeout(timeoutTimer);
+      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- The processing code decides what it rejects with.
       reject(reason);
     };
 
@@ -203,10 +204,10 @@ export const unsafeEvaluateAsync = async (code: string, globalVariables: Record<
       ...builtInNodeModules,
       resolve: vmResolve,
       reject: vmReject,
-      setTimeout: timers.customSetTimeout,
-      setInterval: timers.customSetInterval,
-      clearTimeout: timers.customClearTimeout,
-      clearInterval: timers.customClearInterval,
+      setTimeout: vmTimers.customSetTimeout,
+      setInterval: vmTimers.customSetInterval,
+      clearTimeout: vmTimers.customClearTimeout,
+      clearInterval: vmTimers.customClearInterval,
     };
     vm.runInNewContext(code, vmContext, { displayErrors: true, timeout });
   });

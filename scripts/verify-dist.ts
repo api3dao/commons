@@ -35,7 +35,7 @@ const listExports = (format: 'cjs' | 'esm', entrypoint: string) => {
       : `const module = await import(${JSON.stringify(pathToFileURL(path).href)}); console.log(JSON.stringify(Object.keys(module)))`;
   const args = format === 'cjs' ? ['-e', code] : ['--input-type=module', '-e', code];
 
-  return (JSON.parse(execFileSync(process.execPath, args, { encoding: 'utf8' })) as string[]).sort();
+  return (JSON.parse(execFileSync(process.execPath, args, { encoding: 'utf8' })) as string[]).toSorted();
 };
 
 const assert = (condition: boolean, message: string) => {

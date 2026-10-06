@@ -1,3 +1,6 @@
+/* eslint-disable unicorn/no-incorrect-template-string-interpolation -- The template literals hold processing code, where "{name}" is destructuring, not a missing "$". */
+// Objects and errors created by the "vm" module come from a different context, so they are not strictly equal and the
+// tests use "toEqual".
 import { ZodError } from 'zod';
 
 import { createEndpoint } from '../../test/fixtures/processing.js';

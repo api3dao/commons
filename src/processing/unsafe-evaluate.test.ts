@@ -1,3 +1,5 @@
+// Objects and errors created by the "vm" module come from a different context, so they are not strictly equal and the
+// tests use "toEqual".
 import { unsafeEvaluate, unsafeEvaluateAsync, unsafeEvaluateV2 } from './unsafe-evaluate.js';
 
 describe('unsafe evaluate - sync', () => {

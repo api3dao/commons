@@ -7,7 +7,7 @@ export const sortObjectKeysRecursively = (value: any) => {
   if (value === null) return null;
   if (!isObject(value) || Array.isArray(value)) return value;
 
-  const sortedKeys = Object.keys(value).sort();
+  const sortedKeys = Object.keys(value).toSorted();
   const sortedObject: any = {};
 
   for (const key of sortedKeys) {

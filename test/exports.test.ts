@@ -20,11 +20,11 @@ test('all modules are exported', () => {
   const srcModules = readdirSync(join(__dirname, '../src'), { withFileTypes: true })
     .filter((dirent) => dirent.isDirectory())
     .map((dirent) => dirent.name)
-    .sort();
+    .toSorted();
   const universalExports = getExports('universal-index.ts');
   // Node imports all universal exports, so it needs to be excluded.
   const nodeExports = getExports('node-index.ts').filter((exp) => exp !== 'universal-index');
-  const allExports = [...nodeExports, ...universalExports].sort();
+  const allExports = [...nodeExports, ...universalExports].toSorted();
 
   expect(srcModules).toStrictEqual(allExports);
 });

@@ -1,11 +1,9 @@
 import noop from 'lodash/noop.js';
 
-import { createBaseLogger, wrapper, type LogConfig } from './index.js';
+import { createBaseLogger, wrapper } from './index.js';
 
-const createTestLogger = (
-  logConfig: LogConfig = { enabled: true, minLevel: 'debug', format: 'json', colorize: false }
-) => {
-  const baseLogger = createBaseLogger(logConfig);
+const createTestLogger = () => {
+  const baseLogger = createBaseLogger({ enabled: true, minLevel: 'debug', format: 'json', colorize: false });
   const logger = wrapper(baseLogger);
   jest.spyOn(baseLogger, 'debug').mockImplementation(noop as any);
   jest.spyOn(baseLogger, 'info').mockImplementation(noop as any);
