@@ -29,4 +29,11 @@ module.exports = [
       'jest/expect-expect': ['warn', { assertFunctionNames }],
     },
   },
+  {
+    files: ['package.json'],
+    rules: {
+      // TS consumers using the "node10" module resolution ignore "exports" and find the types via "main".
+      'package-json/prefer-exports': 'off',
+    },
+  },
 ];

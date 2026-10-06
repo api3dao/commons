@@ -1,6 +1,7 @@
 {
   "name": "@api3/commons",
   "version": "2.0.0",
+  "description": "Common utilities, modules and configurations used in API3 projects.",
   "license": "MIT",
   "repository": "github:api3dao/commons",
   "exports": {
@@ -19,7 +20,7 @@
   "browser": "./dist/esm/universal-index.js",
   "sideEffects": false,
   "engines": {
-    "node": ">=18.20.8"
+    "node": ">=20.18.1"
   },
   "packageManager": "pnpm@10.34.4",
   "scripts": {
@@ -42,7 +43,11 @@
     "dist",
     "src"
   ],
-  "keywords": [],
+  "keywords": [
+    "api3",
+    "commons",
+    "utilities"
+  ],
   "dependencies": {
     "@api3/ois": "^3.0.0",
     "@octokit/rest": "^20.1.1",
