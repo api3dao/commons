@@ -94,13 +94,28 @@ string value in the log entry. Use the `g` flag to replace all occurrences in a 
 entry, which the `json` format prints and [additional transports](#additional-transports) receive. The `pretty` format
 prints the log entry without redaction.
 
-Redaction is off by default. To turn it on, add the rules to the configuration:
+Redaction is off by default. To turn it on, add the rules to the configuration. The package exports `urlRedactionRules`,
+which redact secrets in URLs:
+
+- The values of query parameters named like an API key, token, secret or password: `apikey` (as in Reblok RPC URLs and
+  the Etherscan API), `api_key`, `dkey` (as in dRPC RPC URLs), `key`, `token`, `api_token`, `access_token`,
+  `auth_token`, `secret`, `client_secret` or `password`, also with an `x-` prefix. Other parameters, such as `sellToken`
+  or `publicKey`, stay in the logs.
+- The API keys in the paths of the RPC URLs of QuickNode, Infura, Alchemy, dRPC, Ankr and Tenderly, including their
+  WebSocket URLs. Infura, Alchemy and Ankr put the key after paths of different lengths, so for them the first path
+  segment that looks like a key is redacted: a hex token of at least 32 characters for Infura and Ankr, and a segment of
+  at least 16 characters for Alchemy. When the key is sent in a header instead, a long Alchemy method name can be
+  redacted.
+- Credentials before the host, such as in `postgresql://user:password@host`.
+
+Add your own rules for the secrets that only your service uses:
 
 ```ts
 export const logger = createLogger({
   ...createLogConfigFromEnv(env),
   redactionRules: [
-    { pattern: /(?<prefix>https:\/\/[\w-]+\.infura\.io\/v3\/)[\w-]+/g, replacement: '$<prefix>********' },
+    ...urlRedactionRules,
+    { pattern: /(?<prefix>https:\/\/rpc\.example\.com\/)[\w-]+/g, replacement: '$<prefix>********' },
   ],
 });
 ```

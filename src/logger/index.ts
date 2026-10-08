@@ -6,6 +6,8 @@ import { z } from 'zod';
 
 import { getAsyncLocalStorage } from './async-storage.js';
 
+export * from './redaction-rules.js';
+
 export const logFormatOptions = ['json', 'pretty'] as const;
 
 export type LogFormat = (typeof logFormatOptions)[number];
