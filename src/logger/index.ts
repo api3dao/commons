@@ -2,6 +2,7 @@ import isError from 'lodash/isError.js';
 import isString from 'lodash/isString.js';
 import winston from 'winston';
 import { consoleFormat } from 'winston-console-format';
+import { z } from 'zod';
 
 import { getAsyncLocalStorage } from './async-storage.js';
 
@@ -26,6 +27,24 @@ export interface LogConfig {
   minLevel: LogLevel;
   redactionRules?: RedactionRule[] | undefined;
 }
+
+export const loggerEnvSchema = z.object({
+  LOGGER_ENABLED: z.stringbool().default(true),
+  LOG_COLORIZE: z.stringbool().default(false),
+  LOG_FORMAT: z.enum(logFormatOptions).default('json'),
+  LOG_LEVEL: z.enum(logLevelOptions).default('info'),
+  LOG_MAX_HEX_DATA_LENGTH: z.coerce.number().int().positive().optional(),
+});
+
+export type LoggerEnv = z.infer<typeof loggerEnvSchema>;
+
+export const createLogConfigFromEnv = (env: LoggerEnv): LogConfig => ({
+  colorize: env.LOG_COLORIZE,
+  enabled: env.LOGGER_ENABLED,
+  format: env.LOG_FORMAT,
+  maxHexDataLength: env.LOG_MAX_HEX_DATA_LENGTH,
+  minLevel: env.LOG_LEVEL,
+});
 
 const truncatedHexDataPrefixLength = 12;
 
@@ -189,33 +208,4 @@ export const wrapper = (logger: winston.Logger): Logger => {
   } as Logger;
 };
 
-export const validateLogConfig = (config: unknown): LogConfig => {
-  if (typeof config !== 'object' || config === null) {
-    throw new Error('Invalid logger configuration');
-  }
-
-  const { colorize, enabled, format, maxHexDataLength, minLevel } = config as Partial<LogConfig>;
-
-  if (typeof colorize !== 'boolean') {
-    throw new TypeError('Invalid logger configuration: colorize must be a boolean');
-  }
-  if (typeof enabled !== 'boolean') {
-    throw new TypeError('Invalid logger configuration: enabled must be a boolean');
-  }
-  if (!logFormatOptions.includes(format as any)) {
-    throw new TypeError('Invalid logger configuration: format must be one of "json" or "pretty"');
-  }
-  if (maxHexDataLength !== undefined && (!Number.isSafeInteger(maxHexDataLength) || maxHexDataLength <= 0)) {
-    throw new TypeError('Invalid logger configuration: maxHexDataLength must be a positive integer');
-  }
-  if (!logLevelOptions.includes(minLevel as any)) {
-    throw new TypeError('Invalid logger configuration: minLevel must be one of "debug", "info", "warn" or "error"');
-  }
-
-  return config as LogConfig;
-};
-
-export const createLogger = (config: LogConfig) => {
-  // Ensure that the logger configuration is valid.
-  return wrapper(createBaseLogger(validateLogConfig(config)));
-};
+export const createLogger = (config: LogConfig) => wrapper(createBaseLogger(config));

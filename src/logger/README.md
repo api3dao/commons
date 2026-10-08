@@ -6,7 +6,44 @@ Backend-only logger for Node.js packages based on Winston logger.
 
 ## Getting started
 
-Import `createLogger` function to create a logger instance.
+Create the logger with `createLogger`. To configure it with environment variables, add `loggerEnvSchema` to the
+environment schema of your service and pass the parsed values to `createLogConfigFromEnv`:
+
+```ts
+import { createLogConfigFromEnv, createLogger, loggerEnvSchema } from '@api3/commons';
+import { z } from 'zod';
+
+const envSchema = z.object({ ...loggerEnvSchema.shape, RPC_URL: z.url() });
+const env = envSchema.parse(process.env);
+
+export const logger = createLogger(createLogConfigFromEnv(env));
+```
+
+`createLogger` does not validate its configuration at runtime and relies on the `LogConfig` type. Parse the values that
+come from outside of the code, such as environment variables, with `loggerEnvSchema` first.
+
+## Environment variables
+
+`loggerEnvSchema` parses these environment variables to the [configuration](#configuration) options:
+
+| Variable                  | Option             | Default   |
+| ------------------------- | ------------------ | --------- |
+| `LOGGER_ENABLED`          | `enabled`          | `true`    |
+| `LOG_COLORIZE`            | `colorize`         | `false`   |
+| `LOG_FORMAT`              | `format`           | `json`    |
+| `LOG_LEVEL`               | `minLevel`         | `info`    |
+| `LOG_MAX_HEX_DATA_LENGTH` | `maxHexDataLength` | (not set) |
+
+The boolean variables accept the values of the `z.stringbool` schema of Zod, such as `true` and `false`. The
+`redactionRules` option is code rather than deployment configuration, so it has no environment variable. See
+[`redactionRules`](#redactionrules) for how to turn on redaction.
+
+The schema rejects empty values, such as the `LOG_LEVEL=` line of a `.env` file. To treat them as unset instead, so that
+they get the defaults, remove them before you parse the environment:
+
+```ts
+const env = envSchema.parse(Object.fromEntries(Object.entries(process.env).filter(([, value]) => value !== '')));
+```
 
 ## Logging errors
 
@@ -57,12 +94,11 @@ string value in the log entry. Use the `g` flag to replace all occurrences in a 
 entry, which the `json` format prints and [additional transports](#additional-transports) receive. The `pretty` format
 prints the log entry without redaction.
 
+Redaction is off by default. To turn it on, add the rules to the configuration:
+
 ```ts
-const logger = createLogger({
-  colorize: false,
-  enabled: true,
-  format: 'json',
-  minLevel: 'info',
+export const logger = createLogger({
+  ...createLogConfigFromEnv(env),
   redactionRules: [
     { pattern: /(?<prefix>https:\/\/[\w-]+\.infura\.io\/v3\/)[\w-]+/g, replacement: '$<prefix>********' },
   ],

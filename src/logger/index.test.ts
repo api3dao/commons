@@ -3,7 +3,14 @@ import noop from 'lodash/noop.js';
 import winston from 'winston';
 import { z } from 'zod';
 
-import { createBaseLogger, createJsonReplacer, validateLogConfig, wrapper, type LogConfig } from './index.js';
+import {
+  createBaseLogger,
+  createJsonReplacer,
+  createLogConfigFromEnv,
+  loggerEnvSchema,
+  wrapper,
+  type LogConfig,
+} from './index.js';
 
 // Winston stores the serialized log entry under this symbol, which the "triple-beam" package exports as MESSAGE.
 const serializedLogEntryKey = Symbol.for('message');
@@ -319,20 +326,51 @@ test('creates a JSON replacer that redacts values, truncates hex data and serial
   });
 });
 
-test('validates maxHexDataLength', () => {
-  const logConfig: LogConfig = { enabled: true, minLevel: 'debug', format: 'json', colorize: false };
+test('creates the default log config when no logger environment variables are set', () => {
+  const env = loggerEnvSchema.parse({ PATH: '/usr/bin' });
 
-  expect(validateLogConfig({ ...logConfig, maxHexDataLength: 100 })).toStrictEqual({
-    ...logConfig,
-    maxHexDataLength: 100,
+  expect(createLogConfigFromEnv(env)).toStrictEqual({
+    colorize: false,
+    enabled: true,
+    format: 'json',
+    maxHexDataLength: undefined,
+    minLevel: 'info',
   });
-  expect(() => validateLogConfig({ ...logConfig, maxHexDataLength: 0 })).toThrow(
-    'Invalid logger configuration: maxHexDataLength must be a positive integer'
-  );
-  expect(() => validateLogConfig({ ...logConfig, maxHexDataLength: 1.5 })).toThrow(
-    'Invalid logger configuration: maxHexDataLength must be a positive integer'
-  );
-  expect(() => validateLogConfig({ ...logConfig, maxHexDataLength: '100' })).toThrow(
-    'Invalid logger configuration: maxHexDataLength must be a positive integer'
-  );
+});
+
+test('creates the log config from the logger environment variables', () => {
+  const env = loggerEnvSchema.parse({
+    LOGGER_ENABLED: 'false',
+    LOG_COLORIZE: 'true',
+    LOG_FORMAT: 'pretty',
+    LOG_LEVEL: 'debug',
+    LOG_MAX_HEX_DATA_LENGTH: '100',
+  });
+
+  expect(createLogConfigFromEnv(env)).toStrictEqual({
+    colorize: true,
+    enabled: false,
+    format: 'pretty',
+    maxHexDataLength: 100,
+    minLevel: 'debug',
+  });
+});
+
+test.each([
+  ['LOGGER_ENABLED', 'flase'],
+  ['LOG_COLORIZE', 'maybe'],
+  ['LOG_FORMAT', 'yaml'],
+  ['LOG_LEVEL', 'verbose'],
+  ['LOG_MAX_HEX_DATA_LENGTH', '0'],
+  ['LOG_MAX_HEX_DATA_LENGTH', '1.5'],
+  ['LOG_MAX_HEX_DATA_LENGTH', 'abc'],
+  ['LOGGER_ENABLED', ''],
+  ['LOG_COLORIZE', ''],
+  ['LOG_FORMAT', ''],
+  ['LOG_LEVEL', ''],
+  ['LOG_MAX_HEX_DATA_LENGTH', ''],
+])('rejects %s set to "%s"', (name, value) => {
+  const result = loggerEnvSchema.safeParse({ [name]: value });
+
+  expect(result.error?.issues.map(({ path }) => path)).toStrictEqual([[name]]);
 });
