@@ -1,8 +1,9 @@
 import { makeError } from 'ethers';
 import noop from 'lodash/noop.js';
+import winston from 'winston';
 import { z } from 'zod';
 
-import { createBaseLogger, validateLogConfig, wrapper, type LogConfig } from './index.js';
+import { createBaseLogger, createJsonReplacer, validateLogConfig, wrapper, type LogConfig } from './index.js';
 
 // Winston stores the serialized log entry under this symbol, which the "triple-beam" package exports as MESSAGE.
 const serializedLogEntryKey = Symbol.for('message');
@@ -33,7 +34,7 @@ const createTestLoggerWithCapturedLogEntries = (logConfigOverrides: Partial<LogC
   const getLogEntries = () => transportLogSpy.mock.calls.map(([logEntry]) => logEntry);
   const getSerializedLogEntries = (): string[] => getLogEntries().map((logEntry) => logEntry[serializedLogEntryKey]);
 
-  return { logger: wrapper(baseLogger), getLogEntries, getSerializedLogEntries };
+  return { baseLogger, logger: wrapper(baseLogger), getLogEntries, getSerializedLogEntries };
 };
 
 const infuraRedactionRule = {
@@ -274,6 +275,48 @@ test('does not truncate hex data when maxHexDataLength is not set', () => {
 
   const [serializedLogEntry] = getSerializedLogEntries();
   expect(JSON.parse(serializedLogEntry!).ctx).toStrictEqual({ calldata });
+});
+
+test('passes the redacted JSON log entry to additional transports', () => {
+  const { baseLogger, logger } = createTestLoggerWithCapturedLogEntries({
+    format: 'pretty',
+    maxHexDataLength: 20,
+    redactionRules: [infuraRedactionRule],
+  });
+  const additionalTransport = new winston.transports.Console({ level: 'warn' });
+  const additionalTransportLogSpy = jest
+    .spyOn(additionalTransport, 'log')
+    .mockImplementation((_logEntry: any, next: () => void) => next());
+  baseLogger.add(additionalTransport);
+  const error = makeError('server error', 'SERVER_ERROR', { request: 'https://mainnet.infura.io/v3/secret-key' });
+
+  logger.runWithContext({ serviceId: 'liquidator' }, () => {
+    logger.error('Request failed', error, { calldata: `0x${'ab'.repeat(60)}` });
+  });
+
+  const [logEntry] = additionalTransportLogSpy.mock.calls[0]!;
+  expect(logEntry[serializedLogEntryKey]).not.toContain('secret-key');
+  expect(JSON.parse(logEntry[serializedLogEntryKey])).toMatchObject({
+    level: 'error',
+    message: 'Request failed',
+    ctx: { serviceId: 'liquidator', calldata: '0xababababab...<122 chars>' },
+    error: { request: 'https://mainnet.infura.io/v3/********' },
+  });
+});
+
+test('creates a JSON replacer that redacts values, truncates hex data and serializes bigints', () => {
+  const replacer = createJsonReplacer({ maxHexDataLength: 20, redactionRules: [infuraRedactionRule] });
+
+  const serializedValue = JSON.stringify(
+    { url: 'https://mainnet.infura.io/v3/secret-key', amount: 10n ** 18n, calldata: `0x${'ab'.repeat(60)}` },
+    replacer
+  );
+
+  expect(JSON.parse(serializedValue)).toStrictEqual({
+    url: 'https://mainnet.infura.io/v3/********',
+    amount: '1000000000000000000',
+    calldata: '0xababababab...<122 chars>',
+  });
 });
 
 test('validates maxHexDataLength', () => {

@@ -35,7 +35,7 @@ const truncateHexData = (value: string, longHexDataPattern: RegExp) =>
     (hexData) => `${hexData.slice(0, truncatedHexDataPrefixLength)}...<${hexData.length} chars>`
   );
 
-const createJsonReplacer = (config: LogConfig) => {
+export const createJsonReplacer = (config: Pick<LogConfig, 'maxHexDataLength' | 'redactionRules'>) => {
   const { maxHexDataLength, redactionRules = [] } = config;
   // The "0x" prefix counts towards the length, so the pattern needs one hex digit less than the maximum length.
   const longHexDataPattern =
@@ -65,7 +65,8 @@ const createConsoleTransport = (config: LogConfig) => {
 
   switch (format) {
     case 'json': {
-      return new winston.transports.Console({ format: winston.format.json({ replacer: createJsonReplacer(config) }) });
+      // The format of the logger already serializes the log entry to JSON.
+      return new winston.transports.Console();
     }
     case 'pretty': {
       const formats = [
@@ -96,12 +97,13 @@ export const createBaseLogger = (config: LogConfig) => {
 
   return winston.createLogger({
     level: minLevel,
-    // This format is recommended by the "winston-console-format" package.
+    // This format is recommended by the "winston-console-format" package. Serializing at the logger level gives every
+    // transport, including additional ones, the redacted JSON log entry.
     format: winston.format.combine(
       winston.format.timestamp(),
       winston.format.errors({ stack: true }),
       winston.format.splat(),
-      winston.format.json()
+      winston.format.json({ replacer: createJsonReplacer(config) })
     ),
     silent: !enabled,
     exitOnError: false,
