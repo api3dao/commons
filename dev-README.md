@@ -17,8 +17,8 @@ Inspect the `package.json` for more scripts.
 
 The package is published for both module systems. `pnpm run build` runs `tsc` twice:
 
-- `build:cjs` uses `tsconfig.cjs.json` and writes `dist/cjs`. It only sets `outDir`, because `tsconfig.json` already
-  sets `module` to `commonjs`.
+- `build:cjs` uses `tsconfig.cjs.json` and writes `dist/cjs`. It only sets `outDir`. `tsconfig.json` sets `module` to
+  `nodenext`, which emits CommonJS because the root `package.json` has no `type` field.
 - `build:esm` uses `tsconfig.esm.json` and writes `dist/esm`. It sets `module` to `esnext`, and `moduleResolution` to
   `bundler`, which is the only module resolution that `esnext` accepts.
 
