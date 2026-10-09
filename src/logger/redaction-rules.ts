@@ -1,6 +1,6 @@
 import type { RedactionRule } from './index.js';
 
-const redactedValue = '********';
+export const redactedValue = '********';
 
 // The start of a URL up to its path, also with credentials before the host or with a port.
 const createUrlOriginPattern = (hostPattern: string) =>

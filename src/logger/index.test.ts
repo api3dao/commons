@@ -326,6 +326,26 @@ test('creates a JSON replacer that redacts values, truncates hex data and serial
   });
 });
 
+test('applies redaction rules with a replacement function', () => {
+  const replacer = createJsonReplacer({
+    redactionRules: [
+      { pattern: /secret-(\w+)/g, replacement: (_secret: string, name: string) => `<${name.length} chars>` },
+    ],
+  });
+
+  expect(replacer('', 'Using secret-abc and secret-defgh')).toBe('Using <3 chars> and <5 chars>');
+});
+
+test('replaces the whole match with the redacted value for redaction rules without a replacement', () => {
+  const replacer = createJsonReplacer({
+    redactionRules: [{ pattern: /secret-\w+/g }, { pattern: /(?<=dkey=)[\w-]+/g }],
+  });
+
+  expect(replacer('', 'Using secret-abc with https://lb.drpc.org/ogrpc?network=base&dkey=Ak3x-9xQ')).toBe(
+    'Using ******** with https://lb.drpc.org/ogrpc?network=base&dkey=********'
+  );
+});
+
 test('creates the default log config when no logger environment variables are set', () => {
   const env = loggerEnvSchema.parse({ PATH: '/usr/bin' });
 

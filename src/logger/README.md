@@ -89,10 +89,11 @@ Defines the minimum level of logs. Logs with smaller level (severity) will be si
 ### `redactionRules`
 
 Optional list of rules that redact sensitive data (for example API keys in RPC URLs) from the logs. Each rule has a
-`pattern` regular expression and a `replacement` string, which the logger passes to `String.prototype.replace` for every
-string value in the log entry. Use the `g` flag to replace all occurrences in a value. The rules apply to the JSON log
-entry, which the `json` format prints and [additional transports](#additional-transports) receive. The `pretty` format
-prints the log entry without redaction.
+`pattern` regular expression and an optional `replacement` string or function, which the logger passes to
+`String.prototype.replace` for every string value in the log entry. Use the `g` flag to replace all occurrences in a
+value. Without a `replacement`, the logger replaces the whole match with `********`, so match only the secret, for
+example with a lookbehind for the text before it. The rules apply to the JSON log entry, which the `json` format prints
+and [additional transports](#additional-transports) receive. The `pretty` format prints the log entry without redaction.
 
 Redaction is off by default. To turn it on, add the rules to the configuration. The package exports `urlRedactionRules`,
 which redact secrets in URLs:
@@ -113,10 +114,7 @@ Add your own rules for the secrets that only your service uses:
 ```ts
 export const logger = createLogger({
   ...createLogConfigFromEnv(env),
-  redactionRules: [
-    ...urlRedactionRules,
-    { pattern: /(?<prefix>https:\/\/rpc\.example\.com\/)[\w-]+/g, replacement: '$<prefix>********' },
-  ],
+  redactionRules: [...urlRedactionRules, { pattern: /(?<=https:\/\/rpc\.example\.com\/)[\w-]+/g }],
 });
 ```
 

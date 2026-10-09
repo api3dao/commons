@@ -5,8 +5,9 @@ import { consoleFormat } from 'winston-console-format';
 import { z } from 'zod';
 
 import { getAsyncLocalStorage } from './async-storage.js';
+import { redactedValue } from './redaction-rules.js';
 
-export * from './redaction-rules.js';
+export { urlRedactionRules } from './redaction-rules.js';
 
 export const logFormatOptions = ['json', 'pretty'] as const;
 
@@ -18,7 +19,7 @@ export type LogLevel = (typeof logLevelOptions)[number];
 
 export interface RedactionRule {
   pattern: RegExp;
-  replacement: string;
+  replacement?: string | ((substring: string, ...args: any[]) => string) | undefined;
 }
 
 export interface LogConfig {
@@ -56,6 +57,10 @@ const truncateHexData = (value: string, longHexDataPattern: RegExp) =>
     (hexData) => `${hexData.slice(0, truncatedHexDataPrefixLength)}...<${hexData.length} chars>`
   );
 
+const applyRedactionRule = (value: string, { pattern, replacement = redactedValue }: RedactionRule) =>
+  // eslint-disable-next-line unicorn/no-unsafe-string-replacement -- Rules may use patterns like "$<prefix>".
+  isString(replacement) ? value.replace(pattern, replacement) : value.replace(pattern, replacement);
+
 export const createJsonReplacer = (config: Pick<LogConfig, 'maxHexDataLength' | 'redactionRules'>) => {
   const { maxHexDataLength, redactionRules = [] } = config;
   // The "0x" prefix counts towards the length, so the pattern needs one hex digit less than the maximum length.
@@ -67,13 +72,12 @@ export const createJsonReplacer = (config: Pick<LogConfig, 'maxHexDataLength' | 
     if (typeof value === 'bigint') return value.toString();
     if (!isString(value)) return value;
 
-    const redactedValue = redactionRules.reduce(
-      // eslint-disable-next-line unicorn/no-unsafe-string-replacement -- Rules may use patterns like "$<prefix>".
-      (partiallyRedactedValue, { pattern, replacement }) => partiallyRedactedValue.replace(pattern, replacement),
+    const redactedString = redactionRules.reduce(
+      (partiallyRedactedValue, rule) => applyRedactionRule(partiallyRedactedValue, rule),
       value
     );
 
-    return longHexDataPattern ? truncateHexData(redactedValue, longHexDataPattern) : redactedValue;
+    return longHexDataPattern ? truncateHexData(redactedString, longHexDataPattern) : redactedString;
   };
 };
 
