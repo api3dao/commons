@@ -1,4 +1,5 @@
 import isError from 'lodash/isError.js';
+import isNil from 'lodash/isNil.js';
 import isString from 'lodash/isString.js';
 import winston from 'winston';
 import { consoleFormat } from 'winston-console-format';
@@ -7,7 +8,7 @@ import { z } from 'zod';
 import { getAsyncLocalStorage } from './async-storage.js';
 import { redactedValue } from './redaction-rules.js';
 
-export { urlRedactionRules } from './redaction-rules.js';
+export { commonJsonRedaction } from './redaction-rules.js';
 
 export const logFormatOptions = ['json', 'pretty'] as const;
 
@@ -17,18 +18,28 @@ export const logLevelOptions = ['debug', 'info', 'warn', 'error'] as const;
 
 export type LogLevel = (typeof logLevelOptions)[number];
 
-export interface RedactionRule {
+export interface KeyRedactionRule {
+  key: string | RegExp;
+  replacement?: string | ((value: unknown, key: string) => unknown) | undefined;
+}
+
+export interface ValueRedactionRule {
   pattern: RegExp;
   replacement?: string | ((substring: string, ...args: any[]) => string) | undefined;
+}
+
+export interface JsonRedaction {
+  keys?: KeyRedactionRule[] | undefined;
+  values?: ValueRedactionRule[] | undefined;
 }
 
 export interface LogConfig {
   colorize: boolean;
   enabled: boolean;
   format: LogFormat;
+  jsonRedaction?: JsonRedaction | undefined;
   maxHexDataLength?: number | undefined;
   minLevel: LogLevel;
-  redactionRules?: RedactionRule[] | undefined;
 }
 
 export const loggerEnvSchema = z.object({
@@ -57,23 +68,34 @@ const truncateHexData = (value: string, longHexDataPattern: RegExp) =>
     (hexData) => `${hexData.slice(0, truncatedHexDataPrefixLength)}...<${hexData.length} chars>`
   );
 
-const applyRedactionRule = (value: string, { pattern, replacement = redactedValue }: RedactionRule) =>
+const matchesKey = (key: string, rule: KeyRedactionRule) =>
+  // eslint-disable-next-line unicorn/prefer-regexp-test -- Unlike "test", "search" ignores the position that a global regular expression keeps between calls.
+  isString(rule.key) ? key === rule.key : key.search(rule.key) !== -1;
+
+const applyKeyRedactionRule = (value: unknown, key: string, { replacement = redactedValue }: KeyRedactionRule) =>
+  isString(replacement) ? replacement : replacement(value, key);
+
+const applyValueRedactionRule = (value: string, { pattern, replacement = redactedValue }: ValueRedactionRule) =>
   // eslint-disable-next-line unicorn/no-unsafe-string-replacement -- Rules may use patterns like "$<prefix>".
   isString(replacement) ? value.replace(pattern, replacement) : value.replace(pattern, replacement);
 
-export const createJsonReplacer = (config: Pick<LogConfig, 'maxHexDataLength' | 'redactionRules'>) => {
-  const { maxHexDataLength, redactionRules = [] } = config;
+export const createJsonReplacer = (config: Pick<LogConfig, 'jsonRedaction' | 'maxHexDataLength'>) => {
+  const { jsonRedaction: { keys: keyRedactionRules = [], values: valueRedactionRules = [] } = {}, maxHexDataLength } =
+    config;
   // The "0x" prefix counts towards the length, so the pattern needs one hex digit less than the maximum length.
   const longHexDataPattern =
     maxHexDataLength === undefined ? undefined : new RegExp(String.raw`0x[\dA-Fa-f]{${maxHexDataLength - 1},}`, 'g');
 
-  return (_key: string, value: unknown) => {
+  return (key: string, value: unknown) => {
+    // A missing secret, such as "authTokens: null", reveals nothing and tells that the secret is not set.
+    const keyRedactionRule = isNil(value) ? undefined : keyRedactionRules.find((rule) => matchesKey(key, rule));
+    if (keyRedactionRule) return applyKeyRedactionRule(value, key, keyRedactionRule);
     // A custom replacer overrides the default one of the JSON format, which is what serializes bigints.
     if (typeof value === 'bigint') return value.toString();
     if (!isString(value)) return value;
 
-    const redactedString = redactionRules.reduce(
-      (partiallyRedactedValue, rule) => applyRedactionRule(partiallyRedactedValue, rule),
+    const redactedString = valueRedactionRules.reduce(
+      (partiallyRedactedValue, rule) => applyValueRedactionRule(partiallyRedactedValue, rule),
       value
     );
 

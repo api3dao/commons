@@ -1,6 +1,6 @@
-import { createJsonReplacer, urlRedactionRules } from './index.js';
+import { commonJsonRedaction, createJsonReplacer } from './index.js';
 
-const replacer = createJsonReplacer({ redactionRules: urlRedactionRules });
+const replacer = createJsonReplacer({ jsonRedaction: commonJsonRedaction });
 const redact = (value: string) => replacer('', value);
 
 const apiKey = 'a1B2c3D4e5F6g7H8i9J0k1L2m3N4o5P6';
@@ -212,4 +212,75 @@ test.each([
   redact(value);
 
   expect(performance.now() - start).toBeLessThan(500);
+});
+
+test.each([
+  'AIRNODE_SECRET_OMDB_API_KEY',
+  'ALLOCATOR_PRIVATE_KEY',
+  'AWS_ACCESS_KEY_ID',
+  'AWS_SECRET_ACCESS_KEY',
+  'Authorization',
+  'DATABASE_PASSWORD',
+  'Drpc-Key',
+  'GH_TOKEN',
+  'GRAFANA_LOKI_AUTH',
+  'HOT_WALLET_MNEMONIC',
+  'KEYCARD_PAIRING_KEY',
+  'SLACK_API_TOKEN',
+  'ZEROEX_API_KEY',
+  'accessToken',
+  'airnodeWalletMnemonic',
+  'apiKey',
+  'authToken',
+  'authTokens',
+  'clientSecret',
+  'cookie',
+  'drpcKey',
+  'password',
+  'privateKey',
+  'x-api-key',
+])('redacts the value of the "%s" key', (key) => {
+  expect(JSON.parse(JSON.stringify({ [key]: 'secret-value' }, replacer))).toStrictEqual({ [key]: '********' });
+});
+
+test.each([
+  'author',
+  'collateralToken',
+  'keyword',
+  'promptTokens',
+  'publicKey',
+  'sellToken',
+  'tokenId',
+  'tokenIn',
+  'tokens',
+])('keeps the value of the "%s" key', (key) => {
+  expect(JSON.parse(JSON.stringify({ [key]: 'value' }, replacer))).toStrictEqual({ [key]: 'value' });
+});
+
+test('redacts the values of secret keys', () => {
+  const config = {
+    allowedAirnodes: [
+      { address: '0xc52EeA00154B4fF1EbbF8Ba39FDe37F1AC3B9Fd4', authTokens: ['ab'.repeat(32)], isCertified: true },
+    ],
+    endpoints: [{ authTokens: null, delaySeconds: 15, urlPath: '/delayed' }],
+    keyword: 'oracle',
+    publicKey: '0x04ab',
+    sellToken: '0xA0b86991',
+    signedApis: [{ authToken: 'signed-api-token', url: 'https://signed-api.example.com' }],
+    tokenId: 42,
+    wallet: { mnemonic: 'test test test test test test test test test test test junk', privateKey: '0x0123' },
+  };
+
+  expect(JSON.parse(JSON.stringify(config, replacer))).toStrictEqual({
+    allowedAirnodes: [
+      { address: '0xc52EeA00154B4fF1EbbF8Ba39FDe37F1AC3B9Fd4', authTokens: '********', isCertified: true },
+    ],
+    endpoints: [{ authTokens: null, delaySeconds: 15, urlPath: '/delayed' }],
+    keyword: 'oracle',
+    publicKey: '0x04ab',
+    sellToken: '0xA0b86991',
+    signedApis: [{ authToken: '********', url: 'https://signed-api.example.com' }],
+    tokenId: 42,
+    wallet: { mnemonic: '********', privateKey: '********' },
+  });
 });

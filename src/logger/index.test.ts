@@ -208,7 +208,7 @@ test('logs an error when passed as context to non error level', () => {
 
 test('redacts sensitive data in JSON logs', () => {
   const { logger, getSerializedLogEntries } = createTestLoggerWithCapturedLogEntries({
-    redactionRules: [infuraRedactionRule],
+    jsonRedaction: { values: [infuraRedactionRule] },
   });
 
   logger.info('Connecting to https://mainnet.infura.io/v3/secret-key', {
@@ -225,7 +225,7 @@ test('redacts sensitive data in JSON logs', () => {
 
 test('redacts sensitive data in the fields of a logged error', () => {
   const { logger, getSerializedLogEntries } = createTestLoggerWithCapturedLogEntries({
-    redactionRules: [infuraRedactionRule],
+    jsonRedaction: { values: [infuraRedactionRule] },
   });
   const error = makeError('server error', 'SERVER_ERROR', { request: 'https://mainnet.infura.io/v3/secret-key' });
 
@@ -238,7 +238,7 @@ test('redacts sensitive data in the fields of a logged error', () => {
 
 test('serializes bigints in JSON logs', () => {
   const { logger, getSerializedLogEntries } = createTestLoggerWithCapturedLogEntries({
-    redactionRules: [infuraRedactionRule],
+    jsonRedaction: { values: [infuraRedactionRule] },
   });
 
   logger.info('Transferring tokens', { amount: 10n ** 18n });
@@ -288,7 +288,7 @@ test('passes the redacted JSON log entry to additional transports', () => {
   const { baseLogger, logger } = createTestLoggerWithCapturedLogEntries({
     format: 'pretty',
     maxHexDataLength: 20,
-    redactionRules: [infuraRedactionRule],
+    jsonRedaction: { values: [infuraRedactionRule] },
   });
   const additionalTransport = new winston.transports.Console({ level: 'warn' });
   const additionalTransportLogSpy = jest
@@ -312,7 +312,7 @@ test('passes the redacted JSON log entry to additional transports', () => {
 });
 
 test('creates a JSON replacer that redacts values, truncates hex data and serializes bigints', () => {
-  const replacer = createJsonReplacer({ maxHexDataLength: 20, redactionRules: [infuraRedactionRule] });
+  const replacer = createJsonReplacer({ jsonRedaction: { values: [infuraRedactionRule] }, maxHexDataLength: 20 });
 
   const serializedValue = JSON.stringify(
     { url: 'https://mainnet.infura.io/v3/secret-key', amount: 10n ** 18n, calldata: `0x${'ab'.repeat(60)}` },
@@ -326,24 +326,85 @@ test('creates a JSON replacer that redacts values, truncates hex data and serial
   });
 });
 
-test('applies redaction rules with a replacement function', () => {
+test('applies value redaction rules with a replacement function', () => {
   const replacer = createJsonReplacer({
-    redactionRules: [
-      { pattern: /secret-(\w+)/g, replacement: (_secret: string, name: string) => `<${name.length} chars>` },
-    ],
+    jsonRedaction: {
+      values: [{ pattern: /secret-(\w+)/g, replacement: (_secret: string, name: string) => `<${name.length} chars>` }],
+    },
   });
 
   expect(replacer('', 'Using secret-abc and secret-defgh')).toBe('Using <3 chars> and <5 chars>');
 });
 
-test('replaces the whole match with the redacted value for redaction rules without a replacement', () => {
+test('replaces the whole match with the redacted value for value redaction rules without a replacement', () => {
   const replacer = createJsonReplacer({
-    redactionRules: [{ pattern: /secret-\w+/g }, { pattern: /(?<=dkey=)[\w-]+/g }],
+    jsonRedaction: { values: [{ pattern: /secret-\w+/g }, { pattern: /(?<=dkey=)[\w-]+/g }] },
   });
 
   expect(replacer('', 'Using secret-abc with https://lb.drpc.org/ogrpc?network=base&dkey=Ak3x-9xQ')).toBe(
     'Using ******** with https://lb.drpc.org/ogrpc?network=base&dkey=********'
   );
+});
+
+test('redacts the values of the keys that equal the key of a key redaction rule', () => {
+  const replacer = createJsonReplacer({ jsonRedaction: { keys: [{ key: 'sessionId' }] } });
+  const value = {
+    SESSION_ID: 'a',
+    missing: { sessionId: null },
+    previousSessionId: 'b',
+    sessionId: ['c', 'd'],
+    sessionIds: 'e',
+  };
+
+  expect(JSON.parse(JSON.stringify(value, replacer))).toStrictEqual({
+    SESSION_ID: 'a',
+    missing: { sessionId: null },
+    previousSessionId: 'b',
+    sessionId: '********',
+    sessionIds: 'e',
+  });
+});
+
+test('redacts the values of the keys that match the regular expression of a key redaction rule', () => {
+  const replacer = createJsonReplacer({ jsonRedaction: { keys: [{ key: /Mnemonic$/g }] } });
+  const value = { airnodeWalletMnemonic: 'a', hotWalletMnemonic: 'b', mnemonicLength: 12 };
+
+  expect(JSON.parse(JSON.stringify(value, replacer))).toStrictEqual({
+    airnodeWalletMnemonic: '********',
+    hotWalletMnemonic: '********',
+    mnemonicLength: 12,
+  });
+});
+
+test('applies the replacement of a key redaction rule', () => {
+  const replacer = createJsonReplacer({
+    jsonRedaction: {
+      keys: [
+        { key: 'authTokens', replacement: (value, key) => `${(value as string[]).length} ${key}` },
+        { key: 'password', replacement: '<hidden>' },
+      ],
+    },
+  });
+  const value = { authTokens: ['a', 'b'], password: 'p' };
+
+  expect(JSON.parse(JSON.stringify(value, replacer))).toStrictEqual({
+    authTokens: '2 authTokens',
+    password: '<hidden>',
+  });
+});
+
+test('redacts the values of keys in the logs', () => {
+  const { logger, getSerializedLogEntries } = createTestLoggerWithCapturedLogEntries({
+    jsonRedaction: { keys: [{ key: 'authTokens' }] },
+  });
+
+  logger.info('Using configuration.', { allowedAirnodes: [{ address: '0x1', authTokens: ['secret-token'] }] });
+
+  const [serializedLogEntry] = getSerializedLogEntries();
+  expect(serializedLogEntry).not.toContain('secret-token');
+  expect(JSON.parse(serializedLogEntry!).ctx).toStrictEqual({
+    allowedAirnodes: [{ address: '0x1', authTokens: '********' }],
+  });
 });
 
 test('creates the default log config when no logger environment variables are set', () => {

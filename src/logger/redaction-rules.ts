@@ -1,4 +1,4 @@
-import type { RedactionRule } from './index.js';
+import type { JsonRedaction, KeyRedactionRule, ValueRedactionRule } from './index.js';
 
 export const redactedValue = '********';
 
@@ -7,14 +7,14 @@ const createUrlOriginPattern = (hostPattern: string) =>
   String.raw`\b(?:https?|wss?)://(?:[^\s"#'/?@]*@)?${hostPattern}(?::\d+)?`;
 
 // Redacts the path segment that follows the URL prefix, which is where these RPC providers put the API key.
-const createApiKeyAfterUrlPrefixRule = (hostPattern: string, pathPrefixPattern = ''): RedactionRule => ({
+const createApiKeyAfterUrlPrefixRule = (hostPattern: string, pathPrefixPattern = ''): ValueRedactionRule => ({
   pattern: new RegExp(String.raw`(?<prefix>${createUrlOriginPattern(hostPattern)}/${pathPrefixPattern})[\w-]+`, 'gi'),
   replacement: `$<prefix>${redactedValue}`,
 });
 
 // Redacts the first path segment that looks like an API key, for the RPC providers that put it after paths of different
 // lengths. The API key comes before the other segments that may look like one, such as method names.
-const createFirstApiKeyShapedSegmentRule = (hostPattern: string, apiKeyPattern: string): RedactionRule => ({
+const createFirstApiKeyShapedSegmentRule = (hostPattern: string, apiKeyPattern: string): ValueRedactionRule => ({
   pattern: new RegExp(
     String.raw`(?<prefix>${createUrlOriginPattern(hostPattern)}/(?:[^\s"#'/<>?]*/)*?)${apiKeyPattern}(?![^\s"#'/<>?])`,
     'gi'
@@ -22,7 +22,26 @@ const createFirstApiKeyShapedSegmentRule = (hostPattern: string, apiKeyPattern: 
   replacement: `$<prefix>${redactedValue}`,
 });
 
-export const urlRedactionRules: RedactionRule[] = [
+// The names of secrets in camelCase config fields, SCREAMING_SNAKE_CASE environment variables and HTTP headers. Generic
+// words such as "token" or "key" are left out, because they also name fields such as "tokenIn" or "publicKey".
+const secretKeyRedactionRules: KeyRedactionRule[] = [
+  /mnemonic$/i,
+  /passw(?:or)?d/i,
+  /secret/i,
+  /auth$/i,
+  /^authorization$/i,
+  /^(?:set-)?cookie$/i,
+  /(?:access|admin|api|auth|private|secret)[_-]?keys?$/i,
+  /access[_-]?key[_-]?id$/i,
+  // Keys named after a service, such as "drpcKey" or the "Drpc-Key" header.
+  /(?<!public)Key$/,
+  /-key$/i,
+  /(?:access|api|auth|bearer|refresh|session)[_-]?tokens?$/i,
+  // Environment variables such as "GH_TOKEN" or "APISIX_ADMIN_KEY".
+  /^[A-Z\d]+(?:_[A-Z\d]+)*_(?:KEY|TOKEN)$/,
+].map((key) => ({ key }));
+
+const urlRedactionRules: ValueRedactionRule[] = [
   // Credentials before the host, such as "https://user:password@host" or "postgresql://user:password@host". Matching
   // from "://" instead of the scheme keeps the cost linear on long values with many dots or dashes.
   {
@@ -47,3 +66,8 @@ export const urlRedactionRules: RedactionRule[] = [
   createFirstApiKeyShapedSegmentRule(String.raw`rpc\.ankr\.com`, String.raw`[\dA-Fa-f]{32,}`),
   createApiKeyAfterUrlPrefixRule(String.raw`[\w.-]+\.gateway\.tenderly\.co`),
 ];
+
+export const commonJsonRedaction = {
+  keys: secretKeyRedactionRules,
+  values: urlRedactionRules,
+} satisfies JsonRedaction;
