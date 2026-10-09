@@ -2,9 +2,11 @@
   "compilerOptions": {
     "noEmit": true,
     "lib": ["esnext"],
-    "module": "commonjs",
+    "module": "nodenext",
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "moduleResolution": "nodenext",
+    "types": ["node", "jest"],
+    "rootDir": ".",
     "strict": true,
     "target": "esnext",
     "skipLibCheck": true,
@@ -13,6 +15,9 @@
     "noUncheckedIndexedAccess": true,
     "noImplicitReturns": true,
     "allowJs": true,
+
+    // Required by ts-jest, which transpiles each file in isolation
+    "isolatedModules": true,
 
     // Disabled because they are covered by ESLint rules
     "noUnusedLocals": false,
