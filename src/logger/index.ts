@@ -1,8 +1,14 @@
 import isError from 'lodash/isError.js';
+import isNil from 'lodash/isNil.js';
+import isString from 'lodash/isString.js';
 import winston from 'winston';
 import { consoleFormat } from 'winston-console-format';
+import { z } from 'zod';
 
 import { getAsyncLocalStorage } from './async-storage.js';
+import { redactedValue } from './redaction-rules.js';
+
+export { commonJsonRedaction } from './redaction-rules.js';
 
 export const logFormatOptions = ['json', 'pretty'] as const;
 
@@ -12,12 +18,90 @@ export const logLevelOptions = ['debug', 'info', 'warn', 'error'] as const;
 
 export type LogLevel = (typeof logLevelOptions)[number];
 
+export interface KeyRedactionRule {
+  key: string | RegExp;
+  replacement?: string | ((value: unknown, key: string) => unknown) | undefined;
+}
+
+export interface ValueRedactionRule {
+  pattern: RegExp;
+  replacement?: string | ((substring: string, ...args: any[]) => string) | undefined;
+}
+
+export interface JsonRedaction {
+  keys?: KeyRedactionRule[] | undefined;
+  values?: ValueRedactionRule[] | undefined;
+}
+
 export interface LogConfig {
   colorize: boolean;
   enabled: boolean;
   format: LogFormat;
+  jsonRedaction?: JsonRedaction | undefined;
+  maxHexDataLength?: number | undefined;
   minLevel: LogLevel;
 }
+
+export const loggerEnvSchema = z.object({
+  LOGGER_ENABLED: z.stringbool().default(true),
+  LOG_COLORIZE: z.stringbool().default(false),
+  LOG_FORMAT: z.enum(logFormatOptions).default('json'),
+  LOG_LEVEL: z.enum(logLevelOptions).default('info'),
+  LOG_MAX_HEX_DATA_LENGTH: z.coerce.number().int().positive().optional(),
+});
+
+export type LoggerEnv = z.infer<typeof loggerEnvSchema>;
+
+export const createLogConfigFromEnv = (env: LoggerEnv): LogConfig => ({
+  colorize: env.LOG_COLORIZE,
+  enabled: env.LOGGER_ENABLED,
+  format: env.LOG_FORMAT,
+  maxHexDataLength: env.LOG_MAX_HEX_DATA_LENGTH,
+  minLevel: env.LOG_LEVEL,
+});
+
+const truncatedHexDataPrefixLength = 12;
+
+const truncateHexData = (value: string, longHexDataPattern: RegExp) =>
+  value.replaceAll(
+    longHexDataPattern,
+    (hexData) => `${hexData.slice(0, truncatedHexDataPrefixLength)}...<${hexData.length} chars>`
+  );
+
+const matchesKey = (key: string, rule: KeyRedactionRule) =>
+  // eslint-disable-next-line unicorn/prefer-regexp-test -- Unlike "test", "search" ignores the position that a global regular expression keeps between calls.
+  isString(rule.key) ? key === rule.key : key.search(rule.key) !== -1;
+
+const applyKeyRedactionRule = (value: unknown, key: string, { replacement = redactedValue }: KeyRedactionRule) =>
+  isString(replacement) ? replacement : replacement(value, key);
+
+const applyValueRedactionRule = (value: string, { pattern, replacement = redactedValue }: ValueRedactionRule) =>
+  // eslint-disable-next-line unicorn/no-unsafe-string-replacement -- Rules may use patterns like "$<prefix>".
+  isString(replacement) ? value.replace(pattern, replacement) : value.replace(pattern, replacement);
+
+export const createJsonReplacer = (config: Pick<LogConfig, 'jsonRedaction' | 'maxHexDataLength'>) => {
+  const { jsonRedaction: { keys: keyRedactionRules = [], values: valueRedactionRules = [] } = {}, maxHexDataLength } =
+    config;
+  // The "0x" prefix counts towards the length, so the pattern needs one hex digit less than the maximum length.
+  const longHexDataPattern =
+    maxHexDataLength === undefined ? undefined : new RegExp(String.raw`0x[\dA-Fa-f]{${maxHexDataLength - 1},}`, 'g');
+
+  return (key: string, value: unknown) => {
+    // A missing secret, such as "authTokens: null", reveals nothing and tells that the secret is not set.
+    const keyRedactionRule = isNil(value) ? undefined : keyRedactionRules.find((rule) => matchesKey(key, rule));
+    if (keyRedactionRule) return applyKeyRedactionRule(value, key, keyRedactionRule);
+    // A custom replacer overrides the default one of the JSON format, which is what serializes bigints.
+    if (typeof value === 'bigint') return value.toString();
+    if (!isString(value)) return value;
+
+    const redactedString = valueRedactionRules.reduce(
+      (partiallyRedactedValue, rule) => applyValueRedactionRule(partiallyRedactedValue, rule),
+      value
+    );
+
+    return longHexDataPattern ? truncateHexData(redactedString, longHexDataPattern) : redactedString;
+  };
+};
 
 const createConsoleTransport = (config: LogConfig) => {
   const { colorize, enabled, format } = config;
@@ -28,7 +112,8 @@ const createConsoleTransport = (config: LogConfig) => {
 
   switch (format) {
     case 'json': {
-      return new winston.transports.Console({ format: winston.format.json() });
+      // The format of the logger already serializes the log entry to JSON.
+      return new winston.transports.Console();
     }
     case 'pretty': {
       const formats = [
@@ -59,12 +144,13 @@ export const createBaseLogger = (config: LogConfig) => {
 
   return winston.createLogger({
     level: minLevel,
-    // This format is recommended by the "winston-console-format" package.
+    // This format is recommended by the "winston-console-format" package. Serializing at the logger level gives every
+    // transport, including additional ones, the redacted JSON log entry.
     format: winston.format.combine(
       winston.format.timestamp(),
       winston.format.errors({ stack: true }),
       winston.format.splat(),
-      winston.format.json()
+      winston.format.json({ replacer: createJsonReplacer(config) })
     ),
     silent: !enabled,
     exitOnError: false,
@@ -95,6 +181,15 @@ const parseLocalContext = (localContext: LogContext | undefined) => {
   return localContext;
 };
 
+const parseError = (error: Error) => ({
+  // A JS error has no own enumerable `message`, `name` or `stack`, so the spread keeps only the additional fields (of an
+  // ethers.js error, for example) and we add the rest explicitly.
+  ...error,
+  message: error.message,
+  name: error.name,
+  stack: error.stack,
+});
+
 const createFullContext = (localContext: LogContext | undefined) => {
   const globalContext = getAsyncLocalStorage().getStore();
   if (!globalContext && !localContext) return;
@@ -121,7 +216,9 @@ export const wrapper = (logger: winston.Logger): Logger => {
     // We need to handle both overloads of the `error` function
     error: (message, errorOrLocalContext: Error | LogContext, localContext?: LogContext) => {
       if (errorOrLocalContext instanceof Error) {
-        logger.error(message, errorOrLocalContext, createFullContext(localContext));
+        // Winston merges additional arguments into the log entry, where fields of the error (like the `message` of a Zod
+        // error) would override the log message, so we log the error as a separate field instead.
+        logger.error(message, { ...createFullContext(localContext), error: parseError(errorOrLocalContext) });
       } else {
         logger.error(message, createFullContext(errorOrLocalContext));
       }
@@ -139,30 +236,4 @@ export const wrapper = (logger: winston.Logger): Logger => {
   } as Logger;
 };
 
-export const validateLogConfig = (config: unknown): LogConfig => {
-  if (typeof config !== 'object' || config === null) {
-    throw new Error('Invalid logger configuration');
-  }
-
-  const { colorize, enabled, format, minLevel } = config as Partial<LogConfig>;
-
-  if (typeof colorize !== 'boolean') {
-    throw new TypeError('Invalid logger configuration: colorize must be a boolean');
-  }
-  if (typeof enabled !== 'boolean') {
-    throw new TypeError('Invalid logger configuration: enabled must be a boolean');
-  }
-  if (!logFormatOptions.includes(format as any)) {
-    throw new TypeError('Invalid logger configuration: format must be one of "json" or "pretty"');
-  }
-  if (!logLevelOptions.includes(minLevel as any)) {
-    throw new TypeError('Invalid logger configuration: minLevel must be one of "debug", "info", "warn" or "error"');
-  }
-
-  return config as LogConfig;
-};
-
-export const createLogger = (config: LogConfig) => {
-  // Ensure that the logger configuration is valid.
-  return wrapper(createBaseLogger(validateLogConfig(config)));
-};
+export const createLogger = (config: LogConfig) => wrapper(createBaseLogger(config));
